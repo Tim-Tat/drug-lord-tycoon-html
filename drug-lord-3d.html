@@ -448,7 +448,7 @@ addEventListener('keydown',e=>{keys[e.code]=true;
 addEventListener('keyup',e=>{keys[e.code]=false;if(e.code==='Space'&&mg)mgUp()});
 addEventListener('wheel',e=>{if(!menuOpen&&!modal&&hbMode==='gh')S.tool=(S.tool+(e.deltaY>0?1:2))%3});
 $('play').onclick=()=>{started=true;$('overlay').style.display='none';$('chr').style.display='none';renderer.domElement.requestPointerLock&&renderer.domElement.requestPointerLock()};
-document.addEventListener('pointerlockchange',()=>{locked=document.pointerLockElement===renderer.domElement;if(!locked&&!menuOpen&&!modal&&started){$('overlay').style.display='grid';$('play').textContent='▶ Weiter'}});
+document.addEventListener('pointerlockchange',()=>{locked=document.pointerLockElement===renderer.domElement;if(locked&&dead){document.exitPointerLock();return}if(!locked&&!menuOpen&&!modal&&started){$('overlay').style.display='grid';$('play').textContent='▶ Weiter'}});
 document.addEventListener('pointerlockerror',()=>{fallback=true;$('overlay').style.display='none';$('warn').textContent=''});
 let drag=null;
 renderer.domElement.addEventListener('mousedown',e=>{if(menuOpen||modal)return;if(locked){interact(false);return}
@@ -1208,7 +1208,7 @@ function labHud(time){
 
 // ======================= Minispiele =======================
 const mini=$('mini'),mc=$('mc'),mctx=mc.getContext('2d');
-function relock(){try{const p=renderer.domElement.requestPointerLock();p&&p.catch&&p.catch(()=>{})}catch(e){}}
+function relock(){if(dead)return;try{const p=renderer.domElement.requestPointerLock();p&&p.catch&&p.catch(()=>{})}catch(e){}}
 function openMini(title,info){modal=true;if(document.pointerLockElement)document.exitPointerLock();mini.style.display='grid';$('mt').textContent=title;$('mi').textContent=info;$('mr').textContent='';$('mb').innerHTML=''}
 function closeMini(){modal=false;mini.style.display='none';mg=null;relock()}
 function setBtns(list){const b=$('mb');b.innerHTML='';list.forEach(([t,fn])=>{const el=document.createElement('button');el.textContent=t;el.onclick=fn;b.appendChild(el)})}
