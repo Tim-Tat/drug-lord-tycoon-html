@@ -412,13 +412,13 @@ function closeMenu(){if(NET.remote){NET.remoteClosed=true;return}menuOpen=false;
 let menuSigLast='';
 function renderMenu(force=true){
   const {line,items}=menuFn();
-  const sig=JSON.stringify([line,items.map(i=>[i[0],i[1],i[3]])]);
+  const sig=JSON.stringify([line,items.map(i=>[i[0],i[1],i[3],i[4]])]);
   if(!force&&sig===menuSigLast)return;menuSigLast=sig;
   const ml=$('menuLine');ml.textContent=line;ml.style.fontSize=line.length>90?'16px':'24px';
   const bx=$('menuBtns');bx.innerHTML='';
-  items.forEach(([t,en,fn,sub],idx)=>{const el=document.createElement('button');el.innerHTML=t+(sub?'<small>'+sub+'</small>':'');el.disabled=!en;
+  items.forEach(([t,en,fn,sub,aid])=>{const el=document.createElement('button');el.innerHTML=t+(sub?'<small>'+sub+'</small>':'');el.disabled=!en;
     el.onclick=()=>{
-      if(isClient()&&MENUS[menuFn.name]&&fn!==closeMenu){netSend({t:'menu',id:menuFn.name,i:idx});return}   // Mitspieler: Host führt aus
+      if(isClient()&&MENUS[menuFn.name]&&fn!==closeMenu){if(aid)netSend({t:'menu',id:menuFn.name,a:aid});return}   // Mitspieler: Host führt aus (per stabiler Aktions-ID, nicht per Position)
       fn();if(menuOpen)renderMenu()};
     bx.appendChild(el)});
 }
@@ -846,37 +846,37 @@ function mineTick(dt){
 let noticeSeen=false;try{noticeSeen=!!localStorage.getItem('dlt_notice')}catch(e){}
 function noticeMenu(){noticeSeen=true;try{localStorage.setItem('dlt_notice','1')}catch(e){}return{line:'⚠ HINWEIS\nDies ist ein Spiel (Satire). Alle Stoffe, Abläufe, Mengen und Werte im Labor sind frei erfunden und KEINE Anleitung für irgendetwas.\nHerstellung, Besitz und Handel mit Drogen sind in der Realität strafbar und gefährlich. Nur zur Unterhaltung – ab 18.',items:[['Verstanden – Labor betreten',true,closeMenu]]}}
 function shopMenu(){
-  const items=Object.entries(ING).map(([k,v])=>[`${v.n} – ${money(v.p)}`,S.cash>=v.p,()=>{S.cash-=v.p;S.reag[k]=(S.reag[k]||0)+1;S.flags.bought=1},`im Regal: ${S.reag[k]||0}`]);
+  const items=Object.entries(ING).map(([k,v])=>[`${v.n} – ${money(v.p)}`,S.cash>=v.p,()=>{S.cash-=v.p;S.reag[k]=(S.reag[k]||0)+1;S.flags.bought=1},`im Regal: ${S.reag[k]||0}`,'buy:'+k]);
   for(const id in DRUGS){if(!S.recipes[id])continue;const D=DRUGS[id];
     const miss=Object.entries(D.cost).map(([k,v])=>[k,Math.max(0,v-(S.reag[k]||0))]).filter(([k,n])=>n>0);
     const cst=miss.reduce((a,[k,n])=>a+n*ING[k].p,0);
-    if(miss.length)items.push([`Set für ${D.ic} ${D.n} ergänzen – ${money(cst)}`,S.cash>=cst,()=>{S.cash-=cst;miss.forEach(([k,n])=>S.reag[k]=(S.reag[k]||0)+n);S.flags.bought=1},'fehlt: '+miss.map(([k,n])=>n+'× '+ING[k].n).join(', ')])}
+    if(miss.length)items.push([`Set für ${D.ic} ${D.n} ergänzen – ${money(cst)}`,S.cash>=cst,()=>{S.cash-=cst;miss.forEach(([k,n])=>S.reag[k]=(S.reag[k]||0)+n);S.flags.bought=1},'fehlt: '+miss.map(([k,n])=>n+'× '+ING[k].n).join(', '),'set:'+id])}
   items.push(['Schließen',true,closeMenu]);
   return{line:'CHEMIKALIEN-SCHRANK\nNur erfundene Spielzutaten. (Im Darknet gibt’s sie per Drohne günstiger.)',items}}
 function boardMenu(){
   const items=[];let line;
   if(S.cook){const D=DRUGS[S.cook.drug];
     line=`Aktiver Ansatz: ${D.ic} ${D.n}\nSchritt ${S.cook.i+1}/${D.steps.length}: ${STEP[D.steps[S.cook.i]].n} → ${STATION[STEP[D.steps[S.cook.i]].st]}`;
-    items.push(['Ansatz verwerfen (Zutaten gehen verloren)',true,()=>{S.cook=null;msg('Ansatz entsorgt.')}]);
+    items.push(['Ansatz verwerfen (Zutaten gehen verloren)',true,()=>{S.cook=null;msg('Ansatz entsorgt.')},undefined,'discard']);
   }else{
     line='REZEPT-BOARD\nZutaten werden beim Start verbraucht. '+(S.psa?'':'⚠ Du trägst keine Schutzausrüstung!');
     for(const id in DRUGS){const D=DRUGS[id];
-      if(!S.recipes[id])items.push([`🔒 ${D.ic} ${D.n} – Anleitung im Darknet besorgen (Laptop)`,false,()=>{},`${stars(D)} · ab Level ${D.lvl} · ${D.coin} SCN`]);
-      else items.push([`${D.ic} Ansatz starten: ${D.n} ${D.s}`,canMake(id),()=>{startCook(id);closeMenu()},`${stars(D)} · ${costTxt(id)}`]);
+      if(!S.recipes[id])items.push([`🔒 ${D.ic} ${D.n} – Anleitung im Darknet besorgen (Laptop)`,false,()=>{},`${stars(D)} · ab Level ${D.lvl} · ${D.coin} SCN`,'locked:'+id]);
+      else items.push([`${D.ic} Ansatz starten: ${D.n} ${D.s}`,canMake(id),()=>{startCook(id);closeMenu()},`${stars(D)} · ${costTxt(id)}`,'start:'+id]);
     }
   }
   items.push(['Schließen',true,closeMenu]);return{line,items}}
 function rickMenu(){
   const b=[];
-  b.push([`Pakete verkaufen (${S.pack}) – ${money(S.pack*S.price)}  [Preis ${money(S.price)}]`,S.pack>0,()=>{const v=S.pack*S.price;S.cash+=v;addXp(v/10);S.pack=0;S.flags.sold=1;msg('+'+money(v))}]);
+  b.push([`Pakete verkaufen (${S.pack}) – ${money(S.pack*S.price)}  [Preis ${money(S.price)}]`,S.pack>0,()=>{const v=S.pack*S.price;S.cash+=v;addXp(v/10);S.pack=0;S.flags.sold=1;msg('+'+money(v))},undefined,'sellpack']);
   for(const id in DRUGS){const d=S.drugs[id];if(!d||d.n<1)continue;const D=DRUGS[id],v=Math.round(d.n*unitPrice(id));
-    b.push([`${D.ic} ${D.n} verkaufen (${d.n}× · ${QN(d.q)} ${d.q}%) – ${money(v)}`,true,()=>{S.cash+=v;addXp(v/12);S.drugs[id]={n:0,q:0};S.flags.soldDrug=1;msg('+'+money(v))},'Marktfaktor ×'+(S.dm[id]||1)])}
-  b.push([`Neuen Topf kaufen (${money(potCost())})`,S.potsOwned<12&&S.cash>=potCost(),()=>{S.cash-=potCost();const p=pots.find(q=>!q.owned);p.owned=true;S.potsOwned++}]);
-  b.push([`Arbeiter einstellen (${money(hireCost())}) – ${money(SALARY)}/Tag`,S.workers<6&&S.cash>=hireCost(),()=>{S.cash-=hireCost();S.workers++;spawnWorker()}]);
-  b.push([`Wachstumslampen Lvl ${S.lights}/5 (${money(lightCost())})`,S.lights<5&&S.cash>=lightCost(),()=>{S.cash-=lightCost();S.lights++}]);
-  b.push([`Größere Gießkanne ${S.waterCap}→${S.waterCap+4} (${money(canCost())})`,S.canUp<3&&S.cash>=canCost(),()=>{S.cash-=canCost();S.canUp++;S.waterCap+=4;S.water=S.waterCap}]);
-  if(!S.lab&&S.flags.sold&&S.workers>0)b.push([`🔬 Hinterraum-Labor freischalten – ${money(LAB_COST)}`,S.level>=3&&S.cash>=LAB_COST,()=>{S.cash-=LAB_COST;S.lab=1;msg('🔬 Labor freigeschaltet – Stahltür an der rechten Wand!')},'ab Level 3 · 2 Räume + Laptop mit Darknet']);
-  if(S.workers>0)b.push(['Arbeiter entlassen',true,()=>{const w=workers.pop();if(w.job&&w.job.p)w.job.p.claim=null;scene.remove(w.m);S.workers--}]);
+    b.push([`${D.ic} ${D.n} verkaufen (${d.n}× · ${QN(d.q)} ${d.q}%) – ${money(v)}`,true,()=>{S.cash+=v;addXp(v/12);S.drugs[id]={n:0,q:0};S.flags.soldDrug=1;msg('+'+money(v))},'Marktfaktor ×'+(S.dm[id]||1),'sell:'+id])}
+  b.push([`Neuen Topf kaufen (${money(potCost())})`,S.potsOwned<12&&S.cash>=potCost(),()=>{S.cash-=potCost();const p=pots.find(q=>!q.owned);p.owned=true;S.potsOwned++},undefined,'pot']);
+  b.push([`Arbeiter einstellen (${money(hireCost())}) – ${money(SALARY)}/Tag`,S.workers<6&&S.cash>=hireCost(),()=>{S.cash-=hireCost();S.workers++;spawnWorker()},undefined,'hire']);
+  b.push([`Wachstumslampen Lvl ${S.lights}/5 (${money(lightCost())})`,S.lights<5&&S.cash>=lightCost(),()=>{S.cash-=lightCost();S.lights++},undefined,'light']);
+  b.push([`Größere Gießkanne ${S.waterCap}→${S.waterCap+4} (${money(canCost())})`,S.canUp<3&&S.cash>=canCost(),()=>{S.cash-=canCost();S.canUp++;S.waterCap+=4;S.water=S.waterCap},undefined,'can']);
+  if(!S.lab&&S.flags.sold&&S.workers>0)b.push([`🔬 Hinterraum-Labor freischalten – ${money(LAB_COST)}`,S.level>=3&&S.cash>=LAB_COST,()=>{S.cash-=LAB_COST;S.lab=1;msg('🔬 Labor freigeschaltet – Stahltür an der rechten Wand!')},'ab Level 3 · 2 Räume + Laptop mit Darknet','lab']);
+  if(S.workers>0)b.push(['Arbeiter entlassen',true,()=>{const w=workers.pop();if(w.job&&w.job.p)w.job.p.claim=null;scene.remove(w.m);S.workers--},undefined,'fire']);
   b.push(['Schließen',true,closeMenu]);
   return{line:S.lab?'Das Labor läuft? Dann bring mir die Ware, Kleiner.':(S.flags.sold&&!S.flags.streetsold?'Die Hintertür ist offen. Auf der Straße zahlen sie mehr – aber pass auf die Polizei auf!':lines[Math.floor((S.day+S.level)%lines.length)]),items:b}}
 
@@ -986,16 +986,16 @@ $('lapX').onclick=closeLap;
 function startCook(id){
   if(S.cook||!canMake(id))return;
   for(const [k,v] of Object.entries(DRUGS[id].cost))S.reag[k]-=v;
-  S.cook={drug:id,i:0,sc:[]};S.flags.cookstart=1;
+  S.cook={id:S.cookSeq=(S.cookSeq||0)+1,drug:id,i:0,sc:[]};S.flags.cookstart=1;
   msg('Ansatz gestartet – weiter in Raum 2 (Kochlabor).')}
 function useStation(id){
   const c=S.cook;if(!c){msg('Kein Ansatz aktiv – am Rezept-Board in Raum 1 starten.');return}
   const k=DRUGS[c.drug].steps[c.i],ST=STEP[k];
   if(ST.st!==id){msg('Jetzt dran: '+ST.n+' → '+STATION[ST.st]);return}
   startMini(k)}
-function cookStepDone(score,fail,si,psa){
-  if(isClient()){netSend({t:'cookstep',score,fail,i:si,psa:S.psa});return}
-  const c=S.cook;if(!c)return;if(si!==undefined&&c.i!==si)return;
+function cookStepDone(score,fail,cid,si,psa){
+  if(isClient()){netSend({t:'cookstep',score,fail,cid,i:si,psa:S.psa});return}
+  const c=S.cook;if(!c||c.id!==cid||c.i!==si){msg('Dieser Schritt wurde schon von jemand anderem erledigt – dein Ergebnis zählt nicht.');return}
   if(fail){mishap(fail,psa===undefined?S.psa:psa);S.cook=null;return}
   c.sc.push(Math.round(score));c.i++;addXp(3);
   if(c.i>=DRUGS[c.drug].steps.length)finishCook()}
@@ -1054,12 +1054,12 @@ function startMini(k){
   const c=S.cook,D=DRUGS[c.drug],ST=STEP[k],W=(1+S.up.ease*.18)/D.d;
   openMini(ST.ic+' '+ST.n+' – '+STATION[ST.st],ST.h);
   mg=({weigh:gPour,mix:gStir,heat:gGauge,cool:gGauge,filter:gGauge,dry:gTiming,press:gTiming})[k](k,D,W);
-  mg.hold=false;mg.mx=320;mg.my=130;mg.fin=false;
+  mg.hold=false;mg.mx=320;mg.my=130;mg.fin=false;mg.cid=c.id;mg.si=c.i;   // Ansatz + Schritt beim Start festhalten
   if(mg.btns)setBtns(mg.btns)}
 function mgFinish(score,fail,note){
   if(!mg||mg.fin)return;mg.fin=true;
   $('mr').innerHTML=fail?`<span style="color:#f66">💥 ${fail}</span>`:`<span style="color:${score>=80?'#7f7':score>=50?'#ff6':'#fa6'}">${note||''} Ergebnis: <b>${Math.round(score)}%</b></span>`;
-  const si=S.cook?S.cook.i:undefined;const next=()=>{closeMini();cookStepDone(score,fail,si)};mg.next=next;
+  const cid=mg.cid,si=mg.si;const next=()=>{closeMini();cookStepDone(score,fail,cid,si)};mg.next=next;
   setBtns([[fail?'Weiter':'Weiter ▶',next]])}
 function mgDown(){if(!mg||mg.fin)return;mg.hold=true;mg.press&&mg.press()}
 function mgUp(){if(!mg)return;const was=mg.hold;mg.hold=false;was&&mg.release&&mg.release()}
@@ -1714,9 +1714,9 @@ function hostData(conn,d){
   switch(d.t){
     case 'pos':if(isFinite(d.x)&&isFinite(d.z)&&isFinite(d.yaw)){pl.x=+d.x;pl.z=+d.z;pl.yaw=+d.yaw;pl.psa=d.psa?1:0;pl.veh=d.veh?1:0}break;
     case 'act':if(['plant','water','harvest','trim','pack'].includes(d.k)&&(d.n===undefined||Number.isInteger(d.n)))asRemote(conn,()=>doAct(d.k,d.n));break;
-    case 'menu':if(MENUS[d.id]&&Number.isInteger(d.i))asRemote(conn,()=>{const it=MENUS[d.id]().items[d.i];if(it&&it[1])it[2]()});break;
+    case 'menu':if(MENUS[d.id]&&typeof d.a==='string')asRemote(conn,()=>{const it=MENUS[d.id]().items.find(x=>x[4]===d.a);if(it&&it[1])it[2]()});break;
     case 'lap':if(typeof d.a==='string'&&d.a!=='tab')asRemote(conn,()=>{if(d.a==='welcome')lapWelcome();else lapAct(d.a,d.k)});break;
-    case 'cookstep':asRemote(conn,()=>cookStepDone(+d.score||0,d.fail?String(d.fail).slice(0,80):null,Number.isInteger(d.i)?d.i:undefined,!!d.psa));break;
+    case 'cookstep':asRemote(conn,()=>cookStepDone(+d.score||0,d.fail?String(d.fail).slice(0,80):null,d.cid,d.i,!!d.psa));break;
     case 'flag':if(['talked','psa','inlab'].includes(d.k))S.flags[d.k]=1;break;
     case 'ssell':if(typeof d.k==='string'&&Number.isInteger(d.n)&&isFinite(d.v))asRemote(conn,()=>applyStreetSale(d.k,d.n,+d.v));break;
     case 'arrest':asRemote(conn,()=>applyArrest(pl.id,Array.isArray(d.carry)?d.carry.filter(Number.isInteger):[]));break;
