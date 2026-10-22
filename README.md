@@ -21,6 +21,17 @@ Freischalten: Tutorial-Ziele abschließen (Paket verkaufen, Arbeiter einstellen)
 - **Ausrüstung:** Glasware (mehr Ausbeute) und Präzisions-Ausrüstung (größere Zielzonen) am Laptop.
 - Verkauf der Produkte bei Onkel Rick.
 
+## Straße, Auto, Post & Fahndung (3D)
+
+Sobald du das erste Paket an Onkel Rick verkauft hast, geht die **Hintertür** (Ostwand des Gewächshauses) auf. Draußen liegen Hof, Straße, Häuser, ein Lieferwagen und die Postfiliale.
+
+- **Straßenverkauf:** Auf dem Gehweg kommen Kunden auf dich zu (💬). **E** = ansprechen: Menge, Mindestqualität und Preis stehen im Menü. Straßenpreise liegen über Ricks Preisen, an den **💰-Straßenecken** kommen mehr Kunden mit besseren Preisen. „Mehr verlangen (+25 %)“ ist ein Risiko (Kunde geht, Lärm erhöht die Fahndung). Es werden Gras-Päckchen und alle selbst gekochten Produkte nachgefragt.
+- **Fahndung 🚨:** Jeder Verkauf und jeder Blitzer erhöht sie, mit der Zeit sinkt sie. Ab 55 % taucht ein Polizist auf (Streifenwagen blinkt) und verfolgt dich. Mit Ware am Mann folgt **Festnahme** (70 % der Ware weg, Strafe, Fahndung zurück, du landest im Gewächshaus), ohne Ware nur eine Kontrolle. Verstecken geht im Gewächshaus oder in der Post, im Auto holt dich der Polizist nicht ein.
+- **Lieferwagen:** **E** am Auto einsteigen/aussteigen, W/S Gas/Bremse, A/D lenken, Leertaste Handbremse. Tempolimit 40 km/h, zwei **Blitzer** an der Straße (Strafe + Fahndung). Kollisionen beschädigen mitgeführte Pakete.
+- **Darknet-Aufträge:** Laptop → Tab **📦 Aufträge** (neue Aufträge kommen laufend, wenn du Rezepte hast): annehmen → am **Versandtisch** (Labor, Raum 1) packen und mitnehmen → mit dem Auto die Straße nach Norden zur **Postfiliale** (Entfernung im HUD) und am **Postschalter** (E) abgeben. Lohn in SCN: voller Lohn ab 80 % Paketzustand, danach Abzug, unter 20 % zerstört. Aufträge haben eine Frist.
+- **Hotbar draußen:** 💰 Straßenpreise · 🚗 Auto · 📦 Pakete · 🚨 Fahndung (Tasten 1–4).
+- **Multiplayer:** Verkäufe, Festnahmen, Pakete und Abgabe laufen über den Host (gemeinsames Geld/Ware/Fahndung). Kunden, Polizisten und dein Lieferwagen sind pro Spieler lokal; Mitspieler sehen deine Figur samt Auto beim Fahren.
+
 ## Charaktere & Hotbar
 
 - **Charakter-Editor** im Startbildschirm (Live-Vorschau): Haut, Frisur, Haarfarbe, Oberteil, Hose, Extra (Sonnenbrille / Cap / Mundschutz). Wird lokal gespeichert und im Multiplayer an alle gesendet, die anderen sehen deine Figur samt Namen. Mit angelegter Schutzausrüstung trägt sie Kittel, Schutzbrille und Handschuhe.

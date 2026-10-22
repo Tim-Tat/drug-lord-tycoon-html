@@ -84,6 +84,12 @@ button:disabled{opacity:.4;cursor:not-allowed}
 #charOpts button.sw.on{border-color:#fff;box-shadow:0 0 6px #fff8}
 #charOpts button.tb{padding:3px 8px;font-size:13px;border-bottom-width:2px}
 #charOpts button.tb.on{background:#2a7a85}
+.slot.out{border-color:#ffd23aaa;background:#2a2206cc}
+.slot.out.sel{border-color:#ffe27a;background:#4a3a08cc;box-shadow:0 0 14px #ffd23aaa}
+#heatw{position:fixed;top:112px;right:14px;width:300px;font-size:13px;text-align:right;display:none}
+#heatw div{height:8px;background:#0009;margin-top:2px;border:1px solid #fff3}
+#heatf{display:block;height:100%;width:0;background:linear-gradient(90deg,#3ddc84,#ffd23a,#ff3a3a)}
+#drive{position:fixed;left:50%;bottom:130px;transform:translateX(-50%);font-size:22px;text-align:center;display:none;background:#0008;padding:6px 14px;border-radius:6px}
 #menu .p{max-height:92vh;overflow:auto}
 #menu .p button small{display:block;font-size:12px;font-weight:400;opacity:.8;margin-top:2px}
 #menuLine{white-space:pre-line}
@@ -101,6 +107,8 @@ button:disabled{opacity:.4;cursor:not-allowed}
 <div id="info" class="sh"></div>
 <div id="menu"><div class="p"><div class="line sh" id="menuLine"></div><div id="menuBtns"></div></div></div>
 <div id="flash"></div>
+<div id="heatw" class="sh"><span>🚨 Fahndung</span><div><i id="heatf"></i></div></div>
+<div id="drive" class="sh"></div>
 <div id="chat" class="sh"></div>
 <input id="chatIn" maxlength="120" placeholder="Nachricht (Enter senden, Esc abbrechen)" autocomplete="off">
 <div id="players" class="sh"></div>
@@ -177,7 +185,8 @@ mesh(new T.PlaneGeometry(HX*2,HZ*2),new T.MeshStandardMaterial({map:floorTex,rou
 const brickTex=canvasTex(256,128,(g,w,h)=>{g.fillStyle='#d8c9b0';g.fillRect(0,0,w,h);for(let r=0;r<8;r++)for(let c=0;c<5;c++){const x=c*52+(r%2?-26:0),y=r*16;const v=rnd(-12,12);g.fillStyle=`rgb(${128+v|0},${72+v|0},${54+v|0})`;g.fillRect(x+2,y+2,48,12)}},6,2);
 const brickMat=new T.MeshStandardMaterial({map:brickTex,roughness:.9,flatShading:true});
 const wood=M(0x5a3d26),woodDark=M(0x3b2718),woodLight=M(0x8a6842);
-box(.4,HH,HZ*2+.4,brickMat,HX+.2,HH/2,0);                       // rechte Ziegelwand
+for(const sz of[-1,1])box(.4,HH,5.1,brickMat,HX+.2,HH/2,sz*3.65);   // rechte Ziegelwand (Hintertür in der Mitte -> Hof/Straße)
+box(.4,HH-2.6,2.2,brickMat,HX+.2,2.6+(HH-2.6)/2,0);                       // rechte Ziegelwand
 for(const sx of[-1,1])box(7.3,HH,.4,brickMat,sx*4.75,HH/2,HZ+.2);   // vordere Ziegelwand (Türöffnung in der Mitte -> Labor)
 box(2.2,HH-2.6,.4,brickMat,0,2.6+(HH-2.6)/2,HZ+.2);                 // Sturz über der Labor-Tür
 box(2.2,.04,.5,M(0x8a9098),0,.02,HZ+.2,scene,false,true);           // Türschwelle
@@ -211,13 +220,13 @@ box(.02,1,.02,M(0x222),0,.8,0,hang);
 mesh(new T.PlaneGeometry(700,700),M(0x62824f,{flatShading:false}),0,-.06,0,scene,false,true).rotation.x=-Math.PI/2;
 const treeMats=[M(0x3f7a3c),M(0x2f6a35),M(0x4d8a40)];
 for(let i=0;i<70;i++){
-  let x,z;do{x=rnd(-60,60);z=rnd(-60,60)}while((Math.abs(x)<HX+3&&Math.abs(z)<HZ+3)||(Math.abs(x)<HX+3&&z>0&&z<34));
+  let x,z;do{x=rnd(-60,60);z=rnd(-60,60)}while((Math.abs(x)<HX+3&&Math.abs(z)<HZ+3)||(Math.abs(x)<HX+3&&z>0&&z<34)||(x>HX&&x<90&&z>-215&&z<85));
   const t=new T.Group();t.position.set(x,0,z);
   mesh(new T.CylinderGeometry(.18,.28,2.2,5),M(0x5b4128),0,1.1,0,t);
   const s=rnd(1.4,2.6);for(let k=0;k<3;k++){const b=mesh(new T.IcosahedronGeometry(s*(1-k*.2),0),treeMats[(Math.random()*3)|0],rnd(-.4,.4),2.8+k*s*.6,rnd(-.4,.4),t);b.rotation.set(rnd(0,3),rnd(0,3),0)}
   scene.add(t);
 }
-for(let i=0;i<26;i++){const a=i/26*Math.PI*2,r=rnd(90,130),h=rnd(18,60),w=rnd(10,20);
+for(let i=0;i<26;i++){const a=i/26*Math.PI*2,r=rnd(90,130),h=rnd(18,60),w=rnd(10,20);if(Math.cos(a)*r>-25&&Math.cos(a)*r<100&&Math.sin(a)*r>-215&&Math.sin(a)*r<90)continue;
   const c=0x6f8399+((Math.random()*20)|0)*0x010101;
   const b=box(w,h,w,M(c),Math.cos(a)*r,h/2,Math.sin(a)*r,scene,false,false);}
 
@@ -336,7 +345,7 @@ const rickHit=mesh(new T.CylinderGeometry(.7,.7,2,8),hitMat,rick.position.x,1,ri
 const SEED=10,DAYLEN=90,SALARY=50;
 let S={cash:500,xp:0,level:1,day:1,dayT:0,raw:0,trim:0,pack:0,tool:0,water:8,waterCap:8,lights:0,potsOwned:3,workers:0,canUp:0,flags:{},price:55,priceT:0,potsState:[],
   lab:0,psa:false,reag:{},drugs:{},recipes:{},up:{yield:0,ease:0},cook:null,dm:{},batches:0,coins:0,cp:40,cpT:4,evT:60,
-  news:'📰 SchwarzCoin (SCN): ein Kurs, so stabil wie Onkel Ricks Laune.',rig:{gpu:0,fan:0},scams:0};
+  news:'📰 SchwarzCoin (SCN): ein Kurs, so stabil wie Onkel Ricks Laune.',rig:{gpu:0,fan:0},scams:0,heat:0,orders:[],ordId:0,ordT:20};
 function save(){if(NET.role==="client"||NET.role==="lost")return;try{S.potsState=pots.map(p=>({o:p.owned,s:p.stage,t:p.t,w:p.wet}));localStorage.setItem('dlt3d',JSON.stringify(S))}catch(e){}}
 function load(){try{const s=JSON.parse(localStorage.getItem('dlt3d'));if(s&&s.cash!==undefined)S=Object.assign(S,s)}catch(e){}}
 load();
@@ -386,6 +395,9 @@ const OBJ=[
  ['Starte einen Ansatz am Rezept-Board (E)',()=>S.flags.cookstart],
  ['Raum 2: arbeite die Schritte ab – der Pfeil zeigt die Station',()=>S.flags.cooked],
  ['Verkaufe dein Produkt an Onkel Rick',()=>S.flags.soldDrug],
+ ['Hintertür auf! Verkaufe auf der Straße an einen Kunden (E) – Vorsicht, Polizei',()=>S.flags.streetsold],
+ ['Laptop → Tab „Aufträge“: Darknet-Auftrag annehmen, am Versandtisch packen',()=>S.orders.some(o=>o.status==='packed'||o.status==='carried'||o.status==='done')||S.flags.posted],
+ ['Mit dem Lieferwagen sicher zur Postfiliale (Straße nach Norden) und Paket abgeben',()=>S.flags.posted],
  ['Expandiere: mehr Töpfe, Lampen, Arbeiter, Rezepte!',()=>false],
 ];
 let objI=0;
@@ -418,12 +430,12 @@ addEventListener('keydown',e=>{keys[e.code]=true;
   if(modal){modalKey(e);return}
   if(menuOpen){if(e.code==='Escape'||e.code==='KeyE')closeMenu();return}
   if(e.code==='Enter'&&started&&(NET.role==='host'||NET.role==='client')){e.preventDefault();chatOpen();return}
-  {const dn={Digit1:0,Digit2:1,Digit3:2,Digit4:3}[e.code];if(dn!==undefined){if(hbMode==='lab')labQuick(dn);else if(dn<3)S.tool=dn}}
+  {const dn={Digit1:0,Digit2:1,Digit3:2,Digit4:3}[e.code];if(dn!==undefined){if(hbMode==='lab')labQuick(dn);else if(hbMode==='out')outQuick(dn);else if(dn<3)S.tool=dn}}
   if(e.code==='KeyV'){thirdP=!thirdP;msg(thirdP?'Ansicht: 3. Person (V)':'Ansicht: 1. Person (V)')}
   if(e.code==='KeyE')interact(true);
 });
 addEventListener('keyup',e=>{keys[e.code]=false;if(e.code==='Space'&&mg)mgUp()});
-addEventListener('wheel',e=>{if(!menuOpen&&!modal&&hbMode!=='lab')S.tool=(S.tool+(e.deltaY>0?1:2))%3});
+addEventListener('wheel',e=>{if(!menuOpen&&!modal&&hbMode==='gh')S.tool=(S.tool+(e.deltaY>0?1:2))%3});
 $('play').onclick=()=>{started=true;$('overlay').style.display='none';$('chr').style.display='none';renderer.domElement.requestPointerLock&&renderer.domElement.requestPointerLock()};
 document.addEventListener('pointerlockchange',()=>{locked=document.pointerLockElement===renderer.domElement;if(!locked&&!menuOpen&&!modal&&started){$('overlay').style.display='grid';$('play').textContent='▶ Weiter'}});
 document.addEventListener('pointerlockerror',()=>{fallback=true;$('overlay').style.display='none';$('warn').textContent=''});
@@ -445,15 +457,19 @@ function aim(){
   const targets=[rickHit,stations.rack.hit,stations.table.hit,stations.barrel.hit];
   pots.forEach(p=>{if(p.owned)targets.push(p.hit)});
   if(!S.lab)targets.push(labDoorHit);else targets.push(...labTargets);
+  if(!yardOpen())targets.push(yardDoorHit);if(player.x>HX+.8)targets.push(postHit);
   ray.set(new T.Vector3(player.x,1.7,player.z),new T.Vector3(-Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),-Math.cos(yaw)*Math.cos(pitch)));
   const h=ray.intersectObjects(targets,false);
   aimed=h.length?h[0].object.userData.ref:null;
 }
 function interact(viaE){
+  if(streetInteract(viaE))return;
   if(!aimed)return;
   const r=aimed;
   if(r.type==='rick'){if(viaE||true)openMenu();return}
   if(r.type==='labdoor'){msg('Die Stahltür ist abgeschlossen – Onkel Rick hat den Schlüssel.');return}
+  if(r.type==='yarddoor'){msg('Die Hintertür ist zu – verkaufe erst ein Paket an Onkel Rick.');return}
+  if(r.type==='post'){postHandIn();return}
   if(r.type==='st'){labInteract(r.id);return}
   if(r.type==='barrel'){S.water=S.waterCap;msg('Gießkanne aufgefüllt 💧');return}
   if(r.type==='rack'){if(S.raw<1)msg('Keine rohen Blüten – erst ernten!');else doAct('trim');return}
@@ -750,15 +766,16 @@ const GHR=[-HX+.5,HX-.5,-HZ+.5,HZ-.5];
 const DOORR=[-.85,.85,HZ-.6,LZ0+.7];
 const LABRW=[[-5.65,5.65,-7.6,-.55],[-5.65,5.65,-17.6,-8.8],[-.85,.85,-8.8,-7.6]].map(([a,b,c,d])=>[-b,-a,LZ0-d,LZ0-c]);
 const inRect=(r,x,z)=>x>=r[0]&&x<=r[1]&&z>=r[2]&&z<=r[3];
-const walkable=(x,z)=>inRect(GHR,x,z)||(S.lab&&(inRect(DOORR,x,z)||LABRW.some(r=>inRect(r,x,z))));
-const inLabNow=()=>S.lab&&player.z>LZ0+.2;
+const walkable=(x,z)=>inRect(GHR,x,z)||(S.lab&&(inRect(DOORR,x,z)||LABRW.some(r=>inRect(r,x,z))))||(yardOpen()&&(inRect(DOOR2,x,z)||inRect(OUTR,x,z)));
+const inLabNow=()=>S.lab&&player.z>LZ0+.2&&Math.abs(player.x)<6.6;
 function walkCollide(ox,oz){
   let nx=player.x,nz=player.z;
   if(!walkable(nx,nz)){if(walkable(nx,oz))nz=oz;else if(walkable(ox,nz))nx=ox;else{nx=ox;nz=oz}}
   const R=.3;
-  for(const b of labBoxes){if(nx>b[0]-R&&nx<b[1]+R&&nz>b[2]-R&&nz<b[3]+R){
+  for(const b of labBoxes.concat(worldBoxes)){if(nx>b[0]-R&&nx<b[1]+R&&nz>b[2]-R&&nz<b[3]+R){
     const dl=nx-(b[0]-R),dr=(b[1]+R)-nx,dt_=nz-(b[2]-R),db=(b[3]+R)-nz,m=Math.min(dl,dr,dt_,db);
     if(m===dl)nx=b[0]-R;else if(m===dr)nx=b[1]+R;else if(m===dt_)nz=b[2]-R;else nz=b[3]+R}}
+  if(!car.driving&&yardOpen()){const cx=nx-car.x,cz=nz-car.z,cd=Math.hypot(cx,cz);if(cd<2.3&&cd>0){nx=car.x+cx/cd*2.3;nz=car.z+cz/cd*2.3}}
   if(!walkable(nx,nz)){nx=ox;nz=oz}
   player.x=nx;player.z=nz}
 
@@ -816,7 +833,7 @@ function labDay(){
   if(!S.lab)return;
   const bill=8+S.rig.gpu*12,pay=Math.min(S.cash,bill);
   if(pay>0){S.cash-=pay;msg('⚡ '+BILLS[S.day%BILLS.length]+' −'+money(pay))}
-  rollMarket();
+  rollMarket();expireOrders();
 }
 function mineTick(dt){
   if(!S.lab)return;
@@ -861,7 +878,7 @@ function rickMenu(){
   if(!S.lab&&S.flags.sold&&S.workers>0)b.push([`🔬 Hinterraum-Labor freischalten – ${money(LAB_COST)}`,S.level>=3&&S.cash>=LAB_COST,()=>{S.cash-=LAB_COST;S.lab=1;msg('🔬 Labor freigeschaltet – Stahltür an der rechten Wand!')},'ab Level 3 · 2 Räume + Laptop mit Darknet']);
   if(S.workers>0)b.push(['Arbeiter entlassen',true,()=>{const w=workers.pop();if(w.job&&w.job.p)w.job.p.claim=null;scene.remove(w.m);S.workers--}]);
   b.push(['Schließen',true,closeMenu]);
-  return{line:S.lab?'Das Labor läuft? Dann bring mir die Ware, Kleiner.':lines[Math.floor((S.day+S.level)%lines.length)],items:b}}
+  return{line:S.lab?'Das Labor läuft? Dann bring mir die Ware, Kleiner.':(S.flags.sold&&!S.flags.streetsold?'Die Hintertür ist offen. Auf der Straße zahlen sie mehr – aber pass auf die Polizei auf!':lines[Math.floor((S.day+S.level)%lines.length)]),items:b}}
 
 // ---------------- Laptop: Miner + Darknet-Markt ----------------
 let lapTab='mine',lapLoad=0;
@@ -880,7 +897,7 @@ function lapSig(){
   const g=[S.coins>=.01,S.cash>=gpuCost(),S.cash>=fanCost(),S.rig.gpu,S.rig.fan,S.cash>=1200*Math.pow(2,S.up.yield),S.cash>=900*Math.pow(2,S.up.ease),S.up.yield,S.up.ease];
   for(const id in DRUGS)g.push(S.coins>=DRUGS[id].coin,S.level>=DRUGS[id].lvl,!!S.recipes[id]);
   for(const k in ING)g.push(S.coins>=+(ING[k].p*5*.6/40).toFixed(2));
-  g.push(lapTab,S.news);return g.join()}
+  g.push(lapTab,S.news,S.orders.map(o=>o.id+o.status).join('|'));return g.join()}
 let lapSigLast='';
 function lapStats(){
   if(!lapOpen||lapLoad)return;
@@ -889,7 +906,7 @@ function lapStats(){
   if(e('lapCashV'))e('lapCashV').textContent=money(S.coins*S.cp);
   if(lapSig()!==lapSigLast)renderLap()}
 function renderLap(){
-  const tabs=[['mine','⛏ Miner'],['market','🕸 Darknet-Markt'],['gear','🧪 Ausrüstung'],['guides','📜 Anleitungen']];
+  const tabs=[['mine','⛏ Miner'],['market','🕸 Darknet-Markt'],['gear','🧪 Ausrüstung'],['orders','📦 Aufträge'],['guides','📜 Anleitungen']];
   $('lapTabs').innerHTML=tabs.map(([k,t])=>`<button data-a="tab" data-k="${k}" class="${lapTab===k?'on':''}">${t}</button>`).join('');
   $('lapUrl').textContent=lapTab==='market'?'🧅 totally-legit-7x3kq2.onion/markt':'🧅 Onion-Browser – gesicherte Verbindung (angeblich)';
   const head=`<div class="lh"><span>🪙 <b id="lapC">${cn(S.coins)}</b> SCN</span><span>≈ <b id="lapV">${money(S.coins*S.cp)}</b></span><span>Kurs <b id="lapP">${money(S.cp)}</b></span><span>💵 <b id="lapM">${money(S.cash)}</b></span></div>`;
@@ -915,6 +932,12 @@ function renderLap(){
     h+=`</div><h3>⚠ Sonderangebote</h3>
     <div class="card"><b>🎁 100 % ECHTE GRATIS-COINS – nur heute!!!</b><br><small>Verkäufer: Prinz_Abubakar_Offiziell ★1.0 (47.113)</small><br><button data-a="scam">Jetzt abholen</button></div>
     <div class="card"><b>🚐 „Definitiv-kein-FBI-Van“ – Lieferwagen zu vermieten</b><br><small>Verkäufer: Agent_Smith_privat ★4.2 (1)</small><br><button data-a="van">Mieten</button></div>`}
+  else if(lapTab==='orders'){
+    h+=`<h3>📦 Darknet-Aufträge</h3><p class="news">Annehmen → am Versandtisch (Labor, Raum 1) packen → mit dem Lieferwagen sicher zur Postfiliale (Straße nach Norden) und am Schalter abgeben. Lohn in SCN, Abzug bei Transportschaden. Max. 3 gleichzeitig.</p>`;
+    const act=S.orders.filter(o=>o.status!=='done'&&o.status!=='lost'),ST={open:'offen',accepted:'angenommen – am Versandtisch packen',packed:'gepackt – am Versandtisch mitnehmen',carried:'unterwegs zur Post'};
+    if(!act.length)h+=`<p class="news">Keine Aufträge. Schalte Rezepte frei – neue Aufträge kommen laufend.</p>`;
+    act.forEach(o=>{const D=DRUGS[o.drug];
+      h+=`<div class="card"><b>${D.ic} ${o.n}× ${D.n}</b> <span class="tg">≥ ${o.minQ} %</span><br><small>Von <b>${o.who}</b> · Lohn <b>${o.reward.toFixed(3)} SCN</b> · fällig Tag ${o.due} · ${ST[o.status]}</small><br>${o.status==='open'?`<button data-a="oacc" data-k="${o.id}" ${S.orders.filter(x=>x.status==='accepted'||x.status==='packed').length>=3?'disabled':''}>Annehmen</button>`:o.status==='accepted'?`<button data-a="odrop" data-k="${o.id}">Absagen</button>`:''}</div>`})}
   else if(lapTab==='gear'){
     h+=`<h3>🧪 Labor-Ausrüstung (Bargeld)</h3>`;
     [['yield','Bessere Glasware: +1 Einheit pro Ansatz',3,n=>1200*Math.pow(2,n)],['ease','Präzisions-Ausrüstung: größere Zielzonen',3,n=>900*Math.pow(2,n)]].forEach(([k,t,mx,cf])=>{const n=S.up[k],c=cf(n);
@@ -951,6 +974,8 @@ function lapAct(a,k){
   else if(a==='drone'){const c=+(ING[k].p*5*.6/40).toFixed(2);if(S.coins>=c){S.coins-=c;S.reag[k]=(S.reag[k]||0)+5;S.flags.bought=1;msg('🚁 Drohne hat 5× '+ING[k].n+' geliefert – leider auf Tante Ernas Dach.')}}
   else if(a==='scam'){S.coins*=.85;S.scams=(S.scams||0)+1;msg('🎁 '+SCAMS[S.scams%SCAMS.length])}
   else if(a==='van'){const c=Math.min(S.cash,200);S.cash-=c;msg('🚐 Es war tatsächlich das FBI. Anwaltskosten −'+money(c))}
+  else if(a==='oacc'){const o=S.orders.find(o=>o.id==k);if(o&&o.status==='open'&&S.orders.filter(x=>x.status==='accepted'||x.status==='packed').length<3){o.status='accepted';msg('📦 Auftrag angenommen – am Versandtisch packen.')}}
+  else if(a==='odrop'){const o=S.orders.find(o=>o.id==k);if(o&&o.status==='accepted')o.status='open'}
   else if(a==='up'){const f={yield:n=>1200*Math.pow(2,n),ease:n=>900*Math.pow(2,n)}[k],c=f(S.up[k]);if(S.up[k]<3&&S.cash>=c){S.cash-=c;S.up[k]++}}
   renderLap()}
 $('lapBody').addEventListener('click',e=>{const b=e.target.closest('button');if(b&&!b.disabled)lapAct(b.dataset.a,b.dataset.k)});
@@ -991,12 +1016,14 @@ function labInteract(id){
   else if(id==='shop')openMenuX(shopMenu);
   else if(id==='recipes')openMenuX(boardMenu);
   else if(id==='terminal')openLap();
+  else if(id==='ship')openMenuX(shipMenu);
   else useStation(id)}
 function stPrompt(id){
   if(id==='locker')return S.psa?'[E] Schutzausrüstung ablegen':'[E] Schutzausrüstung anlegen';
   if(id==='shop')return '[E] Chemikalien-Schrank (Zutaten kaufen)';
   if(id==='recipes')return S.cook?'[E] Rezept-Board (Ansatz läuft)':'[E] Rezept-Board – Ansatz starten';
   if(id==='terminal')return '[E] Laptop benutzen (Mining & Darknet)';
+  if(id==='ship')return '[E] Versandtisch (Pakete packen / mitnehmen)';
   const c=S.cook;if(!c)return STATION[id]+' – kein Ansatz aktiv';
   const ST=STEP[DRUGS[c.drug].steps[c.i]];return ST.st===id?'[E] '+ST.n+' starten':STATION[id]+' – gerade nicht dran'}
 // Laufend geprüft: Betritt der Spieler das (angebaute) Labor, gilt die Schutzbrillen-Optik + einmaliger Hinweis
@@ -1187,7 +1214,7 @@ function makeCharacter(app){
   const gog=box(.32,.08,.04,M(0x9fd8ff,{transparent:true,opacity:.65}),0,1.47,.17,g);psa.push(gog);
   psa.push(box(.33,.03,.32,M(0x2a2a30),0,1.5,0,g));
   psa.forEach(o=>o.visible=false);
-  g.userData={legs,arms,setPsa:v=>psa.forEach(o=>o.visible=!!v)};
+  g.userData={legs,arms,setPsa:v=>psa.forEach(o=>o.visible=!!v),setCar:v=>{if(v&&!g.userData.carM){const cm=makeCarMesh(0x2d6cc0);cm.scale.setScalar(1/1.1);cm.rotation.y=Math.PI;g.add(cm);g.userData.carM=cm}if(g.userData.carM)g.userData.carM.visible=!!v}};
   g.scale.setScalar(1.1);return g}
 
 // Eigene Figur (nur in 3. Person sichtbar) + Kamera
@@ -1198,6 +1225,8 @@ function animChar(m,moving,time,ph){
   if(moving){const s=Math.sin(time*9+ph)*.6;l0.rotation.x=s;l1.rotation.x=-s;a0.rotation.x=-s*.7;a1.rotation.x=s*.7}
   else{l0.rotation.x=l1.rotation.x=a0.rotation.x=a1.rotation.x=0}}
 function camPlace(time){
+  if(!selfAv)rebuildSelf();
+  if(car.driving){camera.position.set(car.x+Math.sin(car.yaw)*8.5,3.8,car.z+Math.cos(car.yaw)*8.5);camera.rotation.set(-.2,car.yaw,0);selfAv.visible=false;selfPrev.x=player.x;selfPrev.z=player.z;return}
   const ey=1.7+Math.sin(bob)*.035;
   if(thirdP){const cp=Math.cos(pitch),fx=-Math.sin(yaw)*cp,fy=Math.sin(pitch);const fz=-Math.cos(yaw)*cp;
     camera.position.set(player.x-fx*3.2,Math.max(.5,ey-fy*3.2+.35),player.z-fz*3.2)}
@@ -1231,24 +1260,325 @@ buildCharUI();
 let hbMode='',slotEls=[];
 function buildHotbar(mode){
   hbMode=mode;hb.innerHTML='';
-  const defs=mode==='lab'?[['🥽','PSA'],['📋','Ansatz'],['🧪','Zutaten'],['💻','Laptop']]:[['🌱','Samen'],['💧','Gießen'],['✂️','Schere']];
-  defs.forEach(([ic,n],i)=>{const d=document.createElement('div');d.className='slot sh'+(mode==='lab'?' lab':'');d.innerHTML=`<b>${i+1}</b>${ic}<small id="sl${i}">${n}</small>`;hb.appendChild(d)});
+  const defs=mode==='lab'?[['🥽','PSA'],['📋','Ansatz'],['🧪','Zutaten'],['💻','Laptop']]:mode==='out'?[['💰','Verkauf'],['🚗','Auto'],['📦','Pakete'],['🚨','Fahndung']]:[['🌱','Samen'],['💧','Gießen'],['✂️','Schere']];
+  defs.forEach(([ic,n],i)=>{const d=document.createElement('div');d.className='slot sh'+(mode==='lab'?' lab':mode==='out'?' out':'');d.innerHTML=`<b>${i+1}</b>${ic}<small id="sl${i}">${n}</small>`;hb.appendChild(d)});
   slotEls=[...hb.children]}
 function updHotbar(){
-  const mode=inLabNow()?'lab':'gh';if(mode!==hbMode)buildHotbar(mode);
+  const mode=inLabNow()?'lab':(yardOpen()&&(car.driving||player.x>HX+.8))?'out':'gh';if(mode!==hbMode)buildHotbar(mode);
   if(mode==='gh'){slotEls.forEach((e,i)=>e.classList.toggle('sel',i===S.tool));
     $('sl0').textContent='Samen '+money(SEED);$('sl1').textContent='Wasser '+S.water+'/'+S.waterCap;$('sl2').textContent='Schere'}
-  else{const c=S.cook,r=Object.values(S.reag).reduce((a,b)=>a+b,0);
+  else if(mode==='lab'){const c=S.cook,r=Object.values(S.reag).reduce((a,b)=>a+b,0);
     $('sl0').textContent='PSA '+(S.psa?'an':'aus');slotEls[0].classList.toggle('sel',!!S.psa);
     $('sl1').textContent=c?STEP[DRUGS[c.drug].steps[c.i]].n:'kein Ansatz';slotEls[1].classList.toggle('sel',!!c);
     $('sl2').textContent='Zutaten '+r;slotEls[2].classList.remove('sel');
-    $('sl3').textContent=cn(S.coins)+' SCN';slotEls[3].classList.remove('sel')}}
+    $('sl3').textContent=cn(S.coins)+' SCN';slotEls[3].classList.remove('sel')}
+  else{const sl=sellables().reduce((a,x)=>a+x.n,0);$('sl0').textContent='Verkauf '+sl;slotEls[0].classList.remove('sel');$('sl1').textContent=car.driving?'aussteigen':'Auto';slotEls[1].classList.toggle('sel',car.driving);
+    $('sl2').textContent=MY.carry.length?MY.carry.length+' Paket(e)':'Pakete';slotEls[2].classList.toggle('sel',MY.carry.length>0);$('sl3').textContent='Fahndung '+Math.round(S.heat)+'%';slotEls[3].classList.toggle('sel',S.heat>=55)}}
 function labQuick(i){
   if(i===0)togglePSA();
   else if(i===1){const c=S.cook;if(!c){msg('Kein Ansatz aktiv – Rezept-Board in Raum 1.');return}
     const ST=STEP[DRUGS[c.drug].steps[c.i]];msg(`${ST.ic} ${ST.n} → ${STATION[ST.st]} · ${ST.tip}`)}
   else if(i===2)msg('📦 '+Object.keys(ING).map(k=>ING[k].n.split(' ')[0]+' '+(S.reag[k]||0)).join(' · '));
   else if(i===3)openLap()}
+
+// ======================================================================
+
+// ======================================================================
+// ======================================================================
+//  STRASSE · AUTO · POSTFILIALE · FAHNDUNG · DARKNET-AUFTRÄGE
+//  (reine Spielmechanik / Satire – alles frei erfunden)
+// ======================================================================
+const OUTR=[HX+.6,80,-195,70];                 // begehbarer Außenbereich (x0,x1,z0,z1)
+const DOOR2=[HX-.7,HX+1.2,-.9,.9];             // Durchgang an der Hintertür
+const yardOpen=()=>!!S.flags.sold;             // Hintertür geht auf, sobald das erste Paket verkauft wurde
+const worldBoxes=[];                           // Kollisionsboxen draußen (Spieler + Auto)
+const wbox=(x0,x1,z0,z1)=>worldBoxes.push([x0,x1,z0,z1]);
+const rint=n=>Math.floor(Math.random()*n);
+const MY={carry:[],integ:100,hitCd:0,dealT:5,copCd:0};   // lokaler Spielerzustand (nicht synchronisiert)
+const SPEEDLIM=11;                             // m/s  (~40 km/h)
+const HOT=[[14.5,-30],[25.5,-85],[14.5,-140]]; // beliebte Straßenecken (mehr Kunden, bessere Preise)
+const BLITZ=[-70,-155];                        // Blitzer-Positionen (z)
+const sbox=(w,h,d,m,x,y,z,c=true,r=true)=>box(w,h,d,m,x,y,z,scene,c,r);
+
+// ---------------- Welt: Hintertür, Hof, Straße, Häuser ----------------
+const yardDoor=new T.Group();yardDoor.position.set(HX+.2,0,0);scene.add(yardDoor);
+box(.14,2.55,2.12,M(0x5d6670,{roughness:.5}),0,1.275,0,yardDoor,true,true);
+box(.16,.22,2.12,hazardMat(5,1),0,.36,0,yardDoor,false,false);
+box(.2,.5,.06,M(0x14161a),0,1.2,.8,yardDoor,false,false);
+for(const s of[-1,1])box(.5,2.65,.14,LM.steel,HX+.2,1.325,s*1.17,scene,true,true);
+const yardDoorHit=mesh(new T.BoxGeometry(1.4,2.6,2.4),hitMat,HX-.2,1.3,0,scene,false,false);yardDoorHit.userData.ref={type:'yarddoor'};
+{const lb=labelSprite('🚪 Hof / Straße',2.2);lb.position.set(HX-.8,2.9,0);scene.add(lb)}
+sbox(2.6,.04,3.0,M(0x8a9098),HX+1.5,.02,0,false,true);   // Schwelle/Hofplatte vor der Tür
+
+{ // Hofplatte, Straße, Gehwege
+  const pad=mesh(new T.PlaneGeometry(5,16),M(0x8a8c90,{flatShading:false}),HX+3.5,.012,2,scene,false,true);pad.rotation.x=-Math.PI/2;
+  const rt=canvasTex(64,128,(g,w,h)=>{g.fillStyle='#34373d';g.fillRect(0,0,w,h);
+    for(let i=0;i<90;i++){g.fillStyle=`rgba(${60+rint(40)},${60+rint(40)},${64+rint(40)},.3)`;g.fillRect(rnd(0,w),rnd(0,h),2,2)}
+    g.fillStyle='#e6e6e6';g.fillRect(3,0,2,h);g.fillRect(w-5,0,2,h);g.fillStyle='#e0c43a';g.fillRect(w/2-2,10,4,44)},1,27);
+  const road=mesh(new T.PlaneGeometry(8,270),new T.MeshStandardMaterial({map:rt,roughness:.95}),20,.015,-62.5,scene,false,true);road.rotation.x=-Math.PI/2;
+  for(const x of[14.5,25.5])sbox(3,.14,270,M(0x9a9a98),x,.07,-62.5,false,true);
+  // Absperrung am Straßenende
+  sbox(9,1.1,.4,hazardMat(6,1),20,.55,-193);sbox(.3,1.6,.3,LM.steel,16,.8,-193);sbox(.3,1.6,.3,LM.steel,24,.8,-193);
+}
+const WLAMP=new T.MeshBasicMaterial({color:0xffe9a8});
+for(let z=-190;z<=60;z+=24)for(const x of[13.2,26.8]){
+  mesh(new T.CylinderGeometry(.06,.08,4.6,6),M(0x2b2f36),x,2.3,z,scene,false,false);
+  box(.9,.08,.08,M(0x2b2f36),x+(x<20?.4:-.4),4.55,z,scene,false,false);box(.4,.12,.25,WLAMP,x+(x<20?.85:-.85),4.5,z,scene,false,false)}
+function house(x,z,w,d,h,col,roofCol){
+  sbox(w,h,d,M(col),x,h/2,z);sbox(w+.6,.5,d+.6,M(roofCol),x,h+.25,z);
+  for(let i=0;i<3;i++)for(let j=0;j<2;j++)box(.06,.9,1.1,WLAMP,x-w/2-.03,1.5+j*2.2,z-d/2+d*(i+.5)/3,scene,false,false);
+  sbox(.08,2.2,1.1,M(0x4a2f1b),x-w/2-.04,1.1,z,false,false);
+  wbox(x-w/2,x+w/2,z-d/2,z+d/2)}
+{const cols=[0xd9c9a8,0xc9a58a,0xb7c4cf,0xd8b4a0,0xcfd6b0],roofs=[0x6a3b2a,0x4a4f58,0x7a3a3a];
+ for(let z=-185,i=0;z<=50;z+=28,i++){if(Math.abs(z+121)<18)continue;house(35,z,10,12+(i%3)*2,5.5+(i%2)*1.5,cols[i%cols.length],roofs[i%roofs.length])}}
+
+// ---------------- Postfiliale (mit Innenraum + Schalter) ----------------
+const POSTX=29,POSTZ=-121;
+const postHit=mesh(new T.BoxGeometry(1.6,2.2,5.6),hitMat,36,1.1,POSTZ,scene,false,false);postHit.userData.ref={type:'post'};
+{ const wallM=brickMat,H=4.2;
+  sbox(12.5,H,.5,wallM,35,H/2,-125.5);sbox(12.5,H,.5,wallM,35,H/2,-116.5);sbox(.5,H,9.5,wallM,41,H/2,POSTZ);
+  sbox(.5,H,3.55,wallM,POSTX,H/2,-123.975);sbox(.5,H,3.55,wallM,POSTX,H/2,-118.025);sbox(.5,H-2.6,2.4,wallM,POSTX,2.6+(H-2.6)/2,POSTZ);
+  sbox(13,.4,10,M(0x4a4f58),35,H+.2,POSTZ);
+  wbox(28.7,41.4,-125.8,-125.2);wbox(28.7,41.4,-116.8,-116.2);wbox(40.7,41.4,-125.8,-116.2);          // Nord-, Süd-, Ostwand
+  wbox(POSTX-.3,POSTX+.3,-125.8,-122.2);wbox(POSTX-.3,POSTX+.3,-119.8,-116.2);                      // Westwand mit Türöffnung
+  const fl=mesh(new T.PlaneGeometry(11.6,8.6),new T.MeshStandardMaterial({map:tileTex(11,8,'#e8e2d0','#d6cfb8'),roughness:.6}),35,.025,POSTZ,scene,false,true);fl.rotation.x=-Math.PI/2;
+  labSign('POSTFILIALE\nPäckchen · Abgabe',2.4,.8,'#e8c31c','#1a1a1a',POSTX-.3,3.3,POSTZ,-Math.PI/2,scene);
+  const pl=new T.PointLight(0xfff0d8,1.3,16,2);pl.position.set(35,3.5,POSTZ);scene.add(pl);
+  // Schalter + Postbeamter
+  sbox(1.0,1.15,6.0,M(0x6a4a2a),37,.58,POSTZ);sbox(1.2,.08,6.2,M(0x3a2a1a),37,1.2,POSTZ);wbox(36.4,37.6,-124.2,-117.8);
+  box(.04,.9,5.4,LM.glass,36.55,1.7,POSTZ,scene,false,false);
+  const clerk=makeCharacter({sk:2,hc:1,hs:1,sh:3,pa:0,ac:0});clerk.position.set(38.4,0,POSTZ);clerk.rotation.y=-Math.PI/2;scene.add(clerk);
+  const lb=labelSprite('📮 Postschalter',2.2,true);lb.position.set(36.6,2.55,POSTZ);scene.add(lb);
+  // Regale mit Paketen, Briefkasten vor der Tür
+  for(let i=0;i<6;i++){sbox(.9,.5,.7,M([0xb08a55,0xc29a63,0xa57d4a][i%3]),40.2,.25+Math.floor(i/3)*.55,-124.5+(i%3)*.8,false,false)}
+  sbox(.5,1.2,.4,M(0xe8c31c),POSTX-1.2,.6,-118.6);wbox(POSTX-1.5,POSTX-.9,-118.9,-118.3)}
+
+// ---------------- Streifenwagen (parkt, Blaulicht bei hoher Fahndung) + Blitzer ----------------
+const POLR=new T.MeshBasicMaterial({color:0x330000}),POLB=new T.MeshBasicMaterial({color:0x000033});
+{const g=new T.Group();g.position.set(23.3,0,-48);scene.add(g);
+ box(1.9,.8,4.4,M(0xf2f2f4),0,.75,0,g);box(1.7,.7,2.3,M(0xf2f2f4),0,1.45,.2,g);box(1.92,.3,4.42,M(0x1a2a5a),0,.5,0,g);
+ box(1.72,.55,.05,LM.glass,0,1.5,-.95,g,false,false);box(1.5,.12,.5,M(0x15151a),0,1.88,.2,g);
+ box(.5,.12,.4,POLR,-.45,1.96,.2,g,false,false);box(.5,.12,.4,POLB,.45,1.96,.2,g,false,false);
+ for(const sx of[-1,1])for(const sz of[-1,1])mesh(new T.CylinderGeometry(.38,.38,.3,10),M(0x111114),sx*.95,.38,sz*1.3,g,false,false).rotation.z=Math.PI/2;
+ labSign('POLIZEI',.9,.28,'#1a2a5a','#fff',0,.95,-2.21,Math.PI,g);
+ wbox(22.2,24.4,-50.6,-45.4)}
+for(const bz of BLITZ){mesh(new T.CylinderGeometry(.08,.1,3.2,6),M(0x555a62),13.4,1.6,bz,scene,false,false);box(.5,.5,.5,M(0x888d95),13.5,3.3,bz,scene,false,false);box(.1,.2,.2,POLR,13.8,3.3,bz,scene,false,false)}
+for(const [x,z] of HOT){const r=mesh(new T.RingGeometry(1.2,1.5,24),new T.MeshBasicMaterial({color:0x3ddc84,transparent:true,opacity:.55,side:T.DoubleSide}),x,.17,z,scene,false,false);r.rotation.x=-Math.PI/2;
+  const sp=emojiSprite('💰',.8);sp.position.set(x,2.2,z);scene.add(sp)}
+
+// ---------------- Auto (Lieferwagen) ----------------
+function makeCarMesh(col){
+  const g=new T.Group(),body=M(col),glass=new T.MeshStandardMaterial({color:0x1c2a38,roughness:.2}),tire=M(0x111114),cargo=M(0xe8e8ea),hl=new T.MeshBasicMaterial({color:0xfff2b0}),tl=new T.MeshBasicMaterial({color:0xff2a2a});
+  box(1.9,.55,4.3,M(0x222831),0,.55,0,g,false,false);                    // Unterboden
+  box(1.9,1.0,1.9,body,0,1.15,-1.1,g,false,false);                       // Fahrerkabine (vorn = -z)
+  box(1.95,1.55,2.5,cargo,0,1.45,1.0,g,false,false);                     // Laderaum
+  box(1.7,.55,.05,glass,0,1.5,-2.06,g,false,false);                      // Windschutzscheibe
+  for(const s of[-1,1]){box(.05,.5,1.2,glass,s*.96,1.5,-1.15,g,false,false);box(.3,.16,.05,hl,s*.65,.95,-2.16,g,false,false);box(.25,.18,.05,tl,s*.75,.95,2.18,g,false,false);
+    for(const sz of[-1.4,1.3]){const w=mesh(new T.CylinderGeometry(.4,.4,.3,12),tire,s*.98,.4,sz,g,false,false);w.rotation.z=Math.PI/2}}
+  box(1.9,.1,.12,M(0x888d95),0,.38,-2.2,g,false,false);
+  return g}
+const car={g:makeCarMesh(0x2d6cc0),x:11.5,z:6.5,yaw:-Math.PI/2,v:0,driving:false,pz:undefined};
+scene.add(car.g);car.g.position.set(car.x,0,car.z);car.g.rotation.y=car.yaw;
+const nearCar=()=>!car.driving&&yardOpen()&&Math.hypot(player.x-car.x,player.z-car.z)<3.8;
+function enterCar(){car.driving=true;car.v=0;car.pz=undefined;pitch=-.2;msg('🚗 Lieferwagen: W/S Gas/Bremse · A/D lenken · Leertaste Handbremse · E aussteigen')}
+function exitCar(){
+  if(Math.abs(car.v)>2.5){msg('Erst anhalten!');return}
+  const rx=Math.cos(car.yaw),rz=-Math.sin(car.yaw);
+  for(const s of[1,-1]){const nx=car.x+rx*2.4*s,nz=car.z+rz*2.4*s;if(walkable(nx,nz)){player.x=nx;player.z=nz;car.driving=false;car.v=0;yaw=car.yaw+(s>0?-Math.PI/2:Math.PI/2);pitch=0;return}}
+  msg('Hier ist kein Platz zum Aussteigen.')}
+function carHit(){const sp=Math.abs(car.v);if(sp>2.5&&MY.hitCd<=0){MY.hitCd=.6;if(MY.carry.length){MY.integ=Math.max(0,MY.integ-sp*2.2);msg('💥 Kollision! Paket-Zustand '+Math.round(MY.integ)+' %')}else msg('💥 Kollision!')}car.v*=-.25}
+function carCollide(){
+  const R=1.5;
+  for(const b of worldBoxes){
+    if(car.x>b[0]-R&&car.x<b[1]+R&&car.z>b[2]-R&&car.z<b[3]+R){
+      const dl=car.x-(b[0]-R),dr=(b[1]+R)-car.x,dt_=car.z-(b[2]-R),db=(b[3]+R)-car.z,m=Math.min(dl,dr,dt_,db);
+      if(m===dl)car.x=b[0]-R;else if(m===dr)car.x=b[1]+R;else if(m===dt_)car.z=b[2]-R;else car.z=b[3]+R;
+      carHit()}}
+  const x0=OUTR[0]+1.6,x1=OUTR[1]-1.6,z0=OUTR[2]+1.6,z1=OUTR[3]-1.6;
+  if(car.x<x0||car.x>x1||car.z<z0||car.z>z1){car.x=clamp(car.x,x0,x1);car.z=clamp(car.z,z0,z1);carHit()}}
+function driveTick(dt){
+  const up=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0),st=(keys.KeyA||keys.ArrowLeft?1:0)-(keys.KeyD||keys.ArrowRight?1:0);
+  let acc;
+  if(up>0)acc=car.v<0?16:9;else if(up<0)acc=car.v>0?-16:-6;else acc=car.v>0?-3:car.v<0?3:0;
+  if(keys.Space)acc=car.v>0?-22:car.v<0?22:0;
+  const v0=car.v;car.v+=acc*dt;if(up===0&&v0*car.v<0)car.v=0;
+  car.v=clamp(car.v,-5,17);
+  car.yaw+=st*Math.min(1,Math.abs(car.v)/4)*1.7*dt*(car.v>=0?1:-1);
+  car.x+=-Math.sin(car.yaw)*car.v*dt;car.z+=-Math.cos(car.yaw)*car.v*dt;
+  MY.hitCd=Math.max(0,MY.hitCd-dt);
+  carCollide();
+  car.g.position.set(car.x,0,car.z);car.g.rotation.y=car.yaw;
+  player.x=car.x;player.z=car.z;yaw=car.yaw;pitch=-.2;
+  for(const bz of BLITZ){if(car.pz!==undefined&&(car.pz-bz)*(car.z-bz)<=0&&Math.abs(car.v)>SPEEDLIM+.5&&car.x>14&&car.x<27){msg('📸 Blitzer! Zu schnell – Strafe $80');penalty(80,8)}}
+  car.pz=car.z}
+
+// ---------------- Fahndung, Strafen, Straßenverkauf (Host/Solo wenden an) ----------------
+function applyPenalty(cash,heat){cash=clamp(+cash||0,0,500);heat=clamp(+heat||0,-20,40);const c=Math.min(S.cash,cash);S.cash-=c;S.heat=clamp(S.heat+heat,0,100)}
+function penalty(cash,heat){if(isClient())netSend({t:'pen',cash,heat});else applyPenalty(cash,heat)}
+const sellBase=k=>k==='pack'?S.price*1.3:unitPrice(k)*1.4;
+function applyStreetSale(k,n,v){
+  if(!Number.isInteger(n)||n<1||n>12)return;
+  let have;if(k==='pack')have=S.pack;else if(DRUGS[k]){const d=S.drugs[k];have=d?d.n:0}else return;
+  if(have<n)return;
+  const val=Math.max(0,Math.min(Math.round(v),Math.ceil(n*sellBase(k)*1.9)));
+  if(k==='pack')S.pack-=n;else S.drugs[k].n-=n;
+  S.cash+=val;addXp(val/10);S.heat=Math.min(100,S.heat+n*(k==='pack'?1.5:3)+2);S.flags.streetsold=1;
+  msg('+'+money(val)+' (Straße)')}
+function streetSell(k,n,v){if(isClient())netSend({t:'ssell',k,n,v});else applyStreetSale(k,n,v)}
+function applyArrest(pid,carry){
+  S.pack=Math.floor(S.pack*.3);for(const id in S.drugs)if(S.drugs[id])S.drugs[id].n=Math.floor(S.drugs[id].n*.3);
+  const fine=Math.min(S.cash,Math.round(150+S.cash*.12));S.cash-=fine;S.heat=25;
+  (S.orders||[]).forEach(o=>{if(o.status==='carried'&&o.carrier===pid&&carry.includes(o.id)){o.status='lost';o.end=S.day}});
+  msg(`🚓 Festnahme! Ware zu 70 % beschlagnahmt, Strafe ${money(fine)}.`)}
+function arrestMe(){
+  const carry=MY.carry.slice();MY.carry=[];MY.integ=100;
+  if(isClient())netSend({t:'arrest',carry});else applyArrest(0,carry);
+  if(car.driving){car.driving=false}car.v=0;car.x=11.5;car.z=6.5;car.yaw=-Math.PI/2;car.g.position.set(car.x,0,car.z);car.g.rotation.y=car.yaw;
+  player.x=6.8;player.z=0;yaw=Math.PI/2;pitch=0;killCop();clearCust();MY.copCd=30;
+  $('flash').style.opacity=1;setTimeout(()=>$('flash').style.opacity=0,500)}
+
+// ---------------- Darknet-Aufträge (Host verwaltet, in S.orders) ----------------
+const BUYERS=['Kunde_4711','xX_PartyKevin_Xx','Tante_Erna_88','Studenten-WG_Süd','Der_Bäcker_von_nebenan','Anonymous_Dave','Mr_Nobody','Oma_Hilde_Premium'];
+function createOrder(owned){
+  const id=owned[rint(owned.length)],D=DRUGS[id],n=1+rint(D.star>=3?2:4);
+  S.ordId=(S.ordId||0)+1;
+  S.orders.push({id:S.ordId,drug:id,n,minQ:40+rint(46),reward:+(n*D.price*1.5*rnd(.9,1.3)/40).toFixed(3),due:S.day+3,status:'open',who:BUYERS[rint(BUYERS.length)]})}
+function orderTick(dt){
+  if(isClient()||!S.lab)return;
+  S.ordT-=dt;if(S.ordT>0)return;S.ordT=rnd(25,45);
+  const owned=Object.keys(DRUGS).filter(id=>S.recipes[id]),act=S.orders.filter(o=>o.status!=='done'&&o.status!=='lost').length;
+  if(owned.length&&act<4)createOrder(owned)}
+function expireOrders(){
+  S.orders.forEach(o=>{if(['open','accepted','packed','carried'].includes(o.status)&&o.due<S.day){o.status='lost';o.end=S.day;msg('⏰ Auftrag von '+o.who+' ist abgelaufen.')}});
+  S.orders=S.orders.filter(o=>!((o.status==='done'||o.status==='lost')&&S.day-(o.end||0)>=2))}
+function shipMenu(){
+  const items=[],acc=S.orders.filter(o=>o.status==='accepted'),pk=S.orders.filter(o=>o.status==='packed');
+  acc.forEach(o=>{const D=DRUGS[o.drug],d=S.drugs[o.drug],ok=d&&d.n>=o.n&&d.q>=o.minQ;
+    items.push([`📦 Paket packen: ${o.n}× ${D.n}`,!!ok,()=>{S.drugs[o.drug].n-=o.n;o.status='packed';msg('📦 Paket gepackt – Versandlabel #'+o.id)},
+      `Qualität ≥ ${o.minQ} % · Vorrat ${d?d.n:0}× (${d?d.q:0} %) · Lohn ${o.reward.toFixed(3)} SCN`])});
+  if(pk.length)items.push([`🚚 ${pk.length} Paket(e) mitnehmen (Auto → Post)`,true,()=>takeParcels(),'Zur Postfiliale fahren und am Schalter abgeben – nicht rammen!']);
+  if(!acc.length&&!pk.length)items.push(['Keine angenommenen Aufträge – am Laptop (Tab „Aufträge“) annehmen.',false,()=>{}]);
+  items.push(['Schließen',true,closeMenu]);
+  return{line:'VERSANDTISCH\nAngenommene Darknet-Aufträge packen, dann sicher mit dem Auto zur Post.',items}}
+function takeParcels(){
+  const ids=S.orders.filter(o=>o.status==='packed').map(o=>o.id),pid=NET.remote?NET.remote.pid:0;
+  S.orders.forEach(o=>{if(ids.includes(o.id)){o.status='carried';o.carrier=pid}});
+  if(NET.remote){try{NET.remote.send({t:'carry',ids})}catch(e){}}else{MY.carry=MY.carry.concat(ids);MY.integ=100}
+  msg('🚚 Pakete mitgenommen – Postfiliale liegt die Straße entlang nach Norden.')}
+function applyPost(pid,ids,integ){
+  let sum=0,lost=0;
+  ids.forEach(id=>{const o=S.orders.find(o=>o.id===id);if(!o||o.status!=='carried'||o.carrier!==pid)return;
+    const f=integ>=80?1:integ>=50?.6:integ>=20?.3:0;
+    if(f===0){o.status='lost';o.end=S.day;lost++}else{const c=+(o.reward*f).toFixed(3);S.coins+=c;sum+=c;o.status='done';o.end=S.day;addXp(o.n*12)}});
+  S.flags.posted=1;
+  if(sum>0)msg(`📮 Paket angenommen! +${sum.toFixed(3)} SCN`+(integ<80?' (Abzug wegen Transportschaden)':''));
+  else if(lost)msg('📮 Das Paket ist beim Transport zerstört worden – kein Lohn.')}
+function postHandIn(){
+  if(!MY.carry.length){msg('Postschalter: „Sie haben kein Paket dabei.“');return}
+  const ids=MY.carry.slice(),integ=Math.round(MY.integ);MY.carry=[];
+  if(isClient())netSend({t:'post',ids,integ});else applyPost(0,ids,integ)}
+// Versandtisch im Labor (Raum 1)
+{const g=station('ship',-3.6,-1.1,0,2.4,1.3,1.9,'Versandtisch',2.1);
+ lbox(2.2,.08,.9,LM.top,0,.9,0,g);for(const sx of[-1,1])lbox(.08,.9,.8,LM.steel,sx*1.0,.45,0,g);
+ lbox(.5,.3,.4,M(0xb08a55),-.6,1.09,0,g);lbox(.4,.22,.35,M(0xc29a63),-.1,1.05,0,g);lbox(.34,.34,.3,M(0xa57d4a),.45,1.12,0,g);
+ lcyl(.1,.1,.06,M(0xd9c06a),.85,.96,.1,g,10);lbox(.3,.04,.2,LM.black,-.9,.95,.15,g);
+ solid(-4.8,-2.4,-1.6,-.6)}
+
+// ---------------- Kunden (lokal pro Spieler) ----------------
+const custList=[];
+const PHRASES=['Psst – haste was?','Hey, du bist doch der Typ vom Gewächshaus …','Ich hab nur 5 Minuten Pause.','Meine Oma schickt mich.','Ich war nie hier, klar?','Mach’s kurz, die Nachbarn gucken.'];
+const outdoors=()=>yardOpen()&&player.x>HX+.8;
+const inPost=()=>player.x>29.4&&player.x<40.6&&player.z>-125.6&&player.z<-116.4;
+function sellables(){const o=[];if(S.pack>0)o.push({k:'pack',n:S.pack,q:100});for(const id in DRUGS){const d=S.drugs[id];if(d&&d.n>0)o.push({k:id,n:d.n,q:d.q})}return o}
+const prodName=k=>k==='pack'?'Gras-Päckchen':DRUGS[k].n;
+function spawnCustomer(hot){
+  const sl=sellables();if(!sl.length)return;
+  const it=sl[rint(sl.length)],n=Math.max(1,Math.min(it.n,1+rint(it.k==='pack'?3:5)));
+  const minQ=it.k==='pack'?0:Math.round(rnd(0,70));
+  const unit=Math.round(sellBase(it.k)*rnd(.9,1.25)*(hot?1.2:1));
+  const sx=Math.random()<.5?14.5:25.5,z=clamp(player.z+(Math.random()<.5?-1:1)*rnd(18,28),-185,60);
+  const m=makeCharacter({sk:rint(6),hc:rint(6),hs:rint(5),sh:rint(8),pa:rint(4),ac:rint(4)});scene.add(m);m.position.set(sx,0,z);
+  const bubble=emojiSprite('💬',.6);bubble.position.set(0,2.1,0);bubble.visible=false;m.add(bubble);
+  custList.push({m,bubble,x:sx,z,state:'walk',t:0,ph:Math.random()*6,req:{k:it.k,n,minQ,unit},phrase:PHRASES[rint(PHRASES.length)],pushed:false})}
+function removeCust(i){scene.remove(custList[i].m);custList.splice(i,1)}
+function clearCust(){while(custList.length)removeCust(custList.length-1)}
+const nearCust=()=>custList.find(c=>c.state==='wait'&&Math.hypot(player.x-c.x,player.z-c.z)<3.4);
+function custDone(c){c.state='leave';c.lt=0;c.bubble.visible=false}
+function customerMenu(c){
+  const r=c.req,total=r.n*r.unit,have=r.k==='pack'?S.pack:(S.drugs[r.k]?S.drugs[r.k].n:0),q=r.k==='pack'?100:(S.drugs[r.k]?S.drugs[r.k].q:0);
+  c.t=0;
+  const items=[];
+  items.push([`✅ Verkaufen: ${r.n}× ${prodName(r.k)} – ${money(total)}`,custList.includes(c)&&have>=r.n&&q>=r.minQ,()=>{streetSell(r.k,r.n,total);custDone(c,true);closeMenu()},
+    `${r.minQ?`Qualität ≥ ${r.minQ} % (deine: ${q} %) · `:''}Vorrat ${have}×`]);
+  items.push(['💬 Mehr verlangen (+25 %)',!c.pushed,()=>{c.pushed=true;
+    if(Math.random()<.55){r.unit=Math.round(r.unit*1.25);msg('Kunde: „Na gut …“')}
+    else{msg('Kunde: „Du spinnst wohl!“ – er macht Lärm.');penalty(0,4);custDone(c,false);closeMenu()}}]);
+  items.push(['Ablehnen',true,()=>{custDone(c,false);closeMenu()}]);
+  return{line:`Kunde: „${c.phrase}“\nMöchte ${r.n}× ${prodName(r.k)}${r.minQ?' (Qualität ≥ '+r.minQ+' %)':''} für ${money(total)}`,items}}
+
+// ---------------- Polizei (lokal pro Spieler, Fahndung S.heat ist gemeinsam) ----------------
+let cop=null;
+function spawnCop(){
+  const m=makeCharacter({sk:1,hc:0,hs:1,sh:5,pa:1,ac:2});scene.add(m);
+  const lb=labelSprite('🚓 Polizei',1.8,true);lb.position.set(0,2.15,0);m.add(lb);
+  cop={m,x:clamp(player.x+rnd(-6,6),9.5,78),z:clamp(player.z+(Math.random()<.5?-1:1)*34,-185,60),warn:false,wait:0};m.position.set(cop.x,0,cop.z)}
+function killCop(){if(cop){scene.remove(cop.m);cop=null}}
+function copTick(dt,time){
+  MY.copCd=Math.max(0,MY.copCd-dt);
+  const out=outdoors();
+  if(!cop){if(out&&S.heat>=55&&!car.driving&&!inPost()&&MY.copCd<=0)spawnCop();return}
+  const dx=player.x-cop.x,dz=player.z-cop.z,d=Math.hypot(dx,dz),hide=!out||inPost()||car.driving;
+  if(hide){cop.wait+=dt;if(cop.wait>12||S.heat<30){killCop();return}}
+  else{cop.wait=0;const sp=(S.heat>=85?4.4:3.4)*dt;if(d>1.4){cop.x+=dx/d*sp;cop.z+=dz/d*sp}
+    if(d<14&&!cop.warn){cop.warn=true;msg('🚓 Polizei! Hau ab – oder versteck dich!')}
+    if(d<1.5){caught();return}}
+  if(S.heat<30&&d>20){killCop();return}
+  cop.m.position.set(cop.x,0,cop.z);cop.m.rotation.y=Math.atan2(dx,dz);animChar(cop.m,!hide&&d>1.4,time,1)}
+function caught(){
+  const dirty=S.pack>0||Object.values(S.drugs).some(d=>d&&d.n>0)||MY.carry.length>0;
+  if(dirty)arrestMe();else{msg('🚓 Kontrolle: nichts gefunden. „Beim nächsten Mal …“');penalty(0,-10);killCop();MY.copCd=40}}
+
+// ---------------- Takt, HUD, Interaktion ----------------
+function streetTick(dt,time){
+  // Fahndungsanzeige + Fahr-HUD
+  const hw=$('heatw');
+  if(yardOpen()||S.heat>0){hw.style.display='block';$('heatf').style.width=S.heat+'%'}else hw.style.display='none';
+  const dr=$('drive');let t='';
+  if(car.driving){t=`🚗 ${Math.round(Math.abs(car.v)*3.6)} km/h · Limit ${Math.round(SPEEDLIM*3.6)}`}
+  if(MY.carry.length){t+=(t?' · ':'')+`📦 ${MY.carry.length} Paket(e) · Zustand ${Math.round(MY.integ)} %`;const dd=Math.round(Math.hypot(player.x-POSTX,player.z-POSTZ));t+=` · 📮 Post ${dd} m`}
+  dr.textContent=t;dr.style.display=t?'block':'none';
+  // Blaulicht
+  const flash=S.heat>=55&&Math.floor(time*6)%2===0;POLR.color.set(flash?0xff1a1a:0x330000);POLB.color.set(!flash&&S.heat>=55?0x1a4aff:0x000033);
+  if(!outdoors()){if(custList.length)clearCust();copTick(dt,time);return}
+  // Kunden
+  if(!car.driving&&!inPost()){
+    MY.dealT-=dt;
+    const hot=HOT.find(h=>Math.hypot(player.x-h[0],player.z-h[1])<7);
+    if(MY.dealT<=0&&custList.length<2&&player.x>12&&sellables().length){spawnCustomer(!!hot);MY.dealT=hot?rnd(4,8):rnd(12,22)}}
+  for(let i=custList.length-1;i>=0;i--){
+    const c=custList[i],dx=player.x-c.x,dz=player.z-c.z,d=Math.hypot(dx,dz);
+    if(c.state==='walk'){if(car.driving)custDone(c,false);else if(d>2.4){const sp=1.8*dt;c.x+=dx/d*sp;c.z+=dz/d*sp}else{c.state='wait';c.t=0;c.bubble.visible=true}}
+    else if(c.state==='wait'){if(!menuOpen)c.t+=dt;if(c.t>45||car.driving||d>9)custDone(c,false)}
+    if(c.state==='leave'){c.lt=(c.lt||0)+dt;c.z+=(c.z<player.z?-1:1)*1.9*dt;if(c.lt>8){removeCust(i);continue}}
+    c.m.position.set(c.x,0,c.z);if(c.state!=='leave')c.m.rotation.y=Math.atan2(dx,dz);else c.m.rotation.y=(c.z<player.z?Math.PI:0);
+    animChar(c.m,c.state!=='wait',time,c.ph)}
+  copTick(dt,time)}
+function streetInteract(viaE){
+  if(car.driving){if(viaE)exitCar();return true}
+  if(!viaE)return false;
+  const c=nearCust();if(c){openMenuX(()=>customerMenu(c));return true}
+  if(!aimed&&nearCar()){enterCar();return true}
+  return false}
+function streetPrompt(){
+  if(car.driving)return '[E] Aussteigen';
+  if(nearCust())return '[E] Kunde ansprechen';
+  if(nearCar())return '[E] Einsteigen (Lieferwagen)';
+  return ''}
+function outQuick(i){
+  if(i===0){const sl=sellables();msg(sl.length?'💰 Straßenpreise: '+sl.map(s=>prodName(s.k)+' ≈ '+money(sellBase(s.k))+' ×'+s.n).join(' · '):'Du hast nichts zu verkaufen – erst anbauen/kochen.')}
+  else if(i===1){if(car.driving)exitCar();else if(nearCar())enterCar();else msg('Der Lieferwagen steht am Hof (bei der Hintertür).')}
+  else if(i===2){msg(MY.carry.length?`📦 ${MY.carry.length} Paket(e), Zustand ${Math.round(MY.integ)} % – Postfiliale: Straße nach Norden, am Schalter abgeben.`:'Keine Pakete. Darknet-Aufträge am Laptop annehmen, am Versandtisch packen.')}
+  else msg(`🚨 Fahndung ${Math.round(S.heat)} % – ab 55 % kommt die Polizei. Verkaufen & Rasen erhöhen sie, Zeit senkt sie.`)}
 
 // ======================================================================
 
@@ -1263,7 +1593,7 @@ const NET={role:'solo',peer:null,conns:[],hostConn:null,code:'',name:'Spieler',i
 const isClient=()=>NET.role==='client',isHost=()=>NET.role==='host';
 const PCOL=[0xe74c3c,0x3498db,0x2ecc71,0xf1c40f,0x9b59b6,0xe67e22,0x1abc9c,0xec407a];
 const PEER_OPTS=(()=>{try{const q=new URLSearchParams(location.search).get('ps');if(!q)return{};const [h,pt]=q.split(':');return{host:h,port:+pt||9000,path:'/',secure:false}}catch(e){return{}}})();
-const MENUS={rickMenu,shopMenu,boardMenu};
+const MENUS={rickMenu,shopMenu,boardMenu,shipMenu};
 const cleanName=n=>String(n||'').replace(/[^\wäöüÄÖÜß .\-]/g,'').trim().slice(0,14);
 const angDiff=(b,a)=>((b-a+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI;
 
@@ -1308,7 +1638,7 @@ function ensureAvatar(id,name,app){
 function dropAvatar(id){const a=AV[id];if(a){scene.remove(a.m);delete AV[id]}}
 function syncAvatars(list,selfId){
   const seen={};
-  list.forEach(p=>{if(p.id===selfId)return;seen[p.id]=1;const a=ensureAvatar(p.id,p.name,p.app);a.tx=p.x;a.tz=p.z;a.tyaw=p.yaw;a.m.userData.setPsa(p.psa);if(!a.init){a.init=true;a.m.position.set(p.x,0,p.z)}});
+  list.forEach(p=>{if(p.id===selfId)return;seen[p.id]=1;const a=ensureAvatar(p.id,p.name,p.app);a.tx=p.x;a.tz=p.z;a.tyaw=p.yaw;a.m.userData.setPsa(p.psa);a.m.userData.setCar(p.veh);if(!a.init){a.init=true;a.m.position.set(p.x,0,p.z)}});
   for(const id in AV)if(!seen[id])dropAvatar(id)}
 function updAvatars(dt,time){
   for(const id in AV){const a=AV[id],m=a.m,dx=a.tx-m.position.x,dz=a.tz-m.position.z,k=Math.min(1,dt*10);
@@ -1382,12 +1712,16 @@ function hostData(conn,d){
   const pl=NET.pl[conn.pid];if(!pl)return;
   pl.last=performance.now();
   switch(d.t){
-    case 'pos':if(isFinite(d.x)&&isFinite(d.z)&&isFinite(d.yaw)){pl.x=+d.x;pl.z=+d.z;pl.yaw=+d.yaw;pl.psa=d.psa?1:0}break;
+    case 'pos':if(isFinite(d.x)&&isFinite(d.z)&&isFinite(d.yaw)){pl.x=+d.x;pl.z=+d.z;pl.yaw=+d.yaw;pl.psa=d.psa?1:0;pl.veh=d.veh?1:0}break;
     case 'act':if(['plant','water','harvest','trim','pack'].includes(d.k)&&(d.n===undefined||Number.isInteger(d.n)))asRemote(conn,()=>doAct(d.k,d.n));break;
     case 'menu':if(MENUS[d.id]&&Number.isInteger(d.i))asRemote(conn,()=>{const it=MENUS[d.id]().items[d.i];if(it&&it[1])it[2]()});break;
     case 'lap':if(typeof d.a==='string'&&d.a!=='tab')asRemote(conn,()=>{if(d.a==='welcome')lapWelcome();else lapAct(d.a,d.k)});break;
     case 'cookstep':asRemote(conn,()=>cookStepDone(+d.score||0,d.fail?String(d.fail).slice(0,80):null,Number.isInteger(d.i)?d.i:undefined,!!d.psa));break;
     case 'flag':if(['talked','psa','inlab'].includes(d.k))S.flags[d.k]=1;break;
+    case 'ssell':if(typeof d.k==='string'&&Number.isInteger(d.n)&&isFinite(d.v))asRemote(conn,()=>applyStreetSale(d.k,d.n,+d.v));break;
+    case 'arrest':asRemote(conn,()=>applyArrest(pl.id,Array.isArray(d.carry)?d.carry.filter(Number.isInteger):[]));break;
+    case 'post':asRemote(conn,()=>applyPost(pl.id,Array.isArray(d.ids)?d.ids.filter(Number.isInteger):[],clamp(+d.integ||0,0,100)));break;
+    case 'pen':asRemote(conn,()=>applyPenalty(+d.cash||0,+d.heat||0));break;
     case 'chat':{const t=String(d.text||'').slice(0,120);if(t){addChat(pl.name,t);hostBroadcast({t:'chat',from:pl.name,text:t})}break}
   }}
 
@@ -1414,6 +1748,7 @@ function clientData(d){
     case 'players':syncAvatars(d.list,NET.id);break;
     case 'msg':_msg(String(d.text));break;
     case 'closeMenu':if(menuOpen)closeMenu();break;
+    case 'carry':MY.carry=MY.carry.concat(Array.isArray(d.ids)?d.ids.filter(Number.isInteger):[]);MY.integ=100;break;
     case 'chat':addChat(String(d.from),String(d.text));break;
     case 'full':setNetStatus('Der Raum ist voll.');break}}
 function clientLost(){
@@ -1430,8 +1765,8 @@ function netTick(dt,time){
   NET.tPos+=dt;
   if(NET.tPos>=.1){NET.tPos=0;
     const px=+player.x.toFixed(2),pz=+player.z.toFixed(2),py=+yaw.toFixed(2);
-    if(isClient())netSend({t:'pos',x:px,z:pz,yaw:py,psa:S.psa?1:0});
-    else{const list=[{id:0,name:NET.name,app:MYAPP,psa:S.psa?1:0,x:px,z:pz,yaw:py}];for(const id in NET.pl){const p=NET.pl[id];list.push({id:p.id,name:p.name,app:p.app,psa:p.psa,x:p.x,z:p.z,yaw:p.yaw})}
+    if(isClient())netSend({t:'pos',x:px,z:pz,yaw:py,psa:S.psa?1:0,veh:car.driving?1:0});
+    else{const list=[{id:0,name:NET.name,app:MYAPP,psa:S.psa?1:0,veh:car.driving?1:0,x:px,z:pz,yaw:py}];for(const id in NET.pl){const p=NET.pl[id];list.push({id:p.id,name:p.name,app:p.app,psa:p.psa,veh:p.veh,x:p.x,z:p.z,yaw:p.yaw})}
       hostBroadcast({t:'players',list});syncAvatars(list,0)}}
   if(isHost()){NET.tSnap+=dt;if(NET.tSnap>=.2){NET.tSnap=0;hostBroadcast(snapData())}
     const now=performance.now();
@@ -1456,7 +1791,8 @@ function frame(){
   requestAnimationFrame(frame);
   const dt=Math.min(clock.getDelta(),.05),time=clock.elapsedTime;
   // Bewegung
-  if(!menuOpen&&!modal&&started){
+  if(car.driving&&!menuOpen&&!modal&&started)driveTick(dt);
+  if(!menuOpen&&!modal&&started&&!car.driving){
     const ox=player.x,oz=player.z;
     const f=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0),r=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0);
     if(f||r){const sp=(keys.ShiftLeft?5.6:3.6)*dt,l=Math.hypot(f,r);
@@ -1488,7 +1824,9 @@ function frame(){
   stations.table.boxes.forEach((b,i)=>b.visible=i<S.pack);
   if(isClient())clientWorkers(dt,time);else workers.forEach(w=>updateWorker(w,dt,time));
   labDoor.position.x+=((S.lab?2.2:0)-labDoor.position.x)*Math.min(1,dt*3);
-  if(!isClient())mineTick(dt);labEnterCheck();netTick(dt,time);labHud(time);lapTick(dt);
+  yardDoor.position.z+=((yardOpen()?2.2:0)-yardDoor.position.z)*Math.min(1,dt*3);
+  sun.position.set(player.x+11,19,player.z+7);sun.target.position.set(player.x,0,player.z);
+  if(!isClient()){mineTick(dt);orderTick(dt);S.heat=Math.max(0,S.heat-.35*dt)}labEnterCheck();streetTick(dt,time);netTick(dt,time);labHud(time);lapTick(dt);
   if(mg){mg.upd(dt);mg&&mg.draw(mctx)}
   {const tt=!inLabNow()?'Dragon Smoke':player.z<LZ0+8.2?'Labor · Raum 1 – Vorbereitung':'Labor · Raum 2 – Kochraum';if($('title').textContent!==tt)$('title').textContent=tt}
   // Zielerfassung + HUD
@@ -1499,11 +1837,14 @@ function frame(){
     if(r.type==='rick')pr='[E] Mit Onkel Rick reden';
     else if(r.type==='labdoor')pr='🔒 Stahltür – abgeschlossen (Onkel Rick hat den Schlüssel)';
     else if(r.type==='st')pr=stPrompt(r.id);
+    else if(r.type==='yarddoor')pr='🔒 Hintertür – erst ein Paket an Onkel Rick verkaufen';
+    else if(r.type==='post')pr=MY.carry.length?'[E] Pakete am Postschalter abgeben ('+MY.carry.length+')':'[E] Postschalter (keine Pakete dabei)';
     else if(r.type==='barrel')pr='[E] Gießkanne auffüllen';
     else if(r.type==='rack')pr='[E] Blüten trimmen  ('+S.raw+' roh)';
     else if(r.type==='table')pr='[E] Verpacken  ('+S.trim+' getrimmt, 3 nötig)';
     else if(r.type==='pot'){const p=r.p;pr=p.stage<0?'[E] Samen pflanzen ('+money(SEED)+')':p.stage===4?'[E] Ernten':p.wet?'Wächst … ('+Math.floor(p.t/8*100)+'% · Stufe '+(p.stage+1)+'/4)':'[E] Gießen'}
   }
+  if(!pr&&!menuOpen&&!modal)pr=streetPrompt();
   $('prompt').textContent=pr;
   objUpdate();
   $('money').textContent=money(S.cash);
