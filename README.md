@@ -48,6 +48,16 @@ Im Startbildschirm der 3D-Version: **Raum hosten** (zeigt einen 5-stelligen Code
 - **Technik:** WebRTC über [PeerJS](https://peerjs.com). Der Vermittlungsserver (PeerJS-Cloud) wird nur für den Verbindungsaufbau genutzt, Spieldaten laufen direkt zwischen den Geräten. Eigener Server: `?ps=host:port` an die URL hängen (z. B. `peer`-npm-Paket). Hinter sehr strikten NATs/Firmennetzen kann ein TURN-Server nötig sein.
 - Mitspieler speichern nicht über den Host-Spielstand; der Host speichert wie gewohnt lokal.
 
+## Darknet-Verkauf & Post
+
+Am Laptop gibt es den Tab **📤 Darknet-Verkauf**: Ware (Pakete oder Labor-Produkte) mit Preisfaktor einstellen. Käufer bestellen von allein – je teurer, desto seltener (und je besser deine Händler-Bewertung, desto häufiger). Jede Bestellung ist ein **Paket, das du zur gelben Packstation auf der Straße bringen musst** (Porto $4, Frist 3 Tage). Nach dem Aufgeben kommt das Paket zum Tageswechsel an: Zahlung in **SCN**, Bewertung steigt oder sinkt je nach Qualität. Verpasste Frist = Storno + schlechtere Bewertung, 8 % Zoll-Risiko pro Paket.
+
+## Gesundheit, Rausch & Gefahren beim Kochen
+
+- **Gesundheitsbalken** (rechts unten). Regeneriert langsam, Erste-Hilfe-Schrank in Raum 1 heilt gegen Geld. **Bei 0 HP stirbst du**: Krankenhaus kostet 30 % Bargeld, die Labor-Ware ist zur Hälfte weg.
+- **Beim Kochen kann alles schiefgehen** (rein fiktive Spielmechanik): Siedeverzug → Explosion; falsche Einwaage → giftige Dämpfe; zu wildes Rühren → ätzende Spritzer; Unterdruck/Gefrierbruch → Glasbruch; zweimal komplett verfehlte Schläge → Brand/Quetschung. **Abzug-Lüftung** (Schalter neben dem Abzug) muss beim Erhitzen laufen, sonst gibt es Gas. Schutzausrüstung reduziert den Schaden stark, ersetzt aber keine Präzision. Die Zielzonen sind enger geworden.
+- **Eigenkonsum (F)**: jede Ware hat einen eigenen mehrminütigen Rausch-Effekt (Tempo, Bildfilter, Wackeln) und danach einen Crash. Unreine Ware (< 50 % Qualität) macht krank, **Mischkonsum kann zur Überdosis führen**.
+
 ## Wichtig / Rechtliches
 
 Alles im Labor ist **frei erfunden**: Zutaten (z. B. „Grundstoff A“), Abläufe, Mengen, Zielzonen und Werte sind reine Spielmechanik und haben **keinen Bezug zu echter Herstellung**. Es gibt keine echten Anleitungen. Herstellung, Besitz und Handel mit Drogen sind in der Realität strafbar und gefährlich – das Spiel dient nur der Unterhaltung (ab 18). Im Spiel erscheint beim ersten Laborbesuch ein entsprechender Hinweis.

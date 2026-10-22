@@ -44,6 +44,13 @@ button:disabled{opacity:.4;cursor:not-allowed}
 #psa{position:fixed;inset:0;pointer-events:none;display:none;z-index:2;background:radial-gradient(ellipse at center,#0000 52%,#05122899 100%);box-shadow:inset 0 0 0 10px #0a1a3a66}
 #cook{position:fixed;top:64px;left:12px;width:310px;background:#000a;border:1px solid #4aa3a3;padding:8px 12px;font-size:14px;line-height:1.55;display:none}
 #cook b.t{color:#7ff;font-size:16px}#cook .done{color:#7f7}#cook .cur{color:#ff6;font-weight:700}#cook .todo{opacity:.55}
+#hp{position:fixed;right:18px;bottom:20px;width:260px}
+#hp .bar{background:#0009;height:22px;position:relative;border-radius:5px;overflow:hidden;border:1px solid #fff4}
+#hpfill{position:absolute;inset:0 auto 0 0;background:#3ddc84;width:100%}
+#hpnum{position:absolute;inset:0;display:grid;place-items:center;font-size:14px;font-weight:700}
+#hightxt{margin-top:4px;font-size:14px;text-align:right;color:#fd6;min-height:18px}
+#death{position:fixed;inset:0;background:#2a0505ee;display:none;place-items:center;text-align:center;z-index:20}
+#death .box{max-width:560px;padding:24px}#death h1{font-size:54px;margin:0 0 8px;color:#ff4d4d}#death p{font-size:20px;line-height:1.5}
 #mini{position:fixed;inset:0;background:#000c;display:none;place-items:center;z-index:9}
 #mini .mp{width:min(680px,94vw);background:#10151cf2;border:2px solid #4aa3a3;padding:16px 18px;text-align:center}
 #mini h2{margin:0 0 4px;color:#7ff;font-size:26px}#mini p{margin:4px 0 10px;color:#ccd;font-size:15px;line-height:1.4}
@@ -114,13 +121,15 @@ button:disabled{opacity:.4;cursor:not-allowed}
 <div id="players" class="sh"></div>
 <div id="psa"></div>
 <div id="cook" class="sh"></div>
+<div id="hp" class="sh"><div class="bar"><div id="hpfill"></div><div id="hpnum"></div></div><div id="hightxt"></div></div>
+<div id="death"><div class="box sh"><h1>☠ DU BIST TOT</h1><p id="deathTxt"></p><button id="respawn">Im Krankenhaus aufwachen</button></div></div>
 <div id="mini"><div class="mp"><h2 id="mt"></h2><p id="mi"></p><canvas id="mc" width="640" height="260"></canvas><div id="mr"></div><div id="mb"></div></div></div>
 <div id="lap"><div class="win"><div class="bar"><span id="lapUrl">🧅 Onion-Browser</span><button id="lapX">✕ (Esc)</button></div><div id="lapTabs"></div><div id="lapBody"></div>
 <div class="foot">⚠ Satire/Spiel: Alle „Anleitungen“, Stoffe und Werte hier sind frei erfunden – keine echte Chemie, keine Anleitung zu irgendetwas. SchwarzCoin (SCN) gibt es nicht.</div></div></div>
 <div id="overlay"><div class="box sh">
   <h1>DRUG LORD TYCOON 3D</h1>
   <p>Fan-Nachbau als Low-Poly-Gewächshaus. Pflanze, gieße, ernte, trimme, verpacke und verkaufe an Onkel Rick – und stelle Arbeiter ein.</p>
-  <p><b>WASD</b> laufen · <b>Shift</b> rennen · <b>Maus</b> umschauen<br><b>1 / 2 / 3</b> Werkzeug (Samen / Gießkanne / Schere) · <b>Linksklick</b> benutzen<br><b>E</b> interagieren (Topf, Rick, Trockengestell, Tisch, Wasserfass) · <b>Esc</b> Maus freigeben</p>
+  <p><b>WASD</b> laufen · <b>Shift</b> rennen · <b>Maus</b> umschauen<br><b>1 / 2 / 3</b> Werkzeug (Samen / Gießkanne / Schere) · <b>Linksklick</b> benutzen<br><b>E</b> interagieren (Topf, Rick, Trockengestell, Tisch, Wasserfass) · <b>F</b> Eigenkonsum (Spiel – Überdosis & unreine Ware können tödlich sein) · <b>Esc</b> Maus freigeben</p>
   <p style="font-size:13px;color:#cbb">Satire-Spiel: Alle Stoffe, Abläufe und „Anleitungen“ sind frei erfunden – keine echten Anleitungen. Drogenherstellung ist in der Realität illegal und gefährlich.</p>
   <button id="play">▶ Solo spielen</button>
   <div id="chr"><b>🧑 Dein Charakter</b>
@@ -345,7 +354,7 @@ const rickHit=mesh(new T.CylinderGeometry(.7,.7,2,8),hitMat,rick.position.x,1,ri
 const SEED=10,DAYLEN=90,SALARY=50;
 let S={cash:500,xp:0,level:1,day:1,dayT:0,raw:0,trim:0,pack:0,tool:0,water:8,waterCap:8,lights:0,potsOwned:3,workers:0,canUp:0,flags:{},price:55,priceT:0,potsState:[],
   lab:0,psa:false,reag:{},drugs:{},recipes:{},up:{yield:0,ease:0},cook:null,dm:{},batches:0,coins:0,cp:40,cpT:4,evT:60,
-  news:'📰 SchwarzCoin (SCN): ein Kurs, so stabil wie Onkel Ricks Laune.',rig:{gpu:0,fan:0},scams:0,heat:0,orders:[],ordId:0,ordT:20};
+  news:'📰 SchwarzCoin (SCN): ein Kurs, so stabil wie Onkel Ricks Laune.',rig:{gpu:0,fan:0},scams:0,heat:0,orders:[],ordId:0,ordT:20,hp:100,vent:0,high:null,crash:0,dw:{rating:4.5,sales:0,list:{},parcels:[],log:[],pid:1}};
 function save(){if(NET.role==="client"||NET.role==="lost")return;try{S.potsState=pots.map(p=>({o:p.owned,s:p.stage,t:p.t,w:p.wet}));localStorage.setItem('dlt3d',JSON.stringify(S))}catch(e){}}
 function load(){try{const s=JSON.parse(localStorage.getItem('dlt3d'));if(s&&s.cash!==undefined)S=Object.assign(S,s)}catch(e){}}
 load();
@@ -398,6 +407,7 @@ const OBJ=[
  ['Hintertür auf! Verkaufe auf der Straße an einen Kunden (E) – Vorsicht, Polizei',()=>S.flags.streetsold],
  ['Laptop → Tab „Aufträge“: Darknet-Auftrag annehmen, am Versandtisch packen',()=>S.orders.some(o=>o.status==='packed'||o.status==='carried'||o.status==='done')||S.flags.posted],
  ['Mit dem Lieferwagen sicher zur Postfiliale (Straße nach Norden) und Paket abgeben',()=>S.flags.posted],
+ ['Laptop → Darknet-Verkauf: stelle Ware ein und bring die Pakete zur Postfiliale (Straße nach Norden)',()=>S.flags.posted],
  ['Expandiere: mehr Töpfe, Lampen, Arbeiter, Rezepte!',()=>false],
 ];
 let objI=0;
@@ -433,6 +443,7 @@ addEventListener('keydown',e=>{keys[e.code]=true;
   {const dn={Digit1:0,Digit2:1,Digit3:2,Digit4:3}[e.code];if(dn!==undefined){if(hbMode==='lab')labQuick(dn);else if(hbMode==='out')outQuick(dn);else if(dn<3)S.tool=dn}}
   if(e.code==='KeyV'){thirdP=!thirdP;msg(thirdP?'Ansicht: 3. Person (V)':'Ansicht: 1. Person (V)')}
   if(e.code==='KeyE')interact(true);
+  if(e.code==='KeyF'&&started&&!dead)openMenuX(consumeMenu);
 });
 addEventListener('keyup',e=>{keys[e.code]=false;if(e.code==='Space'&&mg)mgUp()});
 addEventListener('wheel',e=>{if(!menuOpen&&!modal&&hbMode==='gh')S.tool=(S.tool+(e.deltaY>0?1:2))%3});
@@ -734,6 +745,13 @@ bench(5.4,-11.7,5.4,-Math.PI/2);solid(4.85,5.95,-14.4,-9.0);
  beaker(g,.9,.91,.0,0xffd36b,.16,.07);beaker(g,1.15,.91,.12,0x9bd6ff,.2,.06);
  lbox(.34,.05,.3,LM.dark,.95,2.65,.2,g);solid(-1.7,1.7,-18,-16.7)}
 
+// Lüftungsschalter neben dem Abzug
+const ventMat=new T.MeshBasicMaterial({color:0xff3a3a});
+{const g=station('vent',2.9,-17.5,0,.9,.8,1.8,'Abzug-Lüftung',1.95);
+ lbox(.5,.7,.06,LM.steel,0,1.45,-.4,g);lbox(.3,.3,.03,ventMat,0,1.55,-.36,g);lbox(.3,.12,.03,LM.dark,0,1.25,-.36,g)}
+// Erste-Hilfe-Schrank (Raum 1, linke Wand)
+{const g=station('aid',-5.45,-1.3,Math.PI/2,.9,1.3,1.8,'Erste Hilfe',2.05);
+ lbox(.7,.9,.3,LM.white,0,1.3,-.2,g);lbox(.4,.1,.02,LM.green,0,1.3,-.04,g);lbox(.1,.4,.02,LM.green,0,1.3,-.04,g);solid(-6,-5.1,-1.95,-.65)}
 // Regale mit Reagenzflaschen, Sicherheitsausrüstung, Sonderabfall
 for(const s of[-1,1]){const sx=s*5.85;
   for(const y of[1.75,2.35]){lbox(.3,.04,6.8,LM.steel,sx,y,-13.4);
@@ -897,7 +915,10 @@ function lapSig(){
   const g=[S.coins>=.01,S.cash>=gpuCost(),S.cash>=fanCost(),S.rig.gpu,S.rig.fan,S.cash>=1200*Math.pow(2,S.up.yield),S.cash>=900*Math.pow(2,S.up.ease),S.up.yield,S.up.ease];
   for(const id in DRUGS)g.push(S.coins>=DRUGS[id].coin,S.level>=DRUGS[id].lvl,!!S.recipes[id]);
   for(const k in ING)g.push(S.coins>=+(ING[k].p*5*.6/40).toFixed(2));
-  g.push(lapTab,S.news,S.orders.map(o=>o.id+o.status).join('|'));return g.join()}
+  g.push(lapTab,S.news,S.orders.map(o=>o.id+o.status).join('|'));
+  g.push(S.pack,S.dw.rating.toFixed(1),S.dw.parcels.map(p=>p.id+p.st).join('.'),Object.entries(S.dw.list).map(([k,L])=>k+L.n+L.f).join('.'));
+  for(const id in DRUGS)g.push(haveOf(id));
+  return g.join()}
 let lapSigLast='';
 function lapStats(){
   if(!lapOpen||lapLoad)return;
@@ -906,7 +927,7 @@ function lapStats(){
   if(e('lapCashV'))e('lapCashV').textContent=money(S.coins*S.cp);
   if(lapSig()!==lapSigLast)renderLap()}
 function renderLap(){
-  const tabs=[['mine','⛏ Miner'],['market','🕸 Darknet-Markt'],['gear','🧪 Ausrüstung'],['orders','📦 Aufträge'],['guides','📜 Anleitungen']];
+  const tabs=[['mine','⛏ Miner'],['market','🕸 Darknet-Markt'],['gear','🧪 Ausrüstung'],['orders','📦 Aufträge'],['guides','📜 Anleitungen'],['sell','📤 Darknet-Verkauf']];
   $('lapTabs').innerHTML=tabs.map(([k,t])=>`<button data-a="tab" data-k="${k}" class="${lapTab===k?'on':''}">${t}</button>`).join('');
   $('lapUrl').textContent=lapTab==='market'?'🧅 totally-legit-7x3kq2.onion/markt':'🧅 Onion-Browser – gesicherte Verbindung (angeblich)';
   const head=`<div class="lh"><span>🪙 <b id="lapC">${cn(S.coins)}</b> SCN</span><span>≈ <b id="lapV">${money(S.coins*S.cp)}</b></span><span>Kurs <b id="lapP">${money(S.cp)}</b></span><span>💵 <b id="lapM">${money(S.cash)}</b></span></div>`;
@@ -943,6 +964,18 @@ function renderLap(){
     [['yield','Bessere Glasware: +1 Einheit pro Ansatz',3,n=>1200*Math.pow(2,n)],['ease','Präzisions-Ausrüstung: größere Zielzonen',3,n=>900*Math.pow(2,n)]].forEach(([k,t,mx,cf])=>{const n=S.up[k],c=cf(n);
       h+=`<div class="card">${t}<br><small>Stufe ${n}/${mx}</small><br><button data-a="up" data-k="${k}" ${n>=mx||S.cash<c?'disabled':''}>${n>=mx?'max':money(c)}</button></div>`});
     h+=`<p class="news">Ansätze bisher: ${S.batches||0} · Einheiten pro Ansatz: ${batchUnits()}</p>`}
+  else if(lapTab==='sell'){
+    const dw=S.dw;
+    h+=`<div class="card"><b>⭐ Händler-Bewertung: ${dw.rating.toFixed(1)}</b> (${dw.sales} Verkäufe)<br><small>Käufer zahlen in SCN – aber erst, wenn du das Paket an der <b>Packstation auf der Straße</b> aufgibst (Frist: ${DW_DAYS} Tage) und es ankommt. Der Zoll kontrolliert manchmal. Unreine Ware ruiniert deine Bewertung.</small></div><h3>📦 Deine Angebote</h3>`;
+    ['pack',...Object.keys(DRUGS).filter(id=>S.recipes[id])].forEach(k=>{
+      const L=dw.list[k]||{n:0,q:0,f:1.1},have=haveOf(k),pu=dwUnit(k,L);
+      h+=`<div class="card"><b>${goodsName(k)}</b> · im Lager <b>${have}</b> · im Angebot <b>${L.n}</b>${k!=='pack'&&L.n?' ('+L.q+' %)':''}<br>Preis ×${L.f.toFixed(1)} → ${money(pu)} (${(pu/S.cp).toFixed(3)} SCN) pro Stück<br><small>Teurer = weniger Käufer.</small><br>
+      <button data-a="dfm" data-k="${k}">Preis −</button><button data-a="dfp" data-k="${k}">Preis +</button>
+      <button data-a="dl1" data-k="${k}" ${have<1?'disabled':''}>+1 einstellen</button><button data-a="dla" data-k="${k}" ${have<1?'disabled':''}>alle einstellen</button><button data-a="dlr" data-k="${k}" ${L.n<1?'disabled':''}>zurücknehmen</button></div>`});
+    h+=`<h3>📮 Bestellungen</h3>`;
+    if(!dw.parcels.length)h+=`<p class="news">Noch keine Bestellungen – Käufer melden sich von allein, sobald Ware im Angebot ist.</p>`;
+    dw.parcels.forEach(p=>{h+=`<div class="card">📦 <b>${p.buyer}</b>: ${p.n}× ${goodsName(p.k)}${p.k==='pack'?'':' ('+p.q+' %)'} · ${p.coins.toFixed(3)} SCN<br>`+(p.st==='pending'?`<small class="tg">➜ Zur Packstation bringen! Frist: Tag ${p.dl}${p.dl<=S.day?' (heute!)':''}</small>`:`<small class="ok">✔ unterwegs – Ankunft zum Tageswechsel</small>`)+`</div>`});
+    h+=`<h3>💬 Postfach</h3>`+(dw.log.length?dw.log.slice(0,6).map(l=>`<div class="card"><small>${l}</small></div>`).join(''):'<small>Keine Nachrichten.</small>')}
   else{
     const own=Object.keys(DRUGS).filter(id=>S.recipes[id]);
     if(!own.length)h+=`<p class="news">Noch keine Anleitung gekauft. Minen → Darknet-Markt → kaufen.</p>`;
@@ -976,12 +1009,110 @@ function lapAct(a,k){
   else if(a==='van'){const c=Math.min(S.cash,200);S.cash-=c;msg('🚐 Es war tatsächlich das FBI. Anwaltskosten −'+money(c))}
   else if(a==='oacc'){const o=S.orders.find(o=>o.id==k);if(o&&o.status==='open'&&S.orders.filter(x=>x.status==='accepted'||x.status==='packed').length<3){o.status='accepted';msg('📦 Auftrag angenommen – am Versandtisch packen.')}}
   else if(a==='odrop'){const o=S.orders.find(o=>o.id==k);if(o&&o.status==='accepted')o.status='open'}
+  else if(a==='dfp'||a==='dfm'){const L=dwL(k);L.f=clamp(+(L.f+(a==='dfp'?.1:-.1)).toFixed(1),.7,1.8)}
+  else if(a==='dl1'||a==='dla'){const n=a==='dl1'?Math.min(1,haveOf(k)):haveOf(k);if(n>0){const L=dwL(k),q=k==='pack'?0:S.drugs[k].q;L.q=L.n>0?Math.round((L.q*L.n+q*n)/(L.n+n)):q;L.n+=n;takeGoods(k,n)}}
+  else if(a==='dlr'){const L=dwL(k);if(L.n>0){addGoods(k,L.n,L.q);L.n=0}}
   else if(a==='up'){const f={yield:n=>1200*Math.pow(2,n),ease:n=>900*Math.pow(2,n)}[k],c=f(S.up[k]);if(S.up[k]<3&&S.cash>=c){S.cash-=c;S.up[k]++}}
   renderLap()}
 $('lapBody').addEventListener('click',e=>{const b=e.target.closest('button');if(b&&!b.disabled)lapAct(b.dataset.a,b.dataset.k)});
 $('lapTabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b)lapAct(b.dataset.a,b.dataset.k)});
 $('lapX').onclick=closeLap;
 
+const rpick=a=>a[Math.floor(Math.random()*a.length)];
+const goodsName=k=>k==='pack'?'🌿 Paket(e)':DRUGS[k].ic+' '+DRUGS[k].n;
+const haveOf=k=>k==='pack'?S.pack:(S.drugs[k]?S.drugs[k].n:0);
+function takeGoods(k,n){if(k==='pack')S.pack-=n;else{S.drugs[k].n-=n;if(S.drugs[k].n<=0)S.drugs[k]={n:0,q:0}}}
+// ======================================================================
+//  GESUNDHEIT, RAUSCH, DARKNET-VERKAUF  (reine Spielmechanik, alles erfunden)
+// ======================================================================
+let dead=false,spdMul=1,highShake=0,highRoll=0;
+function hurt(dmg,why){if(dead)return;S.hp=Math.max(0,S.hp-dmg);if(S.hp<=0)die(why||'Du bist gestorben.')}
+function die(why){
+  dead=true;modal=true;mg=null;S.cook=null;S.high=null;S.crash=0;menuOpen=false;menuCust=null;lapOpen=false;
+  $('mini').style.display='none';$('lap').style.display='none';$('menu').style.display='none';
+  if(document.pointerLockElement)document.exitPointerLock();
+  const loss=Math.round(S.cash*.3);
+  $('deathTxt').innerHTML=why+'<br><small>Krankenhaus: Behandlung −'+money(loss)+'. Labor-Ware zur Hälfte weg, Gesundheit 40 %.</small>';
+  $('flash').style.opacity=1;$('death').style.display='grid';
+  $('respawn').onclick=()=>{S.cash-=loss;for(const k in S.drugs)if(S.drugs[k]){S.drugs[k].n=Math.floor(S.drugs[k].n/2);if(!S.drugs[k].n)S.drugs[k]={n:0,q:0}}
+    S.hp=40;player.x=0;player.z=4.6;yaw=0;pitch=0;$('death').style.display='none';$('flash').style.opacity=0;dead=false;modal=false;relock()}}
+function hpTick(dt){if(dead)return;if(S.hp<100)S.hp=Math.min(100,S.hp+dt*.4)}
+$('hpnum').textContent='';
+
+// ---- Rausch (Eigenkonsum) ----
+const HIGH={
+  pack:{dur:150,spd:.9},
+  speed:{dur:180,spd:1.35,fov:6,shake:.004,crash:30},
+  mdma:{dur:210,spd:1.05,crash:30},
+  meth:{dur:240,spd:1.5,fov:8,shake:.01,drain:.12,crash:45},
+  lsd:{dur:240,spd:.9}
+};
+const hIcon=k=>k==='pack'?'🌿':DRUGS[k].ic;
+function consume(k){
+  if(haveOf(k)<1||dead)return;
+  const q=k==='pack'?70:S.drugs[k].q;takeGoods(k,1);
+  if(S.high&&Math.random()<.45){const d=Math.round(rnd(30,60));msg('🚑 Mischkonsum – Überdosis! −'+d+' HP');hurt(d,DEATH.od);if(dead)return}
+  if(q<50&&Math.random()<.7){const d=Math.round(rnd(8,20));msg('🤢 Verunreinigte Ware – dir wird übel. −'+d+' HP');hurt(d,'Verunreinigte Ware – Kreislaufversagen.');if(dead)return}
+  S.high={k,t:HIGH[k].dur,dur:HIGH[k].dur};S.crash=0;S.flags.high=1;
+  msg(hIcon(k)+' Du bist drauf … (ca. '+Math.round(HIGH[k].dur/60*10)/10+' Min.)')}
+function consumeMenu(){
+  const items=[];
+  for(const k of['pack',...Object.keys(DRUGS)]){const n=haveOf(k);if(n<1)continue;
+    items.push([`${goodsName(k)} konsumieren (${n}×${k==='pack'?'':' · '+S.drugs[k].q+' %'})`,true,()=>{closeMenu();consume(k)},S.high?'⚠ Du bist schon drauf – Überdosis-Gefahr!':k==='pack'?'mild':'Qualität unter 50 % kann dich krank machen'])}
+  if(!items.length)items.push(['Du hast nichts dabei.',false,()=>{}]);
+  items.push(['Schließen',true,closeMenu]);
+  return{line:`EIGENKONSUM (Spiel)\nGesundheit ${Math.round(S.hp)}/100. Mischkonsum und unreine Ware können tödlich enden.`,items}}
+function highTick(dt,time){
+  let spd=1,fov=70,shake=0,roll=0,filt='';
+  if(S.high){const H=HIGH[S.high.k],k=S.high.k,i=clamp(Math.min(S.high.t/15,(S.high.dur-S.high.t)/6),0,1);
+    S.high.t-=dt;
+    spd=1+(H.spd-1)*i;fov=70+(H.fov||0)*i;shake=(H.shake||0)*i;
+    if(k==='pack')filt=`saturate(1.3) hue-rotate(-10deg) blur(${(.5*i).toFixed(2)}px)`;
+    else if(k==='speed')filt=`contrast(1.15) saturate(1.2)`;
+    else if(k==='mdma'){filt=`saturate(${(1+.9*i).toFixed(2)}) hue-rotate(${(Math.sin(time*1.5)*25*i).toFixed(1)}deg) brightness(${(1+.1*Math.sin(time*4)*i).toFixed(2)})`}
+    else if(k==='meth')filt=`contrast(1.3) saturate(1.3) brightness(1.1)`;
+    else if(k==='lsd'){filt=`hue-rotate(${((time*40)%360).toFixed(0)}deg) saturate(${(1+1.2*i).toFixed(2)}) blur(${(.6*i).toFixed(2)}px)`;fov+=Math.sin(time*1.3)*6*i;roll=Math.sin(time*.9)*.08*i}
+    if(H.drain)S.hp=Math.max(1,S.hp-H.drain*dt);
+    if(S.high.t<=0){const c=H.crash||0;S.high=null;S.crash=c;msg(c?'😮‍💨 Der Rausch lässt nach – Crash …':'Der Rausch lässt nach.')}}
+  else if(S.crash>0){S.crash-=dt;spd=.8;filt='grayscale(.5) brightness(.85)'}
+  spdMul=spd;highShake=shake;highRoll=roll;
+  if(Math.abs(camera.fov-fov)>.05){camera.fov=fov;camera.updateProjectionMatrix()}
+  if(renderer.domElement.style.filter!==filt)renderer.domElement.style.filter=filt;
+  const hp=Math.round(S.hp);$('hpfill').style.width=hp+'%';$('hpfill').style.background=hp>60?'#3ddc84':hp>30?'#f0a030':'#e23b3b';$('hpnum').textContent='❤ '+hp+' / 100';
+  $('hightxt').textContent=S.high?hIcon(S.high.k)+' high · '+Math.floor(S.high.t/60)+':'+String(Math.floor(S.high.t%60)).padStart(2,'0'):S.crash>0?'😮‍💨 Crash …':''}
+function aidMenu(){return{line:`ERSTE-HILFE-SCHRANK\nGesundheit ${Math.round(S.hp)}/100`,items:[[`Wunden versorgen (+35 HP) – ${money(60)}`,S.hp<100&&S.cash>=60,()=>{S.cash-=60;S.hp=Math.min(100,S.hp+35)}],['Schließen',true,closeMenu]]}}
+
+// ---- Darknet-Verkauf ----
+const DW_DAYS=3,POSTAGE=4,DW_BUYERS=['Party_Paule','ChemieFan88','Nachtschicht_Nina','Opa_Willi_1949','Student_Sven','Raver_Rosi','AnonymousAnna','DJ_Dubstep_Dirk'];
+const dwL=k=>S.dw.list[k]||(S.dw.list[k]={n:0,q:0,f:1.1});
+const dwQ=(k,L)=>k==='pack'?0:(L.n>0?L.q:(S.drugs[k]?S.drugs[k].q:0));
+const dwUnit=(k,L)=>k==='pack'?S.price*1.25*L.f:DRUGS[k].price*(S.dm[k]||1)*(.35+.65*dwQ(k,L)/100)*1.25*L.f;
+function addGoods(k,n,q){if(k==='pack'){S.pack+=n;return}const c=S.drugs[k]||{n:0,q:0};S.drugs[k]={n:c.n+n,q:Math.round((c.q*c.n+q*n)/(c.n+n))}}
+function dwLog(t){S.dw.log.unshift('Tag '+S.day+': '+t);S.dw.log.length=Math.min(S.dw.log.length,12)}
+let dwT=10;
+function dwTick(dt){
+  if(!S.lab)return;dwT-=dt;if(dwT>0)return;dwT=rnd(6,12);
+  for(const k in S.dw.list){const L=S.dw.list[k];if(L.n<1)continue;
+    const demand=clamp(1.9-L.f*.9,.08,1)*(S.dw.rating/5);
+    if(Math.random()<.3*demand){
+      const n=Math.min(L.n,1+Math.floor(Math.random()*(k==='pack'?3:2))),coins=+(n*dwUnit(k,L)/S.cp).toFixed(3);
+      const p={id:S.dw.pid++,buyer:rpick(DW_BUYERS),k,n,q:L.q,coins,dl:S.day+DW_DAYS,st:'pending'};
+      L.n-=n;S.dw.parcels.push(p);
+      dwLog(`📥 ${p.buyer} bestellt ${n}× ${goodsName(k)} (${coins.toFixed(3)} SCN) – Paket zur Packstation bringen!`);
+      msg('📥 Neue Darknet-Bestellung von '+p.buyer+' – Paket zur Packstation!')}}}
+function dwDay(){
+  const dw=S.dw;
+  for(const p of dw.parcels.slice()){
+    if(p.st==='shipped'&&S.day>p.ship){
+      dw.parcels.splice(dw.parcels.indexOf(p),1);
+      if(Math.random()<.08){dwLog(`🛃 Zoll hat das Paket an ${p.buyer} geöffnet – Ware weg, keine Zahlung.`);msg('🛃 Der Zoll hat ein Paket kassiert!');continue}
+      const good=p.k==='pack'||p.q>=75,ok=p.k==='pack'||p.q>=50;
+      S.coins+=p.coins;dw.sales++;dw.rating=clamp(dw.rating+(good?.1:ok?.02:-.35),1,5);
+      dwLog(`💰 ${p.buyer}: ${p.coins.toFixed(3)} SCN eingegangen – „${good?'Top Ware, schnelle Lieferung ★★★★★':ok?'Passt schon. ★★★':'Qualität mies, nie wieder. ★'}“`);
+      msg('💰 +'+p.coins.toFixed(3)+' SCN von '+p.buyer)}
+    else if(p.st==='pending'&&S.day>p.dl){
+      dw.parcels.splice(dw.parcels.indexOf(p),1);addGoods(p.k,p.n,p.q);dw.rating=clamp(dw.rating-.4,1,5);
+      dwLog(`⏰ ${p.buyer} hat storniert – nicht rechtzeitig aufgegeben. Ware zurück im Lager, Bewertung sinkt.`)}}}
 // ---------------- Ansatz (Kochablauf) ----------------
 function startCook(id){
   if(S.cook||!canMake(id))return;
@@ -993,10 +1124,10 @@ function useStation(id){
   const k=DRUGS[c.drug].steps[c.i],ST=STEP[k];
   if(ST.st!==id){msg('Jetzt dran: '+ST.n+' → '+STATION[ST.st]);return}
   startMini(k)}
-function cookStepDone(score,fail,cid,si,psa){
-  if(isClient()){netSend({t:'cookstep',score,fail,cid,i:si,psa:S.psa});return}
+function cookStepDone(score,fail,cid,si,psa,hz){
+  if(isClient()){netSend({t:'cookstep',score,fail,cid,i:si,psa:S.psa,hz});return}
   const c=S.cook;if(!c||c.id!==cid||c.i!==si){msg('Dieser Schritt wurde schon von jemand anderem erledigt – dein Ergebnis zählt nicht.');return}
-  if(fail){mishap(fail,psa===undefined?S.psa:psa);S.cook=null;return}
+  if(fail){mishap(fail,psa===undefined?S.psa:psa,hz);S.cook=null;return}
   c.sc.push(Math.round(score));c.i++;addXp(3);
   if(c.i>=DRUGS[c.drug].steps.length)finishCook()}
 function finishCook(){
@@ -1005,14 +1136,23 @@ function finishCook(){
   S.drugs[c.drug]={n:cur.n+u,q:Math.round((cur.q*cur.n+q*u)/(cur.n+u))};
   addXp(Math.round(D.xp*(.5+q/100)));S.batches=(S.batches||0)+1;S.flags.cooked=1;S.cook=null;
   msg(`${D.ic} ${u}× ${D.n} fertig – Qualität ${q}% (${QN(q)})`)}
-function mishap(reason,psa){
+const HAZ={boom:[55,90,.45,'💥'],gas:[30,60,.25,'☠️'],cut:[12,25,.6,'🩸'],acid:[18,35,.3,'🧪']};
+const DEATH={boom:'Die Explosion im Kochlabor hat dich getötet.',gas:'Du hast giftige Dämpfe eingeatmet – Lichter aus.',cut:'Du bist an der Glasverletzung verblutet.',acid:'Die Verätzungen waren zu schwer.',od:'Überdosis. Das war’s.'};
+function mishap(reason,psa,hz){
+  const H=HAZ[hz]||null,dmg=H?Math.round(rnd(H[0],H[1])*(psa?H[2]:1)):0;
   if(!NET.remote){$('flash').style.opacity=1;setTimeout(()=>$('flash').style.opacity=0,500)}
-  if(psa)msg('💥 '+reason+' – Ansatz verloren, aber die Schutzausrüstung hat dich gerettet.');
-  else{const c=Math.min(S.cash,Math.round(250+Math.random()*250));S.cash-=c;msg('💥 '+reason+' – Ansatz verloren. Notaufnahme −'+money(c)+' (ohne Schutzausrüstung!)')}}
-function togglePSA(){S.psa=!S.psa;if(S.psa)netFlag('psa');$('psa').style.display=S.psa&&inLabNow()?'block':'none';
+  let t=(H?H[3]:'💥')+' '+reason+' – Ansatz verloren.';
+  if(psa)t+=' Schutzausrüstung: Schaden stark reduziert.';
+  else{const c=Math.min(S.cash,Math.round(150+Math.random()*150));S.cash-=c;t+=' OHNE Schutzausrüstung! Notaufnahme −'+money(c)+'.'}
+  if(dmg)t+=' −'+dmg+' HP';
+  msg(t);
+  if(dmg){if(NET.remote){try{NET.remote.send({t:'hurt',dmg,why:DEATH[hz]})}catch(e){}}else hurt(dmg,DEATH[hz])}}
+function togglePSA(){S.psa=!S.psa;if(S.psa){netFlag('psa');S.flags.psa=1}$('psa').style.display=S.psa&&inLabNow()?'block':'none';
   msg(S.psa?'🥽 Kittel, Schutzbrille, Handschuhe & Atemschutz angelegt.':'Schutzausrüstung abgelegt.')}
 function labInteract(id){
   if(id==='locker')togglePSA();
+  else if(id==='vent'){S.vent=S.vent?0:1;msg(S.vent?'🌬 Abzug-Lüftung läuft.':'Lüftung aus.')}
+  else if(id==='aid')openMenuX(aidMenu);
   else if(id==='shop')openMenuX(shopMenu);
   else if(id==='recipes')openMenuX(boardMenu);
   else if(id==='terminal')openLap();
@@ -1024,8 +1164,10 @@ function stPrompt(id){
   if(id==='recipes')return S.cook?'[E] Rezept-Board (Ansatz läuft)':'[E] Rezept-Board – Ansatz starten';
   if(id==='terminal')return '[E] Laptop benutzen (Mining & Darknet)';
   if(id==='ship')return '[E] Versandtisch (Pakete packen / mitnehmen)';
+  if(id==='vent')return S.vent?'[E] Abzug-Lüftung ausschalten':'[E] Abzug-Lüftung einschalten';
+  if(id==='aid')return '[E] Erste Hilfe ('+Math.round(S.hp)+' HP)';
   const c=S.cook;if(!c)return STATION[id]+' – kein Ansatz aktiv';
-  const ST=STEP[DRUGS[c.drug].steps[c.i]];return ST.st===id?'[E] '+ST.n+' starten':STATION[id]+' – gerade nicht dran'}
+  const ST=STEP[DRUGS[c.drug].steps[c.i]];return ST.st===id?'[E] '+ST.n+' starten'+(id==='hood'&&!S.vent?' (⚠ Lüftung aus!)':''):STATION[id]+' – gerade nicht dran'}
 // Laufend geprüft: Betritt der Spieler das (angebaute) Labor, gilt die Schutzbrillen-Optik + einmaliger Hinweis
 let inlabSeen=false;
 function labEnterCheck(){
@@ -1051,15 +1193,16 @@ function openMini(title,info){modal=true;if(document.pointerLockElement)document
 function closeMini(){modal=false;mini.style.display='none';mg=null;relock()}
 function setBtns(list){const b=$('mb');b.innerHTML='';list.forEach(([t,fn])=>{const el=document.createElement('button');el.textContent=t;el.onclick=fn;b.appendChild(el)})}
 function startMini(k){
-  const c=S.cook,D=DRUGS[c.drug],ST=STEP[k],W=(1+S.up.ease*.18)/D.d;
-  openMini(ST.ic+' '+ST.n+' – '+STATION[ST.st],ST.h);
+  const c=S.cook,D=DRUGS[c.drug],ST=STEP[k],W=(1+S.up.ease*.18)/D.d*.85;
+  openMini(ST.ic+' '+ST.n+' – '+STATION[ST.st],ST.h+((k==='heat'&&!S.vent)?'  ⚠ ABZUG-LÜFTUNG IST AUS!':''));
   mg=({weigh:gPour,mix:gStir,heat:gGauge,cool:gGauge,filter:gGauge,dry:gTiming,press:gTiming})[k](k,D,W);
   mg.hold=false;mg.mx=320;mg.my=130;mg.fin=false;mg.cid=c.id;mg.si=c.i;   // Ansatz + Schritt beim Start festhalten
+  if(k==='heat'&&!S.vent){const o=mg,u=o.upd;o.vt=0;o.upd=dt=>{u(dt);if(!o.fin){o.vt+=dt;if(o.vt>5)mgFinish(0,'Abzug war aus – giftige Dämpfe im Raum!',null,'gas')}}}
   if(mg.btns)setBtns(mg.btns)}
-function mgFinish(score,fail,note){
+function mgFinish(score,fail,note,hz){
   if(!mg||mg.fin)return;mg.fin=true;
   $('mr').innerHTML=fail?`<span style="color:#f66">💥 ${fail}</span>`:`<span style="color:${score>=80?'#7f7':score>=50?'#ff6':'#fa6'}">${note||''} Ergebnis: <b>${Math.round(score)}%</b></span>`;
-  const cid=mg.cid,si=mg.si;const next=()=>{closeMini();cookStepDone(score,fail,cid,si)};mg.next=next;
+  const cid=mg.cid,si=mg.si;const next=()=>{closeMini();cookStepDone(score,fail,cid,si,undefined,hz)};mg.next=next;
   setBtns([[fail?'Weiter':'Weiter ▶',next]])}
 function mgDown(){if(!mg||mg.fin)return;mg.hold=true;mg.press&&mg.press()}
 function mgUp(){if(!mg)return;const was=mg.hold;mg.hold=false;was&&mg.release&&mg.release()}
@@ -1078,7 +1221,7 @@ function gPour(k,D,W){
   const tgt=Math.round(rnd(8,22)*10)/10,tol=.9*W;let w=0,ht=0,resets=0;const o={};
   o.upd=dt=>{if(o.fin)return;if(o.hold){ht+=dt;w+=(1.1+3*Math.min(ht,2))*dt}else ht=0};
   o.release=()=>{w+=.04};
-  const confirm=()=>{if(o.fin)return;const err=Math.abs(w-tgt);mgFinish(Math.max(0,100*(1-clamp((err-tol*.3)/(tol*2.5),0,1))-8*resets),null,err<=tol?'Präzise!':err<=tol*2?'Okay.':'Daneben …')};
+  const confirm=()=>{if(o.fin)return;const err=Math.abs(w-tgt);if(err>tol*4&&Math.random()<.5)return mgFinish(0,'Falsche Einwaage – heftige Reaktion, giftige Dämpfe!',null,'gas');mgFinish(Math.max(0,100*(1-clamp((err-tol*.3)/(tol*2.5),0,1))-8*resets),null,err<=tol?'Präzise!':err<=tol*2?'Okay.':'Daneben …')};
   const tara=()=>{if(o.fin)return;w=0;resets++};
   o.key=c=>{if(c==='Enter')confirm();if(c==='KeyR')tara()};
   o.btns=[['Bestätigen (Enter)',confirm],['Tara (R) −8 %',tara]];
@@ -1102,6 +1245,7 @@ function gStir(k,D,W){
     const dx=o.mx-320,dy=o.my-118,r=Math.hypot(dx,dy);let inst=0;
     if(r>25){const a=Math.atan2(dy,dx);if(o.ang!==null){let d=a-o.ang;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;inst=Math.abs(d)/Math.max(dt,.001)/15.7}o.ang=a}else o.ang=null;
     o.sp+=(Math.min(1.6,inst)-o.sp)*Math.min(1,dt*5);o.inb=Math.abs(o.sp-ctr)<=hw;
+    if(o.sp>1.4)o.hi=(o.hi||0)+dt;else o.hi=Math.max(0,(o.hi||0)-dt*.5);if(o.hi>2.2)mgFinish(0,'Zu wild gerührt – ätzende Spritzer!',null,'acid');
     if(o.inb)o.prog=Math.min(1,o.prog+dt/5.5);o.rot+=o.sp*dt*9;
     if(o.prog>=1||o.t>=o.T)mgFinish(o.prog*100,null,o.prog>=1?'Schön gleichmäßig!':'Zeit abgelaufen.')};
   o.draw=g=>{g.clearRect(0,0,640,260);const cx=320,cy=118;
@@ -1130,7 +1274,9 @@ function gGauge(k,D,W){
     o.nzT-=dt;if(o.nzT<=0){o.nzT=.4;o.nzG=rnd(-4,4)}o.nz+=(o.nzG-o.nz)*Math.min(1,dt*3);
     if(cfg.tap)o.v+=(cfg.rel+o.nz)*dt;else o.v+=((o.hold?cfg.hold:cfg.rel)+o.nz*1.5)*dt;
     o.v=clamp(o.v,0,100);if(Math.abs(o.v-ctr)<=hw)o.inb+=dt;
-    if(cfg.danger&&o.v>=cfg.danger){o.dang+=dt;if(o.dang>1.2)mgFinish(0,'Siedeverzug! Der Ansatz ist übergekocht.')}else o.dang=Math.max(0,o.dang-dt*.5);
+    if(cfg.danger&&o.v>=cfg.danger){o.dang+=dt;if(o.dang>1.2)mgFinish(0,'Siedeverzug! Der Ansatz ist übergekocht – Explosion!',null,'boom')}else o.dang=Math.max(0,o.dang-dt*.5);
+    if(k==='cool'&&o.v<=2){o.cz=(o.cz||0)+dt;if(o.cz>1.5)mgFinish(0,'Gefrierbruch – das Glas springt!',null,'cut')}
+    if(k==='filter'&&o.v>=98){o.fz=(o.fz||0)+dt;if(o.fz>1.2)mgFinish(0,'Unterdruck zu hoch – das Glas implodiert!',null,'cut')}
     if(!o.fin&&o.t>=cfg.dur){const s=Math.min(100,o.inb/(cfg.dur-2)*100);mgFinish(s,null,s>=80?'Stabil gehalten.':'Wackelig …')}};
   o.draw=g=>{g.clearRect(0,0,640,260);const x=320,y=88;
     g.strokeStyle='#cfe8ff';g.lineWidth=3;g.fillStyle='#cfe8ff22';
@@ -1152,10 +1298,11 @@ function gGauge(k,D,W){
 
 // ---- Timing (Trocknen / Tablettieren) ----
 function gTiming(k,D,W){
-  const n=k==='dry'?3:5,o={i:0,res:[],m:0,dir:1,spd:.9,zc:rnd(.2,.8),hw:.1*W+.02,flash:0,last:null};
+  const n=k==='dry'?3:5,o={i:0,zero:0,res:[],m:0,dir:1,spd:.9,zc:rnd(.2,.8),hw:.1*W+.02,flash:0,last:null};
   o.upd=dt=>{if(o.fin)return;o.m+=o.dir*o.spd*dt;if(o.m>1){o.m=1;o.dir=-1}if(o.m<0){o.m=0;o.dir=1}o.flash=Math.max(0,o.flash-dt)};
   o.press=()=>{if(o.fin)return;const e=Math.abs(o.m-o.zc)/o.hw,s=e<=.35?100:Math.max(0,100-(e-.35)*55);
     o.res.push(s);o.last=s;o.flash=.5;o.i++;
+    if(s<=0&&++o.zero>=2){mgFinish(0,k==='dry'?'Trockenschrank überhitzt – es brennt!':'Finger in der Presse!',null,k==='dry'?'boom':'cut');return}
     if(o.i>=n)mgFinish(o.res.reduce((a,b)=>a+b,0)/n,null,'Timing');else{o.zc=rnd(.18,.82);o.spd*=1.18}};
   o.draw=g=>{g.clearRect(0,0,640,260);const x0=40,w=560;
     g.fillStyle='#1a222c';g.fillRect(x0,100,w,50);g.fillStyle='#2a7a45';g.fillRect(x0+(o.zc-o.hw)*w,100,o.hw*2*w,50);
@@ -1795,7 +1942,7 @@ function frame(){
   if(!menuOpen&&!modal&&started&&!car.driving){
     const ox=player.x,oz=player.z;
     const f=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0),r=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0);
-    if(f||r){const sp=(keys.ShiftLeft?5.6:3.6)*dt,l=Math.hypot(f,r);
+    if(f||r){const sp=(keys.ShiftLeft?5.6:3.6)*spdMul*dt,l=Math.hypot(f,r);
       const fx=-Math.sin(yaw),fz=-Math.cos(yaw),rx=Math.cos(yaw),rz=-Math.sin(yaw);
       player.x+=(fx*f+rx*r)/l*sp;player.z+=(fz*f+rz*r)/l*sp;bob+=dt*(keys.ShiftLeft?11:8)}
     if(keys.KeyQ)yaw+=dt*1.6;if(keys.KeyY&&false)yaw-=dt*1.6;
@@ -1806,7 +1953,7 @@ function frame(){
   // Rick schaut zum Spieler
   rick.rotation.y+=((Math.atan2(player.x-rick.position.x,player.z-rick.position.z))-rick.rotation.y)*.05;rick.position.y=Math.sin(time*2)*.01;
   // Tag / Gehalt
-  if(!isClient())S.dayT+=dt;if(!isClient()&&S.dayT>=DAYLEN){S.dayT=0;S.day++;const pay=Math.min(S.cash,S.workers*SALARY);S.cash-=pay;if(pay>0)msg('Tag '+S.day+': Gehälter −'+money(pay));S.price=Math.round(40+Math.random()*45+S.level*2);labDay()}
+  if(!isClient())S.dayT+=dt;if(!isClient()&&S.dayT>=DAYLEN){S.dayT=0;S.day++;const pay=Math.min(S.cash,S.workers*SALARY);S.cash-=pay;if(pay>0)msg('Tag '+S.day+': Gehälter −'+money(pay));S.price=Math.round(40+Math.random()*45+S.level*2);labDay();dwDay()}
   // Pflanzen
   for(const p of pots){
     p.g.visible=p.owned;if(!p.owned)continue;
@@ -1826,7 +1973,7 @@ function frame(){
   labDoor.position.x+=((S.lab?2.2:0)-labDoor.position.x)*Math.min(1,dt*3);
   yardDoor.position.z+=((yardOpen()?2.2:0)-yardDoor.position.z)*Math.min(1,dt*3);
   sun.position.set(player.x+11,19,player.z+7);sun.target.position.set(player.x,0,player.z);
-  if(!isClient()){mineTick(dt);orderTick(dt);S.heat=Math.max(0,S.heat-.35*dt)}labEnterCheck();streetTick(dt,time);netTick(dt,time);labHud(time);lapTick(dt);
+  if(!isClient()){mineTick(dt);orderTick(dt);S.heat=Math.max(0,S.heat-.35*dt)}labEnterCheck();if(!isClient())dwTick(dt);hpTick(dt);highTick(dt,time);ventMat.color.setHex(S.vent?0x34ff6a:0xff3a3a);streetTick(dt,time);netTick(dt,time);labHud(time);lapTick(dt);
   if(mg){mg.upd(dt);mg&&mg.draw(mctx)}
   {const tt=!inLabNow()?'Dragon Smoke':player.z<LZ0+8.2?'Labor · Raum 1 – Vorbereitung':'Labor · Raum 2 – Kochraum';if($('title').textContent!==tt)$('title').textContent=tt}
   // Zielerfassung + HUD
@@ -1850,7 +1997,7 @@ function frame(){
   $('money').textContent=money(S.cash);
   $('xpfill').style.width=(S.xp/need(S.level)*100)+'%';$('xpnum').textContent=S.level;
   $('day').textContent='Tag '+S.day+' · Markt: '+money(S.price)+'/Paket · Arbeiter: '+S.workers+' · Lampen Lvl '+S.lights;
-  $('inv').innerHTML=`🌿 Roh: <b>${S.raw}</b> &nbsp; ✂️ Getrimmt: <b>${S.trim}</b> &nbsp; 📦 Pakete: <b>${S.pack}</b>`+labInv();
+  $('inv').innerHTML=`🌿 Roh: <b>${S.raw}</b> &nbsp; ✂️ Getrimmt: <b>${S.trim}</b> &nbsp; 📦 Pakete: <b>${S.pack}</b>`+(S.dw.parcels.some(p=>p.st==='pending')?`<br>📮 Zur Postfiliale: <b>${S.dw.parcels.filter(p=>p.st==='pending').length}</b> Paket(e)`:'')+labInv();
   updHotbar();
   renderPreview(time);
   renderer.render(scene,camera);
