@@ -1027,17 +1027,28 @@ function takeGoods(k,n){if(k==='pack')S.pack-=n;else{S.drugs[k].n-=n;if(S.drugs[
 // ======================================================================
 let dead=false,spdMul=1,highShake=0,highRoll=0;
 function hurt(dmg,why){if(dead)return;S.hp=Math.max(0,S.hp-dmg);if(S.hp<=0)die(why||'Du bist gestorben.')}
+// Tod samt Konsequenzen wird sofort angewendet und gespeichert (S.dead) – Neuladen im Todesbildschirm hilft nicht.
 function die(why){
-  dead=true;modal=true;mg=null;S.cook=null;S.high=null;S.crash=0;menuOpen=false;menuCust=null;lapOpen=false;
+  S.cook=null;S.high=null;S.crash=0;
+  if(!S.dead){
+    const loss=Math.round(S.cash*.3);S.cash-=loss;
+    for(const k in S.drugs)if(S.drugs[k]){S.drugs[k].n=Math.floor(S.drugs[k].n/2);if(!S.drugs[k].n)S.drugs[k]={n:0,q:0}}
+    S.hp=0;S.dead=1;
+    S.deathTxt=why+'<br><small>Krankenhaus: Behandlung −'+money(loss)+'. Labor-Ware zur Hälfte weg, Gesundheit 40 %.</small>';
+    save()}
+  showDeath()}
+function showDeath(){
+  dead=true;modal=true;mg=null;menuOpen=false;menuCust=null;lapOpen=false;
   $('mini').style.display='none';$('lap').style.display='none';$('menu').style.display='none';
   if(document.pointerLockElement)document.exitPointerLock();
-  const loss=Math.round(S.cash*.3);
-  $('deathTxt').innerHTML=why+'<br><small>Krankenhaus: Behandlung −'+money(loss)+'. Labor-Ware zur Hälfte weg, Gesundheit 40 %.</small>';
+  $('deathTxt').innerHTML=S.deathTxt||'Du bist gestorben.';
   $('flash').style.opacity=1;$('death').style.display='grid';
-  $('respawn').onclick=()=>{S.cash-=loss;for(const k in S.drugs)if(S.drugs[k]){S.drugs[k].n=Math.floor(S.drugs[k].n/2);if(!S.drugs[k].n)S.drugs[k]={n:0,q:0}}
-    S.hp=40;player.x=0;player.z=4.6;yaw=0;pitch=0;$('death').style.display='none';$('flash').style.opacity=0;dead=false;modal=false;relock()}}
+  $('respawn').onclick=()=>{
+    S.dead=0;S.deathTxt='';S.hp=40;save();
+    player.x=0;player.z=4.6;yaw=0;pitch=0;$('death').style.display='none';$('flash').style.opacity=0;dead=false;modal=false;relock()}}
 function hpTick(dt){if(dead)return;if(S.hp<100)S.hp=Math.min(100,S.hp+dt*.4)}
 $('hpnum').textContent='';
+if(S.dead)showDeath();else if(S.hp<=0)die('Du bist gestorben.');   // Tod übersteht Neuladen
 
 // ---- Rausch (Eigenkonsum) ----
 const HIGH={
@@ -1113,6 +1124,15 @@ function dwDay(){
     else if(p.st==='pending'&&S.day>p.dl){
       dw.parcels.splice(dw.parcels.indexOf(p),1);addGoods(p.k,p.n,p.q);dw.rating=clamp(dw.rating-.4,1,5);
       dwLog(`⏰ ${p.buyer} hat storniert – nicht rechtzeitig aufgegeben. Ware zurück im Lager, Bewertung sinkt.`)}}}
+function postMenu(){
+  const pend=S.dw.parcels.filter(p=>p.st==='pending'),ship=S.dw.parcels.filter(p=>p.st==='shipped'),cost=pend.length*POSTAGE;
+  return{line:`PACKSTATION\n${pend.length} Paket(e) bereit · ${ship.length} unterwegs · Porto ${money(POSTAGE)} pro Paket`,
+    items:[[`📮 Alle Pakete aufgeben (${pend.length}) – ${money(cost)}`,pend.length>0&&S.cash>=cost,()=>{   // Bestellungen/Porto beim Klick neu ermitteln (Menü kann über Fristablauf offen geblieben sein)
+      const now=S.dw.parcels.filter(p=>p.st==='pending'),c=now.length*POSTAGE;
+      if(!now.length){msg('Keine Pakete mehr zum Aufgeben – Bestellungen wurden storniert.');return}
+      if(S.cash<c){msg('Nicht genug Bargeld für das Porto ('+money(c)+').');return}
+      S.cash-=c;now.forEach(p=>{p.st='shipped';p.ship=S.day});S.flags.posted=1;dwLog(`📮 ${now.length} Paket(e) aufgegeben.`);msg('📮 Aufgegeben – Ankunft zum Tageswechsel (der Zoll schaut manchmal rein).')},pend.length?'':'Bestellungen kommen über den Laptop (Darknet-Verkauf).'],['Schließen',true,closeMenu]]}}
+
 // ---------------- Ansatz (Kochablauf) ----------------
 function startCook(id){
   if(S.cook||!canMake(id))return;
