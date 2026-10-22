@@ -1061,6 +1061,7 @@ const HIGH={
 const hIcon=k=>k==='pack'?'🌿':DRUGS[k].ic;
 function consume(k){
   if(haveOf(k)<1||dead)return;
+  if(isClient()){msg('Eigenkonsum geht nur beim Host (Warenbestand liegt dort).');return}
   const q=k==='pack'?70:S.drugs[k].q;takeGoods(k,1);
   if(S.high&&Math.random()<.45){const d=Math.round(rnd(30,60));msg('🚑 Mischkonsum – Überdosis! −'+d+' HP');hurt(d,DEATH.od);if(dead)return}
   if(q<50&&Math.random()<.7){const d=Math.round(rnd(8,20));msg('🤢 Verunreinigte Ware – dir wird übel. −'+d+' HP');hurt(d,'Verunreinigte Ware – Kreislaufversagen.');if(dead)return}
@@ -1131,7 +1132,7 @@ function postMenu(){
       const now=S.dw.parcels.filter(p=>p.st==='pending'),c=now.length*POSTAGE;
       if(!now.length){msg('Keine Pakete mehr zum Aufgeben – Bestellungen wurden storniert.');return}
       if(S.cash<c){msg('Nicht genug Bargeld für das Porto ('+money(c)+').');return}
-      S.cash-=c;now.forEach(p=>{p.st='shipped';p.ship=S.day});S.flags.posted=1;dwLog(`📮 ${now.length} Paket(e) aufgegeben.`);msg('📮 Aufgegeben – Ankunft zum Tageswechsel (der Zoll schaut manchmal rein).')},pend.length?'':'Bestellungen kommen über den Laptop (Darknet-Verkauf).'],['Schließen',true,closeMenu]]}}
+      S.cash-=c;now.forEach(p=>{p.st='shipped';p.ship=S.day});S.flags.posted=1;dwLog(`📮 ${now.length} Paket(e) aufgegeben.`);msg('📮 Aufgegeben – Ankunft zum Tageswechsel (der Zoll schaut manchmal rein).')},pend.length?'':'Bestellungen kommen über den Laptop (Darknet-Verkauf).','dwship'],['Schließen',true,closeMenu]]}}
 
 // ---------------- Ansatz (Kochablauf) ----------------
 function startCook(id){
@@ -1172,7 +1173,7 @@ function togglePSA(){S.psa=!S.psa;if(S.psa){netFlag('psa');S.flags.psa=1}$('psa'
 function labInteract(id){
   if(id==='locker')togglePSA();
   else if(id==='vent'){S.vent=S.vent?0:1;msg(S.vent?'🌬 Abzug-Lüftung läuft.':'Lüftung aus.')}
-  else if(id==='aid')openMenuX(aidMenu);
+  else if(id==='aid'){if(isClient())msg('Erste Hilfe: nur beim Host verfügbar.');else openMenuX(aidMenu)}
   else if(id==='shop')openMenuX(shopMenu);
   else if(id==='recipes')openMenuX(boardMenu);
   else if(id==='terminal')openLap();
@@ -1397,8 +1398,8 @@ function camPlace(time){
   const ey=1.7+Math.sin(bob)*.035;
   if(thirdP){const cp=Math.cos(pitch),fx=-Math.sin(yaw)*cp,fy=Math.sin(pitch);const fz=-Math.cos(yaw)*cp;
     camera.position.set(player.x-fx*3.2,Math.max(.5,ey-fy*3.2+.35),player.z-fz*3.2)}
-  else camera.position.set(player.x,ey,player.z);
-  camera.rotation.set(pitch,yaw,0);
+  else camera.position.set(player.x+(Math.random()-.5)*highShake,ey+(Math.random()-.5)*highShake,player.z+(Math.random()-.5)*highShake);
+  camera.rotation.set(pitch,yaw,thirdP?0:highRoll);
   if(!selfAv)rebuildSelf();
   selfAv.visible=thirdP;
   if(thirdP){selfAv.position.set(player.x,0,player.z);selfAv.rotation.y=yaw+Math.PI;selfAv.userData.setPsa(S.psa);
@@ -1641,6 +1642,7 @@ function applyPost(pid,ids,integ){
   if(sum>0)msg(`📮 Paket angenommen! +${sum.toFixed(3)} SCN`+(integ<80?' (Abzug wegen Transportschaden)':''));
   else if(lost)msg('📮 Das Paket ist beim Transport zerstört worden – kein Lohn.')}
 function postHandIn(){
+  if(!MY.carry.length&&S.dw.parcels.some(p=>p.st==='pending')){openMenuX(postMenu);return}
   if(!MY.carry.length){msg('Postschalter: „Sie haben kein Paket dabei.“');return}
   const ids=MY.carry.slice(),integ=Math.round(MY.integ);MY.carry=[];
   if(isClient())netSend({t:'post',ids,integ});else applyPost(0,ids,integ)}
@@ -1760,7 +1762,7 @@ const NET={role:'solo',peer:null,conns:[],hostConn:null,code:'',name:'Spieler',i
 const isClient=()=>NET.role==='client',isHost=()=>NET.role==='host';
 const PCOL=[0xe74c3c,0x3498db,0x2ecc71,0xf1c40f,0x9b59b6,0xe67e22,0x1abc9c,0xec407a];
 const PEER_OPTS=(()=>{try{const q=new URLSearchParams(location.search).get('ps');if(!q)return{};const [h,pt]=q.split(':');return{host:h,port:+pt||9000,path:'/',secure:false}}catch(e){return{}}})();
-const MENUS={rickMenu,shopMenu,boardMenu,shipMenu};
+const MENUS={rickMenu,shopMenu,boardMenu,shipMenu,postMenu};
 const cleanName=n=>String(n||'').replace(/[^\wäöüÄÖÜß .\-]/g,'').trim().slice(0,14);
 const angDiff=(b,a)=>((b-a+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI;
 
@@ -1820,11 +1822,11 @@ function netHud(){
 
 // ---------------- Snapshots (Host -> Mitspieler) ----------------
 function snapData(){
-  const s=Object.assign({},S);delete s.tool;delete s.water;delete s.psa;delete s.potsState;
+  const s=Object.assign({},S);delete s.tool;delete s.water;delete s.psa;delete s.potsState;for(const k of['hp','high','crash','dead','deathTxt','vent'])delete s[k];
   return{t:'snap',S:s,pots:pots.map(p=>[p.owned?1:0,p.stage,+p.t.toFixed(2),p.wet?1:0]),
     w:workers.map(w=>[+w.m.position.x.toFixed(2),+w.m.position.z.toFixed(2),+w.m.rotation.y.toFixed(2)])}}
 function applySnap(d){
-  const keep={tool:S.tool,water:S.water,psa:S.psa};
+  const keep={tool:S.tool,water:S.water,psa:S.psa,hp:S.hp,high:S.high,crash:S.crash,dead:S.dead,deathTxt:S.deathTxt,vent:S.vent};
   Object.assign(S,d.S,keep);
   d.pots.forEach((a,i)=>{const p=pots[i];if(!p)return;p.owned=!!a[0];p.stage=a[1];p.t=a[2];p.wet=!!a[3]});
   while(workers.length<S.workers)spawnWorker();
@@ -1883,7 +1885,7 @@ function hostData(conn,d){
     case 'act':if(['plant','water','harvest','trim','pack'].includes(d.k)&&(d.n===undefined||Number.isInteger(d.n)))asRemote(conn,()=>doAct(d.k,d.n));break;
     case 'menu':if(MENUS[d.id]&&typeof d.a==='string')asRemote(conn,()=>{const it=MENUS[d.id]().items.find(x=>x[4]===d.a);if(it&&it[1])it[2]()});break;
     case 'lap':if(typeof d.a==='string'&&d.a!=='tab')asRemote(conn,()=>{if(d.a==='welcome')lapWelcome();else lapAct(d.a,d.k)});break;
-    case 'cookstep':asRemote(conn,()=>cookStepDone(+d.score||0,d.fail?String(d.fail).slice(0,80):null,d.cid,d.i,!!d.psa));break;
+    case 'cookstep':asRemote(conn,()=>cookStepDone(+d.score||0,d.fail?String(d.fail).slice(0,80):null,d.cid,d.i,!!d.psa,String(d.hz||'').slice(0,8)));break;
     case 'flag':if(['talked','psa','inlab'].includes(d.k))S.flags[d.k]=1;break;
     case 'ssell':if(typeof d.k==='string'&&Number.isInteger(d.n)&&isFinite(d.v))asRemote(conn,()=>applyStreetSale(d.k,d.n,+d.v));break;
     case 'arrest':asRemote(conn,()=>applyArrest(pl.id,Array.isArray(d.carry)?d.carry.filter(Number.isInteger):[]));break;
@@ -1914,6 +1916,7 @@ function clientData(d){
     case 'snap':applySnap(d);if(!started&&NET.role==='client'){startGameUI();netHud()}break;
     case 'players':syncAvatars(d.list,NET.id);break;
     case 'msg':_msg(String(d.text));break;
+    case 'hurt':hurt(clamp(+d.dmg||0,0,100),d.why?String(d.why).slice(0,120):undefined);break;
     case 'closeMenu':if(menuOpen)closeMenu();break;
     case 'carry':MY.carry=MY.carry.concat(Array.isArray(d.ids)?d.ids.filter(Number.isInteger):[]);MY.integ=100;break;
     case 'chat':addChat(String(d.from),String(d.text));break;
@@ -2005,6 +2008,7 @@ function frame(){
     else if(r.type==='labdoor')pr='🔒 Stahltür – abgeschlossen (Onkel Rick hat den Schlüssel)';
     else if(r.type==='st')pr=stPrompt(r.id);
     else if(r.type==='yarddoor')pr='🔒 Hintertür – erst ein Paket an Onkel Rick verkaufen';
+    else if(r.type==='post'&&!MY.carry.length&&S.dw.parcels.some(p=>p.st==='pending'))pr='[E] Postschalter – '+S.dw.parcels.filter(p=>p.st==='pending').length+' Darknet-Paket(e) aufgeben';
     else if(r.type==='post')pr=MY.carry.length?'[E] Pakete am Postschalter abgeben ('+MY.carry.length+')':'[E] Postschalter (keine Pakete dabei)';
     else if(r.type==='barrel')pr='[E] Gießkanne auffüllen';
     else if(r.type==='rack')pr='[E] Blüten trimmen  ('+S.raw+' roh)';
