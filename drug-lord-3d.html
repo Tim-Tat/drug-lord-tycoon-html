@@ -1208,10 +1208,7 @@ const OBJ=[
  ['Verpacke 3 getrimmte Blüten am Tisch (E)',()=>S.flags.packed],
  ['Verkaufe das Paket an Onkel Rick',()=>S.flags.sold],
  ['Stelle einen Arbeiter bei Rick ein',()=>S.workers>0],
-  if(!S.lab){
-    const miss=[];if(!S.flags.sold)miss.push('Paket verkaufen');if(S.workers<1)miss.push('Arbeiter einstellen');if(S.level<3)miss.push('Level 3');if(S.cash<LAB_COST)miss.push(money(LAB_COST));
-    b.push([`🔑 Labor-Schlüssel kaufen – ${money(LAB_COST)}`,!miss.length,()=>{S.cash-=LAB_COST;S.lab=1;msg('🔑 Onkel Rick gibt dir den Schlüssel – Stahltür aufgeschlossen!')},miss.length?'Fehlt noch: '+miss.join(' · '):'2 Räume + Laptop mit Darknet','lab']);
-  }
+ ['Rick: Hinterraum-Labor freischalten (ab Level 3)',()=>S.lab],
  ['Betritt das Labor – Stahltür in der Frontwand',()=>S.flags.inlab],
  ['Zieh Schutzausrüstung an – Spinde links (E)',()=>S.flags.psa],
  ['Laptop: minen & im Darknet eine Anleitung kaufen (E)',()=>S.flags.guide],
@@ -1912,7 +1909,10 @@ function rickMenu(){
   b.push([`Arbeiter einstellen (${money(hireCost())}) – ${money(SALARY)}/Tag`,S.workers<6&&S.cash>=hireCost(),()=>{S.cash-=hireCost();S.workers++;spawnWorker()},undefined,'hire']);
   b.push([`Wachstumslampen Lvl ${S.lights}/5 (${money(lightCost())})`,S.lights<5&&S.cash>=lightCost(),()=>{S.cash-=lightCost();S.lights++},undefined,'light']);
   b.push([`Größere Gießkanne ${S.waterCap}→${S.waterCap+4} (${money(canCost())})`,S.canUp<3&&S.cash>=canCost(),()=>{S.cash-=canCost();S.canUp++;S.waterCap+=4;S.water=S.waterCap},undefined,'can']);
-  if(!S.lab&&S.flags.sold&&S.workers>0)b.push([`🔬 Hinterraum-Labor freischalten – ${money(LAB_COST)}`,S.level>=3&&S.cash>=LAB_COST,()=>{S.cash-=LAB_COST;S.lab=1;msg('🔬 Labor freigeschaltet – Stahltür an der rechten Wand!')},'ab Level 3 · 2 Räume + Laptop mit Darknet','lab']);
+  if(!S.lab){
+    const miss=[];if(!S.flags.sold)miss.push('Paket verkaufen');if(S.workers<1)miss.push('Arbeiter einstellen');if(S.level<3)miss.push('Level 3');if(S.cash<LAB_COST)miss.push(money(LAB_COST));
+    b.push([`🔑 Labor-Schlüssel kaufen – ${money(LAB_COST)}`,!miss.length,()=>{S.cash-=LAB_COST;S.lab=1;msg('🔑 Onkel Rick gibt dir den Schlüssel – Stahltür aufgeschlossen!')},miss.length?'Fehlt noch: '+miss.join(' · '):'2 Räume + Laptop mit Darknet','lab']);
+  }
   if(S.workers>0)b.push(['Arbeiter entlassen',true,()=>{const w=workers.pop();if(w.job&&w.job.p)w.job.p.claim=null;scene.remove(w.m);S.workers--},undefined,'fire']);
   b.push(['Schließen',true,closeMenu]);
   return{line:S.lab?'Das Labor läuft? Dann bring mir die Ware, Kleiner.':(S.flags.sold&&!S.flags.streetsold?'Die Hintertür ist offen. Auf der Straße zahlen sie mehr – aber pass auf die Polizei auf!':lines[Math.floor((S.day+S.level)%lines.length)]),items:b}}

@@ -1,5 +1,8 @@
 # Drug Lord Tycoon – Fan-Nachbau (HTML)
 
+> **Version 1 (Branch `main-1v`)** – erster kompletter Stand: 3D-Optik, Multiplayer (Co-op/P2P), Charakter-Editor, Straße/Lieferwagen/Straßenverkauf, Darknet-Verkauf mit Packstation, Gesundheit/Tod, mehrstufige Labor-Rezepte und der Labor-Schlüssel bei Onkel Rick. Per Smoke-Test geprüft: Pflanzen → Verkauf → Labor → Kochen (alle 4 Produkte) → Laptop → Straße/Kunden → Auto → Post → Tod/Respawn → Speichern/Laden.
+
+
 Zwei spielbare Browser-Versionen, inspiriert von *Drug Lord Tycoon* (inoffizieller Fan-Nachbau, **Satire mit fiktiver Spielmechanik**).
 
 - `drug-lord-3d.html` – First-Person-3D-Gewächshaus (three.js, Low-Poly): pflanzen, gießen, ernten, trimmen, verpacken, verkaufen, Arbeiter einstellen – plus **angebautes Labor (2 Räume)**.
