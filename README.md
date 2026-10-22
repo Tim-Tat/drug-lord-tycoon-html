@@ -21,6 +21,14 @@ Freischalten: Tutorial-Ziele abschließen (Paket verkaufen, Arbeiter einstellen)
 - **Ausrüstung:** Glasware (mehr Ausbeute) und Präzisions-Ausrüstung (größere Zielzonen) am Laptop.
 - Verkauf der Produkte bei Onkel Rick.
 
+## Straßenverkauf & Aufträge (3D-Version)
+
+Sobald du das erste Paket an Onkel Rick verkauft hast, öffnet sich die **Seitentür in der rechten Gewächshauswand** – dahinter liegt eine Straße mit Gehweg, Kiosk, Späti und einem Lieferwagen, der „definitiv kein FBI“ ist.
+
+- **Laufkundschaft:** Passanten schlendern über den Gehweg und wollen Pakete oder deine Labor-Produkte (Symbol über dem Kopf). Straßenpreis liegt über dem von Onkel Rick. Mit *Preis hochhandeln* gibt es +25 %, aber 40 % Risiko, dass der Kunde beleidigt abhaut.
+- **Aufträge:** Auftraggeber (gelbe Jacke, 📦) warten an festen Plätzen. Jeder Auftrag nennt Menge, bei Labor-Produkten eine **Mindestqualität**, eine **Frist in Tagen** und eine Prämie (meist deutlich über Marktpreis). Aktive Aufträge stehen rechts im HUD (grün = lieferbar, rot = läuft heute ab). Abgelaufene Aufträge verfallen, neue kommen jeden Tag nach. Aufträge werden mit dem Spielstand gespeichert.
+- Aufträge für Labor-Produkte erscheinen erst, wenn du die Anleitung besitzt und das nötige Level hast.
+
 ## Wichtig / Rechtliches
 
 Alles im Labor ist **frei erfunden**: Zutaten (z. B. „Grundstoff A“), Abläufe, Mengen, Zielzonen und Werte sind reine Spielmechanik und haben **keinen Bezug zu echter Herstellung**. Es gibt keine echten Anleitungen. Herstellung, Besitz und Handel mit Drogen sind in der Realität strafbar und gefährlich – das Spiel dient nur der Unterhaltung (ab 18). Im Spiel erscheint beim ersten Laborbesuch ein entsprechender Hinweis.

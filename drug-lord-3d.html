@@ -44,6 +44,8 @@ button:disabled{opacity:.4;cursor:not-allowed}
 #psa{position:fixed;inset:0;pointer-events:none;display:none;z-index:2;background:radial-gradient(ellipse at center,#0000 52%,#05122899 100%);box-shadow:inset 0 0 0 10px #0a1a3a66}
 #cook{position:fixed;top:64px;left:12px;width:310px;background:#000a;border:1px solid #4aa3a3;padding:8px 12px;font-size:14px;line-height:1.55;display:none}
 #cook b.t{color:#7ff;font-size:16px}#cook .done{color:#7f7}#cook .cur{color:#ff6;font-weight:700}#cook .todo{opacity:.55}
+#orders{position:fixed;top:132px;right:14px;width:310px;background:#000a;border:1px solid #d9a63a;padding:8px 12px;font-size:14px;line-height:1.55;display:none;text-align:left}
+#orders b.t{color:#ffd23a;font-size:16px}#orders .done{color:#7f7}#orders .cur{color:#ff8a6a;font-weight:700}
 #mini{position:fixed;inset:0;background:#000c;display:none;place-items:center;z-index:9}
 #mini .mp{width:min(680px,94vw);background:#10151cf2;border:2px solid #4aa3a3;padding:16px 18px;text-align:center}
 #mini h2{margin:0 0 4px;color:#7ff;font-size:26px}#mini p{margin:4px 0 10px;color:#ccd;font-size:15px;line-height:1.4}
@@ -85,6 +87,7 @@ button:disabled{opacity:.4;cursor:not-allowed}
 <div id="flash"></div>
 <div id="psa"></div>
 <div id="cook" class="sh"></div>
+<div id="orders" class="sh"></div>
 <div id="mini"><div class="mp"><h2 id="mt"></h2><p id="mi"></p><canvas id="mc" width="640" height="260"></canvas><div id="mr"></div><div id="mb"></div></div></div>
 <div id="lap"><div class="win"><div class="bar"><span id="lapUrl">🧅 Onion-Browser</span><button id="lapX">✕ (Esc)</button></div><div id="lapTabs"></div><div id="lapBody"></div>
 <div class="foot">⚠ Satire/Spiel: Alle „Anleitungen“, Stoffe und Werte hier sind frei erfunden – keine echte Chemie, keine Anleitung zu irgendetwas. SchwarzCoin (SCN) gibt es nicht.</div></div></div>
@@ -145,7 +148,9 @@ mesh(new T.PlaneGeometry(HX*2,HZ*2),new T.MeshStandardMaterial({map:floorTex,rou
 const brickTex=canvasTex(256,128,(g,w,h)=>{g.fillStyle='#d8c9b0';g.fillRect(0,0,w,h);for(let r=0;r<8;r++)for(let c=0;c<5;c++){const x=c*52+(r%2?-26:0),y=r*16;const v=rnd(-12,12);g.fillStyle=`rgb(${128+v|0},${72+v|0},${54+v|0})`;g.fillRect(x+2,y+2,48,12)}},6,2);
 const brickMat=new T.MeshStandardMaterial({map:brickTex,roughness:.9,flatShading:true});
 const wood=M(0x5a3d26),woodDark=M(0x3b2718),woodLight=M(0x8a6842);
-box(.4,HH,HZ*2+.4,brickMat,HX+.2,HH/2,0);                       // rechte Ziegelwand
+// rechte Ziegelwand mit Seitentür-Öffnung (z = -1.5 … 0.7) zur Straße
+box(.4,HH,4.7,brickMat,HX+.2,HH/2,-3.85);box(.4,HH,5.5,brickMat,HX+.2,HH/2,3.45);
+box(.4,HH-2.6,2.2,brickMat,HX+.2,2.6+(HH-2.6)/2,-.4);
 for(const sx of[-1,1])box(7.3,HH,.4,brickMat,sx*4.75,HH/2,HZ+.2);   // vordere Ziegelwand (Türöffnung in der Mitte -> Labor)
 box(2.2,HH-2.6,.4,brickMat,0,2.6+(HH-2.6)/2,HZ+.2);                 // Sturz über der Labor-Tür
 box(2.2,.04,.5,M(0x8a9098),0,.02,HZ+.2,scene,false,true);           // Türschwelle
@@ -179,7 +184,7 @@ box(.02,1,.02,M(0x222),0,.8,0,hang);
 mesh(new T.PlaneGeometry(700,700),M(0x62824f,{flatShading:false}),0,-.06,0,scene,false,true).rotation.x=-Math.PI/2;
 const treeMats=[M(0x3f7a3c),M(0x2f6a35),M(0x4d8a40)];
 for(let i=0;i<70;i++){
-  let x,z;do{x=rnd(-60,60);z=rnd(-60,60)}while((Math.abs(x)<HX+3&&Math.abs(z)<HZ+3)||(Math.abs(x)<HX+3&&z>0&&z<34));
+  let x,z;do{x=rnd(-60,60);z=rnd(-60,60)}while((Math.abs(x)<HX+3&&Math.abs(z)<HZ+3)||(Math.abs(x)<HX+3&&z>0&&z<34)||(x>HX-1&&x<HX+30&&Math.abs(z)<30));
   const t=new T.Group();t.position.set(x,0,z);
   mesh(new T.CylinderGeometry(.18,.28,2.2,5),M(0x5b4128),0,1.1,0,t);
   const s=rnd(1.4,2.6);for(let k=0;k<3;k++){const b=mesh(new T.IcosahedronGeometry(s*(1-k*.2),0),treeMats[(Math.random()*3)|0],rnd(-.4,.4),2.8+k*s*.6,rnd(-.4,.4),t);b.rotation.set(rnd(0,3),rnd(0,3),0)}
@@ -304,7 +309,7 @@ const rickHit=mesh(new T.CylinderGeometry(.7,.7,2,8),hitMat,rick.position.x,1,ri
 const SEED=10,DAYLEN=90,SALARY=50;
 let S={cash:500,xp:0,level:1,day:1,dayT:0,raw:0,trim:0,pack:0,tool:0,water:8,waterCap:8,lights:0,potsOwned:3,workers:0,canUp:0,flags:{},price:55,priceT:0,potsState:[],
   lab:0,psa:false,reag:{},drugs:{},recipes:{},up:{yield:0,ease:0},cook:null,dm:{},batches:0,coins:0,cp:40,cpT:4,evT:60,
-  news:'📰 SchwarzCoin (SCN): ein Kurs, so stabil wie Onkel Ricks Laune.',rig:{gpu:0,fan:0},scams:0};
+  news:'📰 SchwarzCoin (SCN): ein Kurs, so stabil wie Onkel Ricks Laune.',rig:{gpu:0,fan:0},scams:0,orders:[],oid:1,streetSales:0,ordersDone:0};
 function save(){try{S.potsState=pots.map(p=>({o:p.owned,s:p.stage,t:p.t,w:p.wet}));localStorage.setItem('dlt3d',JSON.stringify(S))}catch(e){}}
 function load(){try{const s=JSON.parse(localStorage.getItem('dlt3d'));if(s&&s.cash!==undefined)S=Object.assign(S,s)}catch(e){}}
 load();
@@ -346,6 +351,7 @@ const OBJ=[
  ['Verpacke 3 getrimmte Blüten am Tisch (E)',()=>S.flags.packed],
  ['Verkaufe das Paket an Onkel Rick',()=>S.flags.sold],
  ['Stelle einen Arbeiter bei Rick ein',()=>S.workers>0],
+ ['Seitentür rechts: verkaufe auf der Straße oder liefere einen Auftrag (E)',()=>S.flags.streetSale||S.flags.streetOrder||S.lab],
  ['Rick: Hinterraum-Labor freischalten (ab Level 3)',()=>S.lab],
  ['Betritt das Labor – Stahltür in der Frontwand',()=>S.flags.inlab],
  ['Zieh Schutzausrüstung an – Spinde links (E)',()=>S.flags.psa],
@@ -403,6 +409,7 @@ function aim(){
   const targets=[rickHit,stations.rack.hit,stations.table.hit,stations.barrel.hit];
   pots.forEach(p=>{if(p.owned)targets.push(p.hit)});
   if(!S.lab)targets.push(labDoorHit);else targets.push(...labTargets);
+  if(!streetOpen())targets.push(sideDoorHit);else targets.push(...custHits);
   ray.setFromCamera({x:0,y:0},camera);
   const h=ray.intersectObjects(targets,false);
   aimed=h.length?h[0].object.userData.ref:null;
@@ -413,6 +420,8 @@ function interact(viaE){
   if(r.type==='rick'){if(viaE||true)openMenu();return}
   if(r.type==='labdoor'){msg('Die Stahltür ist abgeschlossen – Onkel Rick hat den Schlüssel.');return}
   if(r.type==='st'){labInteract(r.id);return}
+  if(r.type==='sidedoor'){msg('Die Seitentür ist abgeschlossen – verkauf erst mal ein Paket an Onkel Rick.');return}
+  if(r.type==='cust'){openCust(r.c);return}
   if(r.type==='barrel'){S.water=S.waterCap;msg('Gießkanne aufgefüllt 💧');return}
   if(r.type==='rack'){if(!A.trim())msg('Keine rohen Blüten – erst ernten!');return}
   if(r.type==='table'){if(!A.pack())msg('Du brauchst 3 getrimmte Blüten.');return}
@@ -699,6 +708,39 @@ const labDoorHit=mesh(new T.BoxGeometry(2.4,2.6,1.4),hitMat,0,1.3,HZ+.2,scene,fa
 {const lb=labelSprite('🔬 Labor',2.2);lb.position.set(0,2.95,HZ-.4);scene.add(lb)}
 solid(1.75,2.35,-7.9,-7.2);   // Mining-Rig
 
+// ---------------- Straße vor der Seitentür (Straßenverkauf) ----------------
+const SDZ=-.4;   // Mitte der Seitentür (z)
+{const walk=M(0xa8a499),curb=M(0xcfcbc0),asph=M(0x33363b,{roughness:1});
+ box(3.3,.06,34,walk,HX+2.05,.03,0,scene,false,true);                       // Gehweg
+ box(.18,.12,34,curb,HX+3.78,.06,0,scene,false,true);                        // Bordstein
+ box(6,.04,34,asph,HX+6.9,.02,0,scene,false,true);                           // Fahrbahn
+ for(let z=-15;z<=15;z+=3)box(.16,.045,1.5,M(0xe8e2c0),HX+6.9,.045,z,scene,false,false);   // Mittelstreifen
+ box(3.3,.06,34,walk,HX+11.55,.03,0,scene,false,true);                       // Gehweg gegenüber
+ for(const z of[-9,8]){const l=new T.Group();l.position.set(HX+3.45,0,z);scene.add(l);               // Straßenlaternen
+   mesh(new T.CylinderGeometry(.06,.09,4.2,6),M(0x2b2e33),0,2.1,0,l);box(1.1,.08,.12,M(0x2b2e33),-.5,4.2,0,l);
+   mesh(new T.BoxGeometry(.45,.1,.3),new T.MeshBasicMaterial({color:0xfff0c0}),-1.0,4.12,0,l,false,false)}
+ const car=(x,z,col,len=4,h=.55)=>{const g=new T.Group();g.position.set(x,0,z);scene.add(g);
+   box(1.8,h,len,M(col),0,.65,0,g);box(1.6,.5,len*.5,M(col),0,.65+h/2+.25,-len*.05,g);
+   box(1.62,.34,len*.46,M(0x9fc2dd,{roughness:.2}),0,.65+h/2+.27,-len*.05,g);
+   for(const sx of[-.9,.9])for(const sz of[-len*.3,len*.3])mesh(new T.CylinderGeometry(.32,.32,.22,8),M(0x15161a),sx,.32,sz,g).rotation.z=Math.PI/2;
+   return g};
+ car(HX+8.3,-9,0xb23a2f);car(HX+8.3,3.5,0x2f5fa8);
+ const van=car(HX+8.3,11,0x23262b,4.8,1.2);{const lb=labelSprite('Definitiv kein FBI',2.6,true);lb.position.set(0,2.9,0);van.add(lb)}
+ [[-10,7,5.5,'KIOSK','#b33a2a'],[0,8,6.5,'SPÄTI 24','#1c5f8a'],[10,7,5,'DÖNERBUDE','#8a6a1c']].forEach(([z,w,h,t,bg])=>{
+   box(6,h,w,M(0xd6cdb8),HX+17.2,h/2,z,scene,true,true);
+   box(.2,1.9,w-1.2,M(0x1d2733),HX+14.1,1.6,z,scene,false,false);
+   labSign(t,w-1.5,.9,bg,'#fff',HX+13.98,3.2,z,-Math.PI/2,scene)});
+ for(const z of[-13.6,13.6]){box(5.9,.9,.12,hazardMat(6,1),HX+3.35,.5,z,scene,false,false);                      // Absperrung am Straßenende
+   for(const x of[HX+.5,HX+6.2])box(.1,1.1,.1,M(0x2b2e33),x,.55,z,scene,false,false)}}
+// Seitentür (schiebt sich in die Wand, sobald Rick das erste Mal Ware abgenommen hat)
+const sideDoor=new T.Group();sideDoor.position.set(HX+.2,0,SDZ);scene.add(sideDoor);
+box(.3,2.55,2.12,M(0x5d6670,{roughness:.5}),0,1.275,0,sideDoor,true,true);
+box(.32,.22,2.14,hazardMat(5,1),0,.36,0,sideDoor,false,false);
+box(.32,.4,.9,M(0x1a2a36),0,1.85,0,sideDoor,false,false);
+for(const s of[-1,1])box(.5,2.65,.14,LM.steel,HX+.2,1.325,SDZ+s*1.17,scene,true,true);
+const sideDoorHit=mesh(new T.BoxGeometry(1.4,2.6,2.6),hitMat,HX+.2,1.3,SDZ,scene,false,false);sideDoorHit.userData.ref={type:'sidedoor'};
+{const lb=labelSprite('🚪 Straße',2.2,true);lb.position.set(HX-.6,2.95,SDZ);scene.add(lb)}
+
 // Marker (zeigt die nächste Station)
 const labMarker=emojiSprite('⬇️',.7);labMarker.visible=false;LS.add(labMarker);
 LS.updateMatrixWorld(true);
@@ -708,8 +750,10 @@ const GHR=[-HX+.5,HX-.5,-HZ+.5,HZ-.5];
 const DOORR=[-.85,.85,HZ-.6,LZ0+.7];
 const LABRW=[[-5.65,5.65,-7.6,-.55],[-5.65,5.65,-17.6,-8.8],[-.85,.85,-8.8,-7.6]].map(([a,b,c,d])=>[-b,-a,LZ0-d,LZ0-c]);
 const inRect=(r,x,z)=>x>=r[0]&&x<=r[1]&&z>=r[2]&&z<=r[3];
-const walkable=(x,z)=>inRect(GHR,x,z)||(S.lab&&(inRect(DOORR,x,z)||LABRW.some(r=>inRect(r,x,z))));
-const inLabNow=()=>S.lab&&player.z>LZ0+.2;
+const DOORR2=[HX-.7,HX+.9,SDZ-1,SDZ+1],STREETR=[HX+.4,HX+6.3,-13,13];
+const streetOpen=()=>!!S.flags.sold;
+const walkable=(x,z)=>inRect(GHR,x,z)||(S.lab&&(inRect(DOORR,x,z)||LABRW.some(r=>inRect(r,x,z))))||(streetOpen()&&(inRect(DOORR2,x,z)||inRect(STREETR,x,z)));
+const inLabNow=()=>S.lab&&player.z>LZ0+.2&&player.x<HX;
 function walkCollide(ox,oz){
   let nx=player.x,nz=player.z;
   if(!walkable(nx,nz)){if(walkable(nx,oz))nz=oz;else if(walkable(ox,nz))nx=ox;else{nx=ox;nz=oz}}
@@ -910,6 +954,126 @@ function lapAct(a,k){
 $('lapBody').addEventListener('click',e=>{const b=e.target.closest('button');if(b&&!b.disabled)lapAct(b.dataset.a,b.dataset.k)});
 $('lapTabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b)lapAct(b.dataset.a,b.dataset.k)});
 $('lapX').onclick=closeLap;
+
+// ======================================================================
+//  STRASSE: Straßenverkauf & Aufträge  (reine Spielmechanik, Figuren frei erfunden)
+// ======================================================================
+const NAMES=['Dicker Dieter','Studentin Svenja','Taxi-Torsten','Bankier Bernd','Oma Gisela','DJ Dennis','Ex-Lehrer Lars','Hausmeister Horst','Yoga-Yvonne','Praktikant Paul','Nachbar Norbert','Kioskfrau Kerstin'];
+const WALK_TALK=['Psst. Du da. Ich zahl bar.','Hab gehört, hier gibt’s was Ordentliches.','Mein Cousin meinte, du bist der Richtige.','Schnell, bevor meine Frau vom Einkaufen zurück ist.','Ich bin nur zufällig hier. Rein zufällig.'];
+const ORDER_TALK=['Ich brauch das bis zum Wochenende. Für … Zwecke.','Ich hab Gäste. Viele Gäste.','Für ein Experiment. Ein rein wissenschaftliches.','Der Strickclub trifft sich bald. Frag nicht.','Mein Chef darf davon nichts erfahren.'];
+const SHIRTS=[0xc8322a,0x3a6fb5,0x3f8a4f,0xd0a53a,0x7a4ab0,0x555a66,0xd9784a],SKINS=[0xc9a27c,0xe0b894,0x8d5a3b,0xf1cfae,0x6b4430],HAIRS=[0x2a1c12,0x6b4430,0xb08a4a,0x1a1a1a,0xc8c8c8];
+const SPOTS=[[HX+2.4,-8],[HX+2.4,4.5],[HX+2.4,9.5]];   // feste Plätze der Auftraggeber
+const rpick=a=>a[Math.floor(Math.random()*a.length)];
+const goodsName=k=>k==='pack'?'🌿 Paket(e)':DRUGS[k].ic+' '+DRUGS[k].n;
+const haveOf=k=>k==='pack'?S.pack:(S.drugs[k]?S.drugs[k].n:0);
+const unitOf=k=>k==='pack'?S.price:unitPrice(k);
+function takeGoods(k,n){if(k==='pack')S.pack-=n;else{S.drugs[k].n-=n;if(S.drugs[k].n<=0)S.drugs[k]={n:0,q:0}}}
+const canDeliver=o=>haveOf(o.k)>=o.n&&(!o.minQ||(S.drugs[o.k]&&S.drugs[o.k].q>=o.minQ));
+const missingTxt=o=>haveOf(o.k)<o.n?'fehlt: '+(o.n-haveOf(o.k))+'× '+goodsName(o.k):'Qualität zu niedrig ('+S.drugs[o.k].q+' % < '+o.minQ+' %)';
+function rollWant(){
+  const pool=[];if(S.pack>0)pool.push('pack','pack');
+  for(const id in DRUGS)if(S.drugs[id]&&S.drugs[id].n>0)pool.push(id);
+  const k=pool.length?rpick(pool):'pack';
+  return {k,n:1+Math.floor(Math.random()*(k==='pack'?3:2))}}
+function faceTo(m,x,z,k){let d=Math.atan2(x-m.position.x,z-m.position.z)-m.rotation.y;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;m.rotation.y+=d*k}
+function makeCustomer(shirt,skin,hair){
+  const g=new T.Group(),legs=[],arms=[],sm=M(shirt),pants=M(rpick([0x3a4a6a,0x4a4a4a,0x6a5a3a,0x2a2f3a]));
+  for(const s of[-1,1]){const l=new T.Group();l.position.set(s*.12,.55,0);box(.17,.55,.2,pants,0,-.27,0,l);g.add(l);legs.push(l)}
+  box(.46,.62,.28,sm,0,.9,0,g);
+  for(const s of[-1,1]){const a=new T.Group();a.position.set(s*.31,1.17,0);box(.13,.5,.15,sm,0,-.25,0,a);g.add(a);arms.push(a)}
+  mesh(new T.SphereGeometry(.2,7,5),M(skin),0,1.45,0,g);
+  mesh(new T.SphereGeometry(.21,7,5),M(hair),0,1.6,-.06,g).scale.set(1,.6,1);
+  for(const s of[-1,1])box(.05,.04,.04,M(0x222222),s*.07,1.47,.18,g);
+  g.userData={legs,arms};return g}
+
+const custs=[],custHits=[];let menuCust=null,streetT=2;
+function spawnCust(kind,o){
+  const m=makeCustomer(kind==='order'?0xe3b91c:rpick(SHIRTS),rpick(SKINS),rpick(HAIRS));
+  const c={m,kind,order:o||null,leaving:false,wait:rnd(0,2),life:rnd(70,120),ph:Math.random()*6,mult:rnd(1.05,1.35),haggled:false,tx:0,tz:0};
+  if(kind==='order'){const sp=SPOTS[o.spot];m.position.set(sp[0],.06,sp[1]);c.name=o.name;c.talk=o.talk}
+  else{m.position.set(HX+rnd(1.2,3),.06,Math.random()<.5?-14.5:14.5);c.name=rpick(NAMES);c.talk=rpick(WALK_TALK);c.want=rollWant()}
+  c.tx=m.position.x;c.tz=m.position.z;m.rotation.y=Math.PI/2;
+  scene.add(m);
+  c.hit=mesh(new T.CylinderGeometry(.6,.6,2.1,8),hitMat,0,1.05,0,m,false,false);c.hit.userData.ref={type:'cust',c};custHits.push(c.hit);
+  const lb=labelSprite(c.name,1.9,true);lb.position.set(0,2.15,0);m.add(lb);
+  const ic=emojiSprite(kind==='order'?'📦':(c.want.k==='pack'?'🌿':DRUGS[c.want.k].ic),.5);ic.material.depthTest=true;ic.position.set(0,2.55,0);m.add(ic);c.icon=ic;
+  custs.push(c);return c}
+function custLeave(c){if(c.leaving)return;c.leaving=true;c.icon.visible=false;c.tx=HX+rnd(1.2,3);c.tz=c.m.position.z>=0?15.5:-15.5}
+function custGone(c){scene.remove(c.m);custs.splice(custs.indexOf(c),1);custHits.splice(custHits.indexOf(c.hit),1)}
+function updateCust(c,dt,time){
+  const m=c.m,[l0,l1]=m.userData.legs,[a0,a1]=m.userData.arms;let moving=false;
+  if(c===menuCust)faceTo(m,player.x,player.z,.15);
+  else if(c.kind==='order'&&!c.leaving){if(Math.hypot(player.x-m.position.x,player.z-m.position.z)<7)faceTo(m,player.x,player.z,.08)}
+  else{
+    if(!c.leaving){c.life-=dt;if(c.life<=0)custLeave(c)}
+    const dx=c.tx-m.position.x,dz=c.tz-m.position.z,d=Math.hypot(dx,dz);
+    if(d>.12){const sp=(c.leaving?1.9:1.0)*dt;m.position.x+=dx/d*Math.min(sp,d);m.position.z+=dz/d*Math.min(sp,d);faceTo(m,c.tx,c.tz,.2);moving=true}
+    else if(c.leaving){custGone(c);return}
+    else{c.wait-=dt;if(c.wait<=0){c.wait=rnd(2,6);c.tx=HX+rnd(1,3.2);c.tz=clamp(m.position.z+rnd(-6,6),-11.5,11.5)}}
+  }
+  if(moving){const s=Math.sin(time*7+c.ph)*.6;l0.rotation.x=s;l1.rotation.x=-s;a0.rotation.x=-s*.7;a1.rotation.x=s*.7}
+  else{l0.rotation.x=l1.rotation.x=a0.rotation.x=a1.rotation.x=0}
+  c.icon.position.y=2.55+Math.sin(time*3+c.ph)*.05}
+
+function streetTick(dt,time){
+  if(!streetOpen())return;
+  if(!S.flags.streetInit){S.flags.streetInit=1;newOrder(true);msg('🚪 Die Seitentür ist offen – draußen wartet Kundschaft!')}
+  streetT-=dt;
+  if(streetT<=0){streetT=rnd(7,14);if(custs.filter(c=>c.kind==='walk'&&!c.leaving).length<4)spawnCust('walk')}
+  for(let i=custs.length-1;i>=0;i--)updateCust(custs[i],dt,time);
+  if(!menuOpen)menuCust=null}
+
+// ---- Aufträge ----
+function dropOrder(o){S.orders.splice(S.orders.indexOf(o),1)}
+function newOrder(first){
+  if(S.orders.length>=SPOTS.length)return;
+  const spot=SPOTS.findIndex((_,i)=>!S.orders.some(o=>o.spot===i));
+  const opts=['pack'];if(!first)for(const id in DRUGS)if(S.recipes[id]&&S.level>=DRUGS[id].lvl)opts.push(id,id);
+  const k=rpick(opts);let n,minQ=0,unit;
+  if(k==='pack'){n=2+Math.floor(Math.random()*Math.min(4,1+S.level));unit=S.price*rnd(1.3,1.6)}
+  else{const D=DRUGS[k];n=1+Math.floor(Math.random()*batchUnits());minQ=rpick([40,55,70,85]);unit=D.price*(.35+.65*minQ/100)*rnd(1.45,1.8)}
+  let name=rpick(NAMES);for(let i=0;i<8&&S.orders.some(o=>o.name===name);i++)name=rpick(NAMES);
+  const o={id:S.oid++,spot,name,talk:rpick(ORDER_TALK),k,n,minQ,reward:Math.round(n*unit),dl:S.day+2+Math.floor(Math.random()*3)};
+  S.orders.push(o);spawnCust('order',o);msg('📋 Neuer Auftrag von '+name+'!')}
+function orderDay(){
+  if(!streetOpen())return;
+  for(const o of S.orders.slice())if(S.day>o.dl){
+    dropOrder(o);const c=custs.find(c=>c.order===o);if(c){if(c===menuCust)closeMenu();custLeave(c)}
+    msg('⏰ Auftrag von '+o.name+' ist verfallen.')}
+  if(S.orders.length<SPOTS.length&&Math.random()<.75)newOrder()}
+
+// ---- Gespräche ----
+function openCust(c){if(c.leaving){msg(c.name+' ist schon weg …');return}menuCust=c;openMenuX(()=>custMenu(c))}
+function custMenu(c){
+  const items=[];let line;
+  if(c.kind==='order'){
+    const o=c.order,ok=canDeliver(o);
+    line=`${o.name}\n„${o.talk}“\nBestellung: ${o.n}× ${goodsName(o.k)}${o.minQ?' · Qualität ≥ '+o.minQ+' %':''}\nBelohnung ${money(o.reward)} · bis Tag ${o.dl}`;
+    items.push([`📦 Liefern – ${money(o.reward)}`,ok,()=>deliverOrder(o,c),ok?'Du hast alles dabei.':missingTxt(o)]);
+    items.push(['Auftrag ablehnen',true,()=>{dropOrder(o);custLeave(c);msg('Auftrag abgelehnt.');closeMenu()}]);
+  }else{
+    const w=c.want,q=Math.min(w.n,haveOf(w.k)),unit=Math.round(unitOf(w.k)*c.mult);
+    line=`${c.name}\n„${c.talk}“\nWill ${w.n}× ${goodsName(w.k)} · bietet ${money(unit)} pro Stück`;
+    items.push([q>0?`Verkaufen: ${q}× ${goodsName(w.k)} – ${money(q*unit)}`:`Du hast nichts davon dabei (${goodsName(w.k)})`,q>0,()=>sellStreet(c,q,q*unit),'Straßenpreis liegt über dem von Onkel Rick']);
+    if(!c.haggled)items.push(['Preis hochhandeln (+25 %)',q>0,()=>haggle(c),'40 % Risiko, dass er abhaut']);
+  }
+  items.push(['Schließen',true,closeMenu]);
+  return{line,items}}
+function sellStreet(c,q,pr){takeGoods(c.want.k,q);S.cash+=pr;addXp(pr/12);S.streetSales++;S.flags.streetSale=1;custLeave(c);msg('💸 +'+money(pr)+' von '+c.name);closeMenu()}
+function haggle(c){c.haggled=true;
+  if(Math.random()<.6){c.mult*=1.25;msg('Er geht auf deinen Preis ein!')}
+  else{custLeave(c);msg('😠 '+c.name+' ist beleidigt abgehauen.');closeMenu()}}
+function deliverOrder(o,c){takeGoods(o.k,o.n);S.cash+=o.reward;addXp(o.reward/8);S.ordersDone++;S.flags.streetOrder=1;dropOrder(o);custLeave(c);msg('📦 Auftrag erledigt: +'+money(o.reward));closeMenu()}
+
+// ---- Auftrags-HUD ----
+let ordLast='';
+function ordHud(){
+  let h='';
+  if(streetOpen()&&S.orders.length){h='<b class="t">📋 Aufträge</b>';
+    S.orders.forEach(o=>{const ok=canDeliver(o),left=o.dl-S.day;
+      h+=`<div class="${ok?'done':left<=0?'cur':''}">${o.name}: ${o.n}× ${goodsName(o.k)}${o.minQ?' ≥'+o.minQ+' %':''} · ${money(o.reward)} · ${left<=0?'nur heute!':'noch '+left+' T.'}${ok?' ✔':''}</div>`})}
+  if(h!==ordLast){ordLast=h;$('orders').innerHTML=h;$('orders').style.display=h?'block':'none'}}
+S.orders.forEach(o=>spawnCust('order',o));   // gespeicherte Aufträge wieder auf die Straße stellen
 
 // ---------------- Ansatz (Kochablauf) ----------------
 function startCook(id){
@@ -1112,12 +1276,14 @@ function frame(){
     if(keys.KeyQ)yaw+=dt*1.6;if(keys.KeyY&&false)yaw-=dt*1.6;
     walkCollide(ox,oz);
     for(const s of solids){const sx=s.o?s.o.x:s.x,sz=s.o?s.o.z:s.z;if(s.o&&!s.o.owned)continue;const dx=player.x-sx,dz=player.z-sz,d=Math.hypot(dx,dz),R=s.r+.3;if(d<R&&d>0){player.x=sx+dx/d*R;player.z=sz+dz/d*R}}
+    for(const c of custs){const cx=c.m.position.x,cz=c.m.position.z,dx=player.x-cx,dz=player.z-cz,d=Math.hypot(dx,dz);
+      if(d<.65&&d>0){const nx=cx+dx/d*.65,nz=cz+dz/d*.65;if(walkable(nx,nz)){player.x=nx;player.z=nz}}}
   }
   camera.position.set(player.x,1.7+Math.sin(bob)*.035,player.z);camera.rotation.set(pitch,yaw,0);
   // Rick schaut zum Spieler
   rick.rotation.y+=((Math.atan2(player.x-rick.position.x,player.z-rick.position.z))-rick.rotation.y)*.05;rick.position.y=Math.sin(time*2)*.01;
   // Tag / Gehalt
-  S.dayT+=dt;if(S.dayT>=DAYLEN){S.dayT=0;S.day++;const pay=Math.min(S.cash,S.workers*SALARY);S.cash-=pay;if(pay>0)msg('Tag '+S.day+': Gehälter −'+money(pay));S.price=Math.round(40+Math.random()*45+S.level*2);labDay()}
+  S.dayT+=dt;if(S.dayT>=DAYLEN){S.dayT=0;S.day++;const pay=Math.min(S.cash,S.workers*SALARY);S.cash-=pay;if(pay>0)msg('Tag '+S.day+': Gehälter −'+money(pay));S.price=Math.round(40+Math.random()*45+S.level*2);labDay();orderDay()}
   // Pflanzen
   for(const p of pots){
     p.g.visible=p.owned;if(!p.owned)continue;
@@ -1135,9 +1301,11 @@ function frame(){
   stations.table.boxes.forEach((b,i)=>b.visible=i<S.pack);
   workers.forEach(w=>updateWorker(w,dt,time));
   labDoor.position.x+=((S.lab?2.2:0)-labDoor.position.x)*Math.min(1,dt*3);
+  sideDoor.position.z+=((streetOpen()?SDZ+2.2:SDZ)-sideDoor.position.z)*Math.min(1,dt*3);
+  streetTick(dt,time);ordHud();
   mineTick(dt);labEnterCheck();labHud(time);lapTick(dt);
   if(mg){mg.upd(dt);mg&&mg.draw(mctx)}
-  {const tt=!inLabNow()?'Dragon Smoke':player.z<LZ0+8.2?'Labor · Raum 1 – Vorbereitung':'Labor · Raum 2 – Kochraum';if($('title').textContent!==tt)$('title').textContent=tt}
+  {const tt=player.x>HX+.3?'Dragon Smoke · Seitenstraße':!inLabNow()?'Dragon Smoke':player.z<LZ0+8.2?'Labor · Raum 1 – Vorbereitung':'Labor · Raum 2 – Kochraum';if($('title').textContent!==tt)$('title').textContent=tt}
   // Zielerfassung + HUD
   aim();
   let pr='';
@@ -1145,6 +1313,8 @@ function frame(){
     const r=aimed;
     if(r.type==='rick')pr='[E] Mit Onkel Rick reden';
     else if(r.type==='labdoor')pr='🔒 Stahltür – abgeschlossen (Onkel Rick hat den Schlüssel)';
+    else if(r.type==='sidedoor')pr='🔒 Seitentür – abgeschlossen';
+    else if(r.type==='cust'){const c=r.c;pr=c.leaving?'':c.kind==='order'?`[E] ${c.name} – Auftrag: ${c.order.n}× ${goodsName(c.order.k)}`:`[E] Mit ${c.name} reden (will ${c.want.n}× ${goodsName(c.want.k)})`}
     else if(r.type==='st')pr=stPrompt(r.id);
     else if(r.type==='barrel')pr='[E] Gießkanne auffüllen';
     else if(r.type==='rack')pr='[E] Blüten trimmen  ('+S.raw+' roh)';
