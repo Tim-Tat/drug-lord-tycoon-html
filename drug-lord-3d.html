@@ -28,8 +28,8 @@ canvas{display:block;width:100vw;height:100vh}
 #prompt{position:fixed;left:50%;top:57%;transform:translateX(-50%);font-size:20px;text-align:center}
 #msg{position:fixed;left:50%;top:22%;transform:translateX(-50%);font-size:24px;text-align:center;opacity:0;transition:opacity .3s;max-width:70vw}
 #title{position:fixed;top:6px;left:50%;transform:translateX(-50%);font-size:34px;font-weight:700}
-#overlay{position:fixed;inset:0;background:#000b;display:grid;place-items:center;text-align:center;z-index:5}
-#overlay .box{max-width:560px;padding:24px}
+#overlay{position:fixed;inset:0;background:#000b;display:grid;place-items:center;text-align:center;z-index:5;overflow:auto}
+#overlay .box{max-width:560px;padding:24px;margin:auto}
 #overlay h1{font-size:44px;margin:0 0 6px;color:var(--yel)}
 #overlay p{margin:8px 0;color:#ddd;line-height:1.5}
 button{font:inherit;color:#fff;background:#111c;border:none;padding:14px 20px;font-size:21px;font-weight:700;cursor:pointer;border-bottom:3px solid #000}
@@ -66,6 +66,14 @@ button:disabled{opacity:.4;cursor:not-allowed}
 #lap ol{margin:6px 0;padding-left:22px}#lap .ld{text-align:center;padding:40px 0;color:#d9b8ff}#lap .spin{font-size:46px;animation:sp 1s linear infinite;display:inline-block}
 @keyframes sp{to{transform:rotate(360deg)}}
 #lap .foot{padding:6px 12px;color:#a88;font-size:12px;border-top:1px solid #3a2060}
+#mp{margin-top:12px;padding:10px;background:#0006;border:1px solid #4aa3a3}
+#mp input{font:inherit;font-size:17px;padding:8px;background:#111c;color:#fff;border:1px solid #556;width:130px;text-transform:none}
+#mp button{font-size:17px;padding:9px 14px;margin:3px}
+#mpStatus{font-size:14px;color:#9fd;min-height:18px;margin:6px 0 0}
+#chat{position:fixed;left:14px;bottom:190px;width:340px;font-size:14px;line-height:1.4;display:none;pointer-events:none;text-shadow:0 0 3px #000,0 1px 3px #000}
+#chat b{color:#ffd23a}
+#chatIn{position:fixed;left:14px;bottom:160px;width:340px;display:none;font:inherit;font-size:15px;padding:6px 8px;background:#000c;color:#fff;border:1px solid #4aa3a3;z-index:6;user-select:text}
+#players{position:fixed;right:14px;bottom:20px;max-width:300px;background:#0009;padding:6px 10px;font-size:13px;display:none;border-left:3px solid #4aa3a3}
 #menu .p{max-height:92vh;overflow:auto}
 #menu .p button small{display:block;font-size:12px;font-weight:400;opacity:.8;margin-top:2px}
 #menuLine{white-space:pre-line}
@@ -83,6 +91,9 @@ button:disabled{opacity:.4;cursor:not-allowed}
 <div id="info" class="sh"></div>
 <div id="menu"><div class="p"><div class="line sh" id="menuLine"></div><div id="menuBtns"></div></div></div>
 <div id="flash"></div>
+<div id="chat" class="sh"></div>
+<input id="chatIn" maxlength="120" placeholder="Nachricht (Enter senden, Esc abbrechen)" autocomplete="off">
+<div id="players" class="sh"></div>
 <div id="psa"></div>
 <div id="cook" class="sh"></div>
 <div id="mini"><div class="mp"><h2 id="mt"></h2><p id="mi"></p><canvas id="mc" width="640" height="260"></canvas><div id="mr"></div><div id="mb"></div></div></div>
@@ -93,11 +104,19 @@ button:disabled{opacity:.4;cursor:not-allowed}
   <p>Fan-Nachbau als Low-Poly-Gewächshaus. Pflanze, gieße, ernte, trimme, verpacke und verkaufe an Onkel Rick – und stelle Arbeiter ein.</p>
   <p><b>WASD</b> laufen · <b>Shift</b> rennen · <b>Maus</b> umschauen<br><b>1 / 2 / 3</b> Werkzeug (Samen / Gießkanne / Schere) · <b>Linksklick</b> benutzen<br><b>E</b> interagieren (Topf, Rick, Trockengestell, Tisch, Wasserfass) · <b>Esc</b> Maus freigeben</p>
   <p style="font-size:13px;color:#cbb">Satire-Spiel: Alle Stoffe, Abläufe und „Anleitungen“ sind frei erfunden – keine echten Anleitungen. Drogenherstellung ist in der Realität illegal und gefährlich.</p>
-  <button id="play">▶ Spielen</button>
+  <button id="play">▶ Solo spielen</button>
+  <div id="mp"><b>🌐 Multiplayer (Co-op)</b><br>
+    <input id="mpName" maxlength="14" placeholder="Dein Name">
+    <button id="mpHost">Raum hosten</button><br>
+    <input id="mpCode" maxlength="5" placeholder="Code" style="text-transform:uppercase;width:90px"><button id="mpJoin">Beitreten</button>
+    <p id="mpStatus"></p>
+    <p style="font-size:12px;color:#9ab;margin:4px 0 0">Der Host spielt vom eigenen Gerät aus (P2P, kein Server nötig) und muss den Tab sichtbar lassen. Freunde treten mit dem 5-stelligen Code bei. Enter = Chat im Spiel.</p>
+  </div>
   <p id="warn" style="font-size:13px;color:#fb8"></p>
 </div></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script>
 if(typeof THREE==='undefined'){document.getElementById('warn').textContent='three.js konnte nicht geladen werden – bitte Internetverbindung prüfen.'}
 const T=THREE;
@@ -286,8 +305,8 @@ function makeRick(){
   box(.06,.04,.04,M(0x222),-.07,1.43,.14,g);box(.06,.04,.04,M(0x222),.07,1.43,.14,g);
   mesh(new T.CylinderGeometry(.2,.22,.14,7),M(0x8a7040),0,1.6,0,g);mesh(new T.CylinderGeometry(.34,.34,.04,8),M(0x8a7040),0,1.53,0,g);
   g.scale.setScalar(1.1);return g}
-function makeWorker(){
-  const g=new T.Group();const white=M(0xeeeef4);
+function makeWorker(col=0xeeeef4){
+  const g=new T.Group();const white=M(col);
   const legs=[],arms=[];
   for(const s of[-1,1]){const l=new T.Group();l.position.set(s*.13,.55,0);box(.2,.55,.22,white,0,-.27,0,l);g.add(l);legs.push(l)}
   box(.5,.66,.3,white,0,.95,0,g);
@@ -305,7 +324,7 @@ const SEED=10,DAYLEN=90,SALARY=50;
 let S={cash:500,xp:0,level:1,day:1,dayT:0,raw:0,trim:0,pack:0,tool:0,water:8,waterCap:8,lights:0,potsOwned:3,workers:0,canUp:0,flags:{},price:55,priceT:0,potsState:[],
   lab:0,psa:false,reag:{},drugs:{},recipes:{},up:{yield:0,ease:0},cook:null,dm:{},batches:0,coins:0,cp:40,cpT:4,evT:60,
   news:'📰 SchwarzCoin (SCN): ein Kurs, so stabil wie Onkel Ricks Laune.',rig:{gpu:0,fan:0},scams:0};
-function save(){try{S.potsState=pots.map(p=>({o:p.owned,s:p.stage,t:p.t,w:p.wet}));localStorage.setItem('dlt3d',JSON.stringify(S))}catch(e){}}
+function save(){if(NET.role==="client"||NET.role==="lost")return;try{S.potsState=pots.map(p=>({o:p.owned,s:p.stage,t:p.t,w:p.wet}));localStorage.setItem('dlt3d',JSON.stringify(S))}catch(e){}}
 function load(){try{const s=JSON.parse(localStorage.getItem('dlt3d'));if(s&&s.cash!==undefined)S=Object.assign(S,s)}catch(e){}}
 load();
 pots.forEach((p,i)=>{const st=S.potsState&&S.potsState[i];p.owned=st?st.o:i<S.potsOwned;if(st){p.stage=st.s;p.t=st.t;p.wet=st.w}});
@@ -363,12 +382,20 @@ function objUpdate(){while(objI<OBJ.length-1&&OBJ[objI][1]()){objI++;msg('Ziel e
 const menu=$('menu');let menuOpen=false,menuFn=null;
 const lines=['Na, Kleiner? Das Geschäft läuft nur, wenn du dich bewegst.','Gutes Zeug. Ich zahl fair.','Mehr Arbeiter, mehr Lampen – so geht Wachstum.','Die Polizei interessiert sich nur für Dinge, die man nicht versteckt... Scherz.'];
 function openMenuX(fn){menuOpen=true;menuFn=fn;if(document.pointerLockElement)document.exitPointerLock();menu.style.display='flex';renderMenu()}
-function openMenu(){S.flags.talked=1;openMenuX(rickMenu)}
-function closeMenu(){menuOpen=false;menu.style.display='none';relock()}
-function renderMenu(){
-  const {line,items}=menuFn();const ml=$('menuLine');ml.textContent=line;ml.style.fontSize=line.length>90?'16px':'24px';
+function openMenu(){netFlag('talked');openMenuX(rickMenu)}
+function closeMenu(){if(NET.remote){NET.remoteClosed=true;return}menuOpen=false;menu.style.display='none';relock()}
+let menuSigLast='';
+function renderMenu(force=true){
+  const {line,items}=menuFn();
+  const sig=JSON.stringify([line,items.map(i=>[i[0],i[1],i[3]])]);
+  if(!force&&sig===menuSigLast)return;menuSigLast=sig;
+  const ml=$('menuLine');ml.textContent=line;ml.style.fontSize=line.length>90?'16px':'24px';
   const bx=$('menuBtns');bx.innerHTML='';
-  items.forEach(([t,en,fn,sub])=>{const el=document.createElement('button');el.innerHTML=t+(sub?'<small>'+sub+'</small>':'');el.disabled=!en;el.onclick=()=>{fn();if(menuOpen)renderMenu()};bx.appendChild(el)});
+  items.forEach(([t,en,fn,sub],idx)=>{const el=document.createElement('button');el.innerHTML=t+(sub?'<small>'+sub+'</small>':'');el.disabled=!en;
+    el.onclick=()=>{
+      if(isClient()&&MENUS[menuFn.name]&&fn!==closeMenu){netSend({t:'menu',id:menuFn.name,i:idx});return}   // Mitspieler: Host führt aus
+      fn();if(menuOpen)renderMenu()};
+    bx.appendChild(el)});
 }
 
 // ---------------- Eingabe ----------------
@@ -377,6 +404,7 @@ const keys={};
 addEventListener('keydown',e=>{keys[e.code]=true;
   if(modal){modalKey(e);return}
   if(menuOpen){if(e.code==='Escape'||e.code==='KeyE')closeMenu();return}
+  if(e.code==='Enter'&&started&&(NET.role==='host'||NET.role==='client')){e.preventDefault();chatOpen();return}
   if(e.code==='Digit1')S.tool=0;if(e.code==='Digit2')S.tool=1;if(e.code==='Digit3')S.tool=2;
   if(e.code==='KeyE')interact(true);
 });
@@ -414,20 +442,20 @@ function interact(viaE){
   if(r.type==='labdoor'){msg('Die Stahltür ist abgeschlossen – Onkel Rick hat den Schlüssel.');return}
   if(r.type==='st'){labInteract(r.id);return}
   if(r.type==='barrel'){S.water=S.waterCap;msg('Gießkanne aufgefüllt 💧');return}
-  if(r.type==='rack'){if(!A.trim())msg('Keine rohen Blüten – erst ernten!');return}
-  if(r.type==='table'){if(!A.pack())msg('Du brauchst 3 getrimmte Blüten.');return}
+  if(r.type==='rack'){if(S.raw<1)msg('Keine rohen Blüten – erst ernten!');else doAct('trim');return}
+  if(r.type==='table'){if(S.trim<3)msg('Du brauchst 3 getrimmte Blüten.');else doAct('pack');return}
   if(r.type==='pot'){
     const p=r.p;
     const tool=viaE?(p.stage<0?0:p.stage===4?2:1):S.tool;
-    if(tool===0){if(p.stage>=0)msg('Hier wächst schon etwas.');else if(!A.plant(p))msg('Nicht genug Geld für Samen ('+money(SEED)+').')}
+    if(tool===0){if(p.stage>=0)msg('Hier wächst schon etwas.');else if(S.cash<SEED)msg('Nicht genug Geld für Samen ('+money(SEED)+').');else doAct('plant',p.n)}
     else if(tool===1){
       if(p.stage<0)msg('Erst Samen pflanzen!');
       else if(p.stage===4)msg('Schon erntereif – nimm die Schere (3).');
       else if(p.wet)msg('Die Pflanze ist feucht.');
       else if(S.water<=0)msg('Gießkanne leer – am Fass auffüllen (E).');
-      else{A.water(p);S.water--}
+      else{doAct('water',p.n);S.water--}
     }
-    else{if(p.stage!==4)msg('Noch nicht erntereif.');else A.harvest(p)}
+    else{if(p.stage!==4)msg('Noch nicht erntereif.');else doAct('harvest',p.n)}
   }
 }
 
@@ -784,7 +812,8 @@ function mineTick(dt){
 }
 
 // ---------------- Menüs (Rick, Chemikalien-Schrank, Rezept-Board, Hinweis) ----------------
-function noticeMenu(){S.flags.notice=1;return{line:'⚠ HINWEIS\nDies ist ein Spiel (Satire). Alle Stoffe, Abläufe, Mengen und Werte im Labor sind frei erfunden und KEINE Anleitung für irgendetwas.\nHerstellung, Besitz und Handel mit Drogen sind in der Realität strafbar und gefährlich. Nur zur Unterhaltung – ab 18.',items:[['Verstanden – Labor betreten',true,closeMenu]]}}
+let noticeSeen=false;try{noticeSeen=!!localStorage.getItem('dlt_notice')}catch(e){}
+function noticeMenu(){noticeSeen=true;try{localStorage.setItem('dlt_notice','1')}catch(e){}return{line:'⚠ HINWEIS\nDies ist ein Spiel (Satire). Alle Stoffe, Abläufe, Mengen und Werte im Labor sind frei erfunden und KEINE Anleitung für irgendetwas.\nHerstellung, Besitz und Handel mit Drogen sind in der Realität strafbar und gefährlich. Nur zur Unterhaltung – ab 18.',items:[['Verstanden – Labor betreten',true,closeMenu]]}}
 function shopMenu(){
   const items=Object.entries(ING).map(([k,v])=>[`${v.n} – ${money(v.p)}`,S.cash>=v.p,()=>{S.cash-=v.p;S.reag[k]=(S.reag[k]||0)+1;S.flags.bought=1},`im Regal: ${S.reag[k]||0}`]);
   for(const id in DRUGS){if(!S.recipes[id])continue;const D=DRUGS[id];
@@ -824,9 +853,11 @@ function rickMenu(){
 let lapTab='mine',lapLoad=0;
 const LOAD_TXT=['Verbinde über Relay 1/3 …','Relay 2/3 (irgendwo in einem Keller) …','Relay 3/3 – Tante Ernas WLAN …','Lade „totally-legit.onion“ …'];
 const SCAMS=['Es war ein Scam. Natürlich. −15 % deiner Coins.','„100 % echt“ war leider zu 100 % gelogen. −15 % deiner Coins.','Du hast wirklich schon wieder geklickt?! −15 % deiner Coins.'];
+function lapWelcome(){if(!S.flags.lap){S.flags.lap=1;S.coins+=3;msg('🎁 Willkommensbonus: 3.000 SCN von „Onkel_Hans_1337“')}}
+function lapWelcomeReq(){if(isClient())netSend({t:'lap',a:'welcome'});else lapWelcome()}
 function openLap(){
   modal=true;lapOpen=true;if(document.pointerLockElement)document.exitPointerLock();
-  if(!S.flags.lap){S.flags.lap=1;S.coins+=3;msg('🎁 Willkommensbonus: 3.000 SCN von „Onkel_Hans_1337“')}
+  lapWelcomeReq();
   $('lap').style.display='grid';renderLap()}
 function closeLap(){modal=false;lapOpen=false;$('lap').style.display='none';relock()}
 const cn=c=>c.toFixed(3);
@@ -835,7 +866,7 @@ function lapSig(){
   const g=[S.coins>=.01,S.cash>=gpuCost(),S.cash>=fanCost(),S.rig.gpu,S.rig.fan,S.cash>=1200*Math.pow(2,S.up.yield),S.cash>=900*Math.pow(2,S.up.ease),S.up.yield,S.up.ease];
   for(const id in DRUGS)g.push(S.coins>=DRUGS[id].coin,S.level>=DRUGS[id].lvl,!!S.recipes[id]);
   for(const k in ING)g.push(S.coins>=+(ING[k].p*5*.6/40).toFixed(2));
-  return g.join()}
+  g.push(lapTab,S.news);return g.join()}
 let lapSigLast='';
 function lapStats(){
   if(!lapOpen||lapLoad)return;
@@ -896,6 +927,7 @@ function labInv(){
   if(inLabNow()){const r=Object.keys(ING).filter(k=>S.reag[k]).map(k=>`${ING[k].n.split(' ')[0]} ${S.reag[k]}`).join(' · ');if(r)h+='<br>📦 '+r}
   return h}
 function lapAct(a,k){
+  if(isClient()&&a!=='tab'){netSend({t:'lap',a,k});if(a==='click'){S.coins+=.004*(1+S.rig.gpu*.1);lapStats()}return}
   if(a==='tab'){lapTab=k;lapLoad=k==='market'?1.6:0;lapStage=-1}
   else if(a==='click'){S.coins+=.004*(1+S.rig.gpu*.1);lapStats();return}
   else if(a==='cash'){S.cash+=S.coins*S.cp;msg('💰 +'+money(S.coins*S.cp)+' ausgezahlt');S.coins=0}
@@ -922,9 +954,10 @@ function useStation(id){
   const k=DRUGS[c.drug].steps[c.i],ST=STEP[k];
   if(ST.st!==id){msg('Jetzt dran: '+ST.n+' → '+STATION[ST.st]);return}
   startMini(k)}
-function cookStepDone(score,fail){
-  const c=S.cook;if(!c)return;
-  if(fail){mishap(fail);S.cook=null;return}
+function cookStepDone(score,fail,si,psa){
+  if(isClient()){netSend({t:'cookstep',score,fail,i:si,psa:S.psa});return}
+  const c=S.cook;if(!c)return;if(si!==undefined&&c.i!==si)return;
+  if(fail){mishap(fail,psa===undefined?S.psa:psa);S.cook=null;return}
   c.sc.push(Math.round(score));c.i++;addXp(3);
   if(c.i>=DRUGS[c.drug].steps.length)finishCook()}
 function finishCook(){
@@ -933,11 +966,11 @@ function finishCook(){
   S.drugs[c.drug]={n:cur.n+u,q:Math.round((cur.q*cur.n+q*u)/(cur.n+u))};
   addXp(Math.round(D.xp*(.5+q/100)));S.batches=(S.batches||0)+1;S.flags.cooked=1;S.cook=null;
   msg(`${D.ic} ${u}× ${D.n} fertig – Qualität ${q}% (${QN(q)})`)}
-function mishap(reason){
-  $('flash').style.opacity=1;setTimeout(()=>$('flash').style.opacity=0,500);
-  if(S.psa)msg('💥 '+reason+' – Ansatz verloren, aber die Schutzausrüstung hat dich gerettet.');
+function mishap(reason,psa){
+  if(!NET.remote){$('flash').style.opacity=1;setTimeout(()=>$('flash').style.opacity=0,500)}
+  if(psa)msg('💥 '+reason+' – Ansatz verloren, aber die Schutzausrüstung hat dich gerettet.');
   else{const c=Math.min(S.cash,Math.round(250+Math.random()*250));S.cash-=c;msg('💥 '+reason+' – Ansatz verloren. Notaufnahme −'+money(c)+' (ohne Schutzausrüstung!)')}}
-function togglePSA(){S.psa=!S.psa;if(S.psa)S.flags.psa=1;$('psa').style.display=S.psa&&inLabNow()?'block':'none';
+function togglePSA(){S.psa=!S.psa;if(S.psa)netFlag('psa');$('psa').style.display=S.psa&&inLabNow()?'block':'none';
   msg(S.psa?'🥽 Kittel, Schutzbrille, Handschuhe & Atemschutz angelegt.':'Schutzausrüstung abgelegt.')}
 function labInteract(id){
   if(id==='locker')togglePSA();
@@ -953,10 +986,11 @@ function stPrompt(id){
   const c=S.cook;if(!c)return STATION[id]+' – kein Ansatz aktiv';
   const ST=STEP[DRUGS[c.drug].steps[c.i]];return ST.st===id?'[E] '+ST.n+' starten':STATION[id]+' – gerade nicht dran'}
 // Laufend geprüft: Betritt der Spieler das (angebaute) Labor, gilt die Schutzbrillen-Optik + einmaliger Hinweis
+let inlabSeen=false;
 function labEnterCheck(){
   const inside=inLabNow();
   $('psa').style.display=S.psa&&inside?'block':'none';
-  if(inside&&!S.flags.inlab){S.flags.inlab=1;if(!S.flags.notice)openMenuX(noticeMenu)}}
+  if(inside&&!inlabSeen){inlabSeen=true;netFlag('inlab');if(!noticeSeen)openMenuX(noticeMenu)}}
 
 // ---------------- HUD (Ansatz-Liste, Marker) ----------------
 let cookLast='';
@@ -984,7 +1018,7 @@ function startMini(k){
 function mgFinish(score,fail,note){
   if(!mg||mg.fin)return;mg.fin=true;
   $('mr').innerHTML=fail?`<span style="color:#f66">💥 ${fail}</span>`:`<span style="color:${score>=80?'#7f7':score>=50?'#ff6':'#fa6'}">${note||''} Ergebnis: <b>${Math.round(score)}%</b></span>`;
-  const next=()=>{closeMini();cookStepDone(score,fail)};mg.next=next;
+  const si=S.cook?S.cook.i:undefined;const next=()=>{closeMini();cookStepDone(score,fail,si)};mg.next=next;
   setBtns([[fail?'Weiter':'Weiter ▶',next]])}
 function mgDown(){if(!mg||mg.fin)return;mg.hold=true;mg.press&&mg.press()}
 function mgUp(){if(!mg)return;const was=mg.hold;mg.hold=false;was&&mg.release&&mg.release()}
@@ -1092,6 +1126,200 @@ function gTiming(k,D,W){
   return o}
 
 
+// ======================================================================
+//  MULTIPLAYER (Co-op, Peer-to-Peer über WebRTC / PeerJS)
+//  Host = Autorität: führt die komplette Simulation aus (Pflanzen, Arbeiter, Tage,
+//  Mining, Labor). Mitspieler senden nur Aktionen und bekommen ~5x/s einen Snapshot.
+//  Der Vermittlungsserver (PeerJS-Cloud) wird nur für den Verbindungsaufbau gebraucht,
+//  Spieldaten laufen direkt zwischen den Geräten. Eigener Server: ?ps=host:port
+// ======================================================================
+const NET={role:'solo',peer:null,conns:[],hostConn:null,code:'',name:'Spieler',id:0,nextId:1,remote:null,remoteClosed:false,pl:{},tPos:0,tSnap:0,tHud:0};
+const isClient=()=>NET.role==='client',isHost=()=>NET.role==='host';
+const PCOL=[0xe74c3c,0x3498db,0x2ecc71,0xf1c40f,0x9b59b6,0xe67e22,0x1abc9c,0xec407a];
+const PEER_OPTS=(()=>{try{const q=new URLSearchParams(location.search).get('ps');if(!q)return{};const [h,pt]=q.split(':');return{host:h,port:+pt||9000,path:'/',secure:false}}catch(e){return{}}})();
+const MENUS={rickMenu,shopMenu,boardMenu};
+const cleanName=n=>String(n||'').replace(/[^\wäöüÄÖÜß .\-]/g,'').trim().slice(0,14);
+const angDiff=(b,a)=>((b-a+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI;
+
+// Meldungen aus Befehlen anderer Spieler gehen an den Auslöser, nicht an den Host
+const _msg=msg;
+msg=function(t){if(NET.remote){try{NET.remote.send({t:'msg',text:t})}catch(e){}}else _msg(t)};
+
+function netSend(d){if(NET.hostConn&&NET.hostConn.open)try{NET.hostConn.send(d)}catch(e){}}
+function hostBroadcast(d){NET.conns.forEach(c=>{if(c.open)try{c.send(d)}catch(e){}})}
+function netFlag(k){if(isClient())netSend({t:'flag',k});else S.flags[k]=1}
+function doAct(k,n){
+  if(isClient()){netSend({t:'act',k,n});return}
+  const p=pots[n];
+  if(k==='plant'&&p)A.plant(p);else if(k==='water'&&p)A.water(p);else if(k==='harvest'&&p)A.harvest(p);
+  else if(k==='trim')A.trim();else if(k==='pack')A.pack()}
+function setNetStatus(t){$('mpStatus').textContent=t}
+function startGameUI(){started=true;$('overlay').style.display='none';$('mp').style.display='none';relock()}
+
+// ---------------- Chat ----------------
+const chatLines=[];
+function addChat(from,text){
+  chatLines.push([from,text]);if(chatLines.length>7)chatLines.shift();
+  const el=$('chat');el.innerHTML='';
+  chatLines.forEach(([f,t])=>{const d=document.createElement('div'),b=document.createElement('b');b.textContent=f+': ';d.appendChild(b);d.appendChild(document.createTextNode(t));el.appendChild(d)});
+  el.style.display='block'}
+function netChat(text){
+  if(isHost()){addChat(NET.name,text);hostBroadcast({t:'chat',from:NET.name,text})}
+  else if(isClient())netSend({t:'chat',text})}
+let typing=false;
+function chatOpen(){typing=true;modal=true;if(document.pointerLockElement)document.exitPointerLock();const i=$('chatIn');i.style.display='block';i.value='';i.focus()}
+function chatClose(send){const i=$('chatIn'),v=i.value.trim();typing=false;modal=false;i.style.display='none';i.blur();if(send&&v)netChat(v);relock()}
+$('chatIn').addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter')chatClose(true);else if(e.key==='Escape')chatClose(false)});
+
+// ---------------- Avatare der Mitspieler ----------------
+const AV={};
+function ensureAvatar(id,name,col){
+  if(AV[id])return AV[id];
+  const m=makeWorker(PCOL[col%PCOL.length]);scene.add(m);
+  const lb=labelSprite(name,2.2,true);lb.position.set(0,2.15,0);m.add(lb);
+  m.position.set(0,0,4.6);
+  return AV[id]={m,name,tx:0,tz:4.6,tyaw:0,init:false}}
+function dropAvatar(id){const a=AV[id];if(a){scene.remove(a.m);delete AV[id]}}
+function syncAvatars(list,selfId){
+  const seen={};
+  list.forEach(p=>{if(p.id===selfId)return;seen[p.id]=1;const a=ensureAvatar(p.id,p.name,p.col);a.tx=p.x;a.tz=p.z;a.tyaw=p.yaw;if(!a.init){a.init=true;a.m.position.set(p.x,0,p.z)}});
+  for(const id in AV)if(!seen[id])dropAvatar(id)}
+function updAvatars(dt,time){
+  for(const id in AV){const a=AV[id],m=a.m,dx=a.tx-m.position.x,dz=a.tz-m.position.z,k=Math.min(1,dt*10);
+    m.position.x+=dx*k;m.position.z+=dz*k;m.rotation.y+=angDiff(a.tyaw+Math.PI,m.rotation.y)*k;
+    const [l0,l1]=m.userData.legs,[a0,a1]=m.userData.arms;
+    if(Math.hypot(dx,dz)>.04){const s=Math.sin(time*9+(+id))*.6;l0.rotation.x=s;l1.rotation.x=-s;a0.rotation.x=-s*.7;a1.rotation.x=s*.7}
+    else{l0.rotation.x=l1.rotation.x=a0.rotation.x=a1.rotation.x=0}}}
+function netHud(){
+  if(NET.role==='solo'){$('players').style.display='none';return}
+  const names=[NET.name+' (du)',...Object.values(AV).map(a=>a.name)];
+  $('players').textContent='🌐 Raum '+NET.code+' · '+names.join(', ');$('players').style.display='block'}
+
+// ---------------- Snapshots (Host -> Mitspieler) ----------------
+function snapData(){
+  const s=Object.assign({},S);delete s.tool;delete s.water;delete s.psa;delete s.potsState;
+  return{t:'snap',S:s,pots:pots.map(p=>[p.owned?1:0,p.stage,+p.t.toFixed(2),p.wet?1:0]),
+    w:workers.map(w=>[+w.m.position.x.toFixed(2),+w.m.position.z.toFixed(2),+w.m.rotation.y.toFixed(2)])}}
+function applySnap(d){
+  const keep={tool:S.tool,water:S.water,psa:S.psa};
+  Object.assign(S,d.S,keep);
+  d.pots.forEach((a,i)=>{const p=pots[i];if(!p)return;p.owned=!!a[0];p.stage=a[1];p.t=a[2];p.wet=!!a[3]});
+  while(workers.length<S.workers)spawnWorker();
+  while(workers.length>S.workers){const w=workers.pop();scene.remove(w.m)}
+  d.w.forEach((a,i)=>{const w=workers[i];if(!w)return;w.tx=a[0];w.tz=a[1];w.try=a[2];if(!w.init){w.init=true;w.m.position.set(a[0],0,a[1])}});
+  if(lapOpen)lapStats();
+  if(menuOpen)renderMenu(false)}
+function clientWorkers(dt,time){
+  workers.forEach((w,i)=>{if(w.tx===undefined)return;const m=w.m,dx=w.tx-m.position.x,dz=w.tz-m.position.z,k=Math.min(1,dt*8);
+    m.position.x+=dx*k;m.position.z+=dz*k;m.rotation.y+=angDiff(w.try,m.rotation.y)*k;
+    const [l0,l1]=m.userData.legs,[a0,a1]=m.userData.arms;
+    if(Math.hypot(dx,dz)>.03){const s=Math.sin(time*9+i)*.6;l0.rotation.x=s;l1.rotation.x=-s;a0.rotation.x=-s*.7;a1.rotation.x=s*.7}
+    else{l0.rotation.x=l1.rotation.x=a0.rotation.x=a1.rotation.x=0}})}
+
+// ---------------- Host ----------------
+function netHost(name,tries=0){
+  NET.name=cleanName(name)||'Host';
+  const code=Array.from({length:5},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('');
+  setNetStatus('Verbinde mit Vermittlungsserver …');
+  const peer=new Peer('dlt-'+code,Object.assign({debug:0},PEER_OPTS));
+  peer.on('open',()=>{NET.peer=peer;NET.role='host';NET.code=code;NET.id=0;startGameUI();netHud();
+    _msg('🌐 Raum-Code: '+code+' – Freunde können jederzeit beitreten')});
+  peer.on('connection',hostAccept);
+  peer.on('disconnected',()=>{try{peer.reconnect()}catch(e){}});
+  peer.on('error',e=>{
+    if(e.type==='unavailable-id'&&tries<4){try{peer.destroy()}catch(x){}netHost(name,tries+1);return}
+    setNetStatus('Fehler: '+e.type)})}
+function hostAccept(conn){
+  NET.conns.push(conn);
+  conn.on('data',d=>hostData(conn,d));
+  const drop=()=>hostDrop(conn);conn.on('close',drop);conn.on('error',drop)}
+function hostDrop(conn){
+  const i=NET.conns.indexOf(conn);if(i>=0)NET.conns.splice(i,1);
+  if(conn.pid!==undefined&&NET.pl[conn.pid]){const nm=NET.pl[conn.pid].name;delete NET.pl[conn.pid];dropAvatar(conn.pid);
+    addChat('📢',nm+' hat das Spiel verlassen.');hostBroadcast({t:'chat',from:'📢',text:nm+' hat das Spiel verlassen.'});netHud()}}
+function asRemote(conn,fn){
+  NET.remote=conn;NET.remoteClosed=false;
+  try{fn()}catch(e){console.error(e)}
+  finally{const closed=NET.remoteClosed;NET.remote=null;NET.remoteClosed=false;if(closed&&conn.open)try{conn.send({t:'closeMenu'})}catch(e){}}
+  hostBroadcast(snapData())}
+function hostData(conn,d){
+  if(!d||typeof d!=='object')return;
+  if(d.t==='join'){
+    if(conn.pid!==undefined)return;
+    if(Object.keys(NET.pl).length>=7){try{conn.send({t:'full'})}catch(e){}setTimeout(()=>conn.close(),300);return}
+    const id=NET.nextId++;conn.pid=id;
+    NET.pl[id]={id,name:cleanName(d.name)||'Gast'+id,col:id%PCOL.length,x:0,z:4.6,yaw:0,last:performance.now()};
+    conn.send({t:'hello',id,code:NET.code});conn.send(snapData());
+    const txt=NET.pl[id].name+' ist beigetreten.';addChat('📢',txt);hostBroadcast({t:'chat',from:'📢',text:txt});netHud();
+    return}
+  if(d.t==='bye'){hostDrop(conn);try{conn.close()}catch(e){}return}
+  const pl=NET.pl[conn.pid];if(!pl)return;
+  pl.last=performance.now();
+  switch(d.t){
+    case 'pos':if(isFinite(d.x)&&isFinite(d.z)&&isFinite(d.yaw)){pl.x=+d.x;pl.z=+d.z;pl.yaw=+d.yaw}break;
+    case 'act':if(['plant','water','harvest','trim','pack'].includes(d.k)&&(d.n===undefined||Number.isInteger(d.n)))asRemote(conn,()=>doAct(d.k,d.n));break;
+    case 'menu':if(MENUS[d.id]&&Number.isInteger(d.i))asRemote(conn,()=>{const it=MENUS[d.id]().items[d.i];if(it&&it[1])it[2]()});break;
+    case 'lap':if(typeof d.a==='string'&&d.a!=='tab')asRemote(conn,()=>{if(d.a==='welcome')lapWelcome();else lapAct(d.a,d.k)});break;
+    case 'cookstep':asRemote(conn,()=>cookStepDone(+d.score||0,d.fail?String(d.fail).slice(0,80):null,Number.isInteger(d.i)?d.i:undefined,!!d.psa));break;
+    case 'flag':if(['talked','psa','inlab'].includes(d.k))S.flags[d.k]=1;break;
+    case 'chat':{const t=String(d.text||'').slice(0,120);if(t){addChat(pl.name,t);hostBroadcast({t:'chat',from:pl.name,text:t})}break}
+  }}
+
+// ---------------- Mitspieler ----------------
+function netJoin(code,name,tries){
+  NET.name=cleanName(name)||'Gast';code=String(code||'').trim().toUpperCase();
+  if(!/^[A-Z0-9]{5}$/.test(code)){setNetStatus('Bitte den 5-stelligen Raum-Code eingeben.');return}
+  setNetStatus('Verbinde …');
+  const peer=new Peer(undefined,Object.assign({debug:0},PEER_OPTS));
+  let done=false;
+  peer.on('open',()=>{
+    const conn=peer.connect('dlt-'+code,{reliable:true,serialization:'json'});NET.hostConn=conn;
+    const to=setTimeout(()=>{if(!done)setNetStatus('Keine Antwort – Code prüfen / ist der Host online?')},10000);
+    conn.on('open',()=>{clearTimeout(to);conn.send({t:'join',name:NET.name})});
+    conn.on('data',d=>{done=true;clientData(d)});
+    conn.on('close',clientLost);conn.on('error',clientLost)});
+  peer.on('error',e=>setNetStatus('Fehler: '+(e.type==='peer-unavailable'?'Raum nicht gefunden':e.type)));
+  NET.peer=peer}
+function clientData(d){
+  if(!d||typeof d!=='object')return;
+  switch(d.t){
+    case 'hello':NET.role='client';NET.id=d.id;NET.code=d.code;break;
+    case 'snap':applySnap(d);if(!started&&NET.role==='client'){startGameUI();netHud()}break;
+    case 'players':syncAvatars(d.list,NET.id);break;
+    case 'msg':_msg(String(d.text));break;
+    case 'closeMenu':if(menuOpen)closeMenu();break;
+    case 'chat':addChat(String(d.from),String(d.text));break;
+    case 'full':setNetStatus('Der Raum ist voll.');break}}
+function clientLost(){
+  if(NET.role!=='client'){setNetStatus('Verbindung getrennt.');return}
+  NET.role='lost';_msg('Verbindung zum Host verloren – lade neu …');setTimeout(()=>location.reload(),2500)}
+
+// Heartbeat + sauberes Abmelden (auch wenn der Tab im Hintergrund nicht rendert)
+setInterval(()=>{if(isClient())netSend({t:'ping'})},2000);
+addEventListener('pagehide',()=>{if(isClient())netSend({t:'bye'})});
+
+// ---------------- Takt (pro Frame) ----------------
+function netTick(dt,time){
+  if(NET.role==='solo'||NET.role==='lost')return;
+  NET.tPos+=dt;
+  if(NET.tPos>=.1){NET.tPos=0;
+    const px=+player.x.toFixed(2),pz=+player.z.toFixed(2),py=+yaw.toFixed(2);
+    if(isClient())netSend({t:'pos',x:px,z:pz,yaw:py});
+    else{const list=[{id:0,name:NET.name,col:0,x:px,z:pz,yaw:py}];for(const id in NET.pl){const p=NET.pl[id];list.push({id:p.id,name:p.name,col:p.col,x:p.x,z:p.z,yaw:p.yaw})}
+      hostBroadcast({t:'players',list});syncAvatars(list,0)}}
+  if(isHost()){NET.tSnap+=dt;if(NET.tSnap>=.2){NET.tSnap=0;hostBroadcast(snapData())}
+    const now=performance.now();
+    for(const id in NET.pl){if(now-NET.pl[id].last>15000){const c=NET.conns.find(c=>c.pid==id);if(c){try{c.close()}catch(e){}hostDrop(c)}}}}
+  updAvatars(dt,time);
+  NET.tHud+=dt;if(NET.tHud>1){NET.tHud=0;netHud()}}
+
+// ---------------- Lobby-UI ----------------
+$('mpHost').onclick=()=>{if(typeof Peer==='undefined'){setNetStatus('PeerJS konnte nicht geladen werden (Internet?).');return}netHost($('mpName').value)};
+$('mpJoin').onclick=()=>{if(typeof Peer==='undefined'){setNetStatus('PeerJS konnte nicht geladen werden (Internet?).');return}netJoin($('mpCode').value,$('mpName').value)};
+$('mpCode').addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'')});
+{const q=new URLSearchParams(location.search).get('join');if(q){$('mpCode').value=q.toUpperCase().slice(0,5)}}
+
+
 // ---------------- Hauptschleife ----------------
 const hb=$('hotbar');
 ['🌱|Samen','💧|Gießen','✂️|Schere'].forEach((t,i)=>{const [ic,n]=t.split('|');const d=document.createElement('div');d.className='slot sh';d.innerHTML=`<b>${i+1}</b>${ic}<small id="sl${i}">${n}</small>`;hb.appendChild(d)});
@@ -1117,11 +1345,11 @@ function frame(){
   // Rick schaut zum Spieler
   rick.rotation.y+=((Math.atan2(player.x-rick.position.x,player.z-rick.position.z))-rick.rotation.y)*.05;rick.position.y=Math.sin(time*2)*.01;
   // Tag / Gehalt
-  S.dayT+=dt;if(S.dayT>=DAYLEN){S.dayT=0;S.day++;const pay=Math.min(S.cash,S.workers*SALARY);S.cash-=pay;if(pay>0)msg('Tag '+S.day+': Gehälter −'+money(pay));S.price=Math.round(40+Math.random()*45+S.level*2);labDay()}
+  if(!isClient())S.dayT+=dt;if(!isClient()&&S.dayT>=DAYLEN){S.dayT=0;S.day++;const pay=Math.min(S.cash,S.workers*SALARY);S.cash-=pay;if(pay>0)msg('Tag '+S.day+': Gehälter −'+money(pay));S.price=Math.round(40+Math.random()*45+S.level*2);labDay()}
   // Pflanzen
   for(const p of pots){
     p.g.visible=p.owned;if(!p.owned)continue;
-    if(p.stage>=0&&p.stage<4&&p.wet){p.t+=dt*lightMult();if(p.t>=8){p.stage++;p.t=0;p.wet=false}}
+    if(!isClient()&&p.stage>=0&&p.stage<4&&p.wet){p.t+=dt*lightMult();if(p.t>=8){p.stage++;p.t=0;p.wet=false}}
     const target=p.stage<0?.01:[.18,.4,.7,.95,1.1][p.stage];
     p.sc+=(target-p.sc)*Math.min(1,dt*3);p.plant.scale.setScalar(Math.max(.01,p.sc));p.plant.visible=p.stage>=0;
     p.plant.userData.buds.visible=p.stage>=3;
@@ -1133,9 +1361,9 @@ function frame(){
   // Stationen (Visuals)
   stations.rack.heap.scale.set(1.5,.15+Math.min(S.raw,8)*.07,1);stations.rack.heap.visible=S.raw>0;
   stations.table.boxes.forEach((b,i)=>b.visible=i<S.pack);
-  workers.forEach(w=>updateWorker(w,dt,time));
+  if(isClient())clientWorkers(dt,time);else workers.forEach(w=>updateWorker(w,dt,time));
   labDoor.position.x+=((S.lab?2.2:0)-labDoor.position.x)*Math.min(1,dt*3);
-  mineTick(dt);labEnterCheck();labHud(time);lapTick(dt);
+  if(!isClient())mineTick(dt);labEnterCheck();netTick(dt,time);labHud(time);lapTick(dt);
   if(mg){mg.upd(dt);mg&&mg.draw(mctx)}
   {const tt=!inLabNow()?'Dragon Smoke':player.z<LZ0+8.2?'Labor · Raum 1 – Vorbereitung':'Labor · Raum 2 – Kochraum';if($('title').textContent!==tt)$('title').textContent=tt}
   // Zielerfassung + HUD
