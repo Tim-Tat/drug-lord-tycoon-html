@@ -219,6 +219,7 @@ function applyQuality(){
   if(Post.on)Post.resize(Math.floor(innerWidth*Post.pr),Math.floor(innerHeight*Post.pr));
   const sm=hi?(renderer.capabilities.maxTextureSize>=4096?4096:2048):1024;
   if(typeof sun!=='undefined'&&sun.shadow.mapSize.x!==sm){sun.shadow.mapSize.set(sm,sm);if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null}}
+  if(typeof grassMesh!=='undefined'&&grassMesh)grassMesh.visible=hi;
   if(typeof PS!=='undefined')PS.uScale.value=innerHeight*Post.pr/(2*Math.tan(camera.fov*Math.PI/360));
 }
 let _rzT=0;addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);clearTimeout(_rzT);_rzT=setTimeout(applyQuality,140)});
@@ -2390,7 +2391,7 @@ function hudFx(dt){
   const mg_=$('msg');mg_.style.transform=mg_.style.opacity==='1'?'translate(-50%,0)':'translate(-50%,-8px)';
 }
 // ---------- Qualität umschalten ----------
-addEventListener('keydown',e=>{if(e.code==='F2'){e.preventDefault();Q.hi=!Q.hi;try{localStorage.setItem('dlt3d_q',Q.hi?'hi':'lo')}catch(_){}applyQuality();if(typeof grassMesh!=='undefined'&&grassMesh)grassMesh.visible=Q.hi;msg(Q.hi?'Grafik: hoch':'Grafik: niedrig')}});
+addEventListener('keydown',e=>{if(e.code==='F2'){e.preventDefault();Q.hi=!Q.hi;try{localStorage.setItem('dlt3d_q',Q.hi?'hi':'lo')}catch(_){}applyQuality();msg(Q.hi?'Grafik: hoch':'Grafik: niedrig')}});
 // ---------- Haupt-Tick ----------
 function vfxTick(dt,time){
   dayCycle(S.dayT/DAYLEN,time);
