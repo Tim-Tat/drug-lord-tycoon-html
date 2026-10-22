@@ -344,7 +344,7 @@ const rickHit=mesh(new T.CylinderGeometry(.7,.7,2,8),hitMat,rick.position.x,1,ri
 // ---------------- Spielzustand ----------------
 const SEED=10,DAYLEN=90,SALARY=50;
 let S={cash:500,xp:0,level:1,day:1,dayT:0,raw:0,trim:0,pack:0,tool:0,water:8,waterCap:8,lights:0,potsOwned:3,workers:0,canUp:0,flags:{},price:55,priceT:0,potsState:[],
-  lab:0,psa:false,reag:{},drugs:{},recipes:{},up:{yield:0,ease:0},cook:null,dm:{},batches:0,coins:0,cp:40,cpT:4,evT:60,
+  lab:0,psa:false,reag:{},drugs:{},recipes:{},up:{yield:0,ease:0},cook:null,dm:{},batches:0,dirty:0,waste:0,coins:0,cp:40,cpT:4,evT:60,
   news:'📰 SchwarzCoin (SCN): ein Kurs, so stabil wie Onkel Ricks Laune.',rig:{gpu:0,fan:0},scams:0,heat:0,orders:[],ordId:0,ordT:20};
 function save(){if(NET.role==="client"||NET.role==="lost")return;try{S.potsState=pots.map(p=>({o:p.owned,s:p.stage,t:p.t,w:p.wet}));localStorage.setItem('dlt3d',JSON.stringify(S))}catch(e){}}
 function load(){try{const s=JSON.parse(localStorage.getItem('dlt3d'));if(s&&s.cash!==undefined)S=Object.assign(S,s)}catch(e){}}
@@ -783,7 +783,7 @@ function walkCollide(ox,oz){
 // ======================================================================
 //  LABOR-LOGIK  (alles Spielmechanik – erfundene Stoffe, erfundene Schritte)
 // ======================================================================
-const LAB_COST=2500;
+const LAB_COST=2500,WASTE_MAX=4,WASTE_COST=60,CLEAN_COST=40;
 let modal=false,lapOpen=false,mg=null;
 const STATION={balance:'Analysenwaage',stirrer:'Magnetrührer',hood:'Abzug mit Heizrührer',bath:'Kühlbad',funnel:'Vakuumfiltration',oven:'Trockenschrank',press:'Tablettenpresse'};
 const STEP={
@@ -795,17 +795,31 @@ const STEP={
   dry:{ic:'♨️',n:'Trocknen',st:'oven',h:'Stoppe den Schieber im grünen Bereich (Klick / Leertaste). 3 Versuche, sie werden schneller.',tip:'Timing, Timing, Timing. Wie beim Toast.'},
   press:{ic:'⚙️',n:'Tablettieren',st:'press',h:'Schlage die Presse im Takt, wenn der Stempel im grünen Bereich ist (Klick / Leertaste). 5 Schläge.',tip:'Im Takt zuschlagen – wie am Schlagzeug, nur hygienischer.'}
 };
+for(const k in STEP)STEP[k].g=k;
+const SV=(b,o)=>({...STEP[b],...o,g:b});
+Object.assign(STEP,{
+  wBase:SV('weigh',{n:'Einwiegen: Grundstoff A',tip:'Erst Grundstoff, dann der Rest – jede Komponente einzeln auf der Waage.'}),
+  wSolv:SV('weigh',{n:'Einwiegen: Lösungsmittel L',tip:'Lösungsmittel immer unter dem Abzug abmessen.'}),
+  wCat:SV('weigh',{n:'Einwiegen: Katalysator / Additiv',tip:'Kleine Mengen – hier rächt sich jedes Zuviel.'}),
+  wSens:SV('weigh',{n:'Einwiegen: Spezial-Reagenz S',tip:'Empfindlich und teuer. Ruhige Hand, gedämpftes Licht.'}),
+  mix2:SV('mix',{n:'Nachrühren: Ansatz ausreifen lassen',tip:'Nicht hetzen – der Ansatz braucht seine Zeit.'}),
+  wash:SV('filter',{n:'Filterkuchen waschen',h:'Klicke im Takt, während du den Filterkuchen mit wenig kaltem Lösungsmittel wäschst – der Unterdruck muss stabil bleiben.',tip:'Lieber zweimal wenig als einmal viel.',bk:'filter'}),
+  heat2:SV('heat',{n:'Umkristallisieren: In der Wärme lösen',tip:'Sanft erwärmen – nur so viel, dass alles gerade in Lösung geht.',bk:'heat2'}),
+  cool2:SV('cool',{n:'Umkristallisieren: Langsam auskristallisieren',tip:'Je langsamer abgekühlt wird, desto sauberer die Kristalle.',bk:'cool2'}),
+  filter2:SV('filter',{n:'Umkristallisat abfiltrieren',tip:'Zweiter Durchgang – diesmal zählt die Reinheit.',bk:'filter'})
+});
 const ING={base:{n:'Grundstoff A',p:20},solv:{n:'Lösungsmittel L',p:12},cat:{n:'Katalysator K',p:45},pur:{n:'Reinigungs-Additiv R',p:70},sens:{n:'Spezial-Reagenz S',p:140}};
 const DRUGS={
-  speed:{n:'Amphetamin',s:'„Speed“',ic:'⚡',star:1,d:1.0,price:70,lvl:1,coin:2,cost:{base:2,solv:1},steps:['weigh','mix','heat','cool','filter'],band:{heat:55,cool:32,filter:62},xp:30,
+  speed:{n:'Amphetamin',s:'„Speed“',ic:'⚡',star:1,d:1.0,price:70,lvl:1,coin:2,cost:{base:2,solv:1},steps:['wBase','wSolv','mix','heat','cool','filter','wash','dry'],band:{heat:55,cool:32,filter:62},yld:1.0,xp:30,
          v:'Onkel_Hans_1337',r:'★4.9 (12.847)',rev:'„Anleitung 10/10 – sogar meine Katze hat’s verstanden.“',tip:'Anfängerfreundlich. Selbst Onkel Rick würde das hinbekommen.'},
-  mdma:{n:'MDMA',s:'„Ecstasy“',ic:'💊',star:2,d:1.3,price:150,lvl:4,coin:8,cost:{base:3,solv:1,cat:1},steps:['weigh','mix','heat','cool','filter','press'],band:{heat:60,cool:28,filter:62},xp:55,
+  mdma:{n:'MDMA',s:'„Ecstasy“',ic:'💊',star:2,d:1.3,price:150,lvl:4,coin:8,cost:{base:3,solv:1,cat:1},steps:['wBase','wSolv','wCat','mix','heat','cool','filter','wash','dry','press'],band:{heat:60,cool:28,filter:62},yld:.95,xp:55,
         v:'PartyPeter_Official',r:'★4.7 (3.412)',rev:'„Pünktlich geliefert, verpackt wie ein Geschenk. Wirkt seriös.“',tip:'Die Presse zickt gern – Rhythmus halten!'},
-  meth:{n:'Methamphetamin',s:'„Crystal“',ic:'💎',star:3,d:1.7,price:320,lvl:6,coin:25,cost:{base:3,solv:2,cat:1,pur:1},steps:['weigh','mix','heat','cool','filter','dry'],band:{heat:68,cool:24,filter:60},xp:100,
+  meth:{n:'Methamphetamin',s:'„Crystal“',ic:'💎',star:3,d:1.7,price:320,lvl:6,coin:25,cost:{base:3,solv:2,cat:1,pur:1},steps:['wBase','wSolv','wCat','mix','heat','cool','filter','heat2','cool2','filter2','dry'],band:{heat:68,cool:24,filter:60,heat2:58,cool2:36},yld:.9,xp:100,
         v:'Prof.Dr.Chemie_a.D.',r:'★4.8 (9.001)',rev:'„Ehemaliger Lehrer. Hat Hausaufgaben mitgeschickt.“',tip:'Enge Zonen, Siedeverzug-Gefahr. Schutzausrüstung ist kein Kostüm.'},
-  lsd:{n:'LSD',s:'„Acid“',ic:'🌈',star:4,d:2.1,price:560,lvl:8,coin:60,cost:{base:2,solv:2,pur:1,sens:1},steps:['weigh','mix','cool','heat','filter','dry'],band:{heat:48,cool:20,filter:58},xp:170,
+  lsd:{n:'LSD',s:'„Acid“',ic:'🌈',star:4,d:2.1,price:560,lvl:8,coin:60,cost:{base:2,solv:2,pur:1,sens:1},steps:['wBase','wSens','wSolv','mix','cool','mix2','heat','cool2','filter','wash','dry'],band:{heat:48,cool:20,filter:58,cool2:28},yld:.8,xp:170,
        v:'Omas_Strickclub_Premium',r:'★5.0 (666)',rev:'„Seltsam, aber gut. Würde wieder kaufen.“',tip:'Mikro-Präzision. Atmen. Bis drei zählen.'}
 };
+if(S.cook&&(!DRUGS[S.cook.drug]||S.cook.i>=DRUGS[S.cook.drug].steps.length))S.cook=null;   // alter Spielstand mit anderem Ablauf
 const stars=D=>'★'.repeat(D.star)+'☆'.repeat(4-D.star);
 const QN=q=>q>=90?'Premium':q>=75?'Gut':q>=50?'Mittel':'Schlecht';
 const batchUnits=()=>6+S.up.yield;
@@ -857,12 +871,15 @@ function boardMenu(){
   const items=[];let line;
   if(S.cook){const D=DRUGS[S.cook.drug];
     line=`Aktiver Ansatz: ${D.ic} ${D.n}\nSchritt ${S.cook.i+1}/${D.steps.length}: ${STEP[D.steps[S.cook.i]].n} → ${STATION[STEP[D.steps[S.cook.i]].st]}`;
-    items.push(['Ansatz verwerfen (Zutaten gehen verloren)',true,()=>{S.cook=null;msg('Ansatz entsorgt.')},undefined,'discard']);
+    items.push(['Ansatz verwerfen (Zutaten gehen verloren)',true,()=>{S.cook=null;S.waste=(S.waste||0)+1;msg('Ansatz entsorgt – wandert ins Sondermüll-Fass.')},undefined,'discard']);
   }else{
-    line='REZEPT-BOARD\nZutaten werden beim Start verbraucht. '+(S.psa?'':'⚠ Du trägst keine Schutzausrüstung!');
+    const full=(S.waste||0)>=WASTE_MAX;
+    line='REZEPT-BOARD\nZutaten werden beim Start verbraucht. '+(S.psa?'':'⚠ Du trägst keine Schutzausrüstung!')+`\nGlasware: ${S.dirty?'verschmutzt ('+S.dirty+'× benutzt)':'sauber'} · Sondermüll: ${S.waste||0}/${WASTE_MAX}${full?' – VOLL':''}`;
+    if(S.dirty)items.push([`🧽 Glasware reinigen – ${money(CLEAN_COST)}`,S.cash>=CLEAN_COST,()=>{S.cash-=CLEAN_COST;S.dirty=0;msg('🧽 Glasware gespült und getrocknet – wieder sauber.')},'Rückstände senken die Reinheit']);
+    if(S.waste)items.push([`🛢 Sondermüll abholen lassen – ${money(S.waste*WASTE_COST)}`,S.cash>=S.waste*WASTE_COST,()=>{const c=S.waste*WASTE_COST;S.cash-=c;S.waste=0;msg('🛢 Entsorgungsfirma hat das Fass geleert −'+money(c))},'Lösungsmittel & Filtrate gehören nicht in den Abfluss']);
     for(const id in DRUGS){const D=DRUGS[id];
       if(!S.recipes[id])items.push([`🔒 ${D.ic} ${D.n} – Anleitung im Darknet besorgen (Laptop)`,false,()=>{},`${stars(D)} · ab Level ${D.lvl} · ${D.coin} SCN`,'locked:'+id]);
-      else items.push([`${D.ic} Ansatz starten: ${D.n} ${D.s}`,canMake(id),()=>{startCook(id);closeMenu()},`${stars(D)} · ${costTxt(id)}`,'start:'+id]);
+      else items.push([`${D.ic} Ansatz starten: ${D.n} ${D.s}`,canMake(id)&&!full,()=>{startCook(id);closeMenu()},`${stars(D)} · ${D.steps.length} Schritte · ${costTxt(id)}${full?' · Sondermüll-Fass voll!':''}`,'start:'+id]);
     }
   }
   items.push(['Schließen',true,closeMenu]);return{line,items}}
@@ -996,15 +1013,20 @@ function useStation(id){
 function cookStepDone(score,fail,cid,si,psa){
   if(isClient()){netSend({t:'cookstep',score,fail,cid,i:si,psa:S.psa});return}
   const c=S.cook;if(!c||c.id!==cid||c.i!==si){msg('Dieser Schritt wurde schon von jemand anderem erledigt – dein Ergebnis zählt nicht.');return}
-  if(fail){mishap(fail,psa===undefined?S.psa:psa);S.cook=null;return}
+  if(fail){mishap(fail,psa===undefined?S.psa:psa);S.cook=null;S.waste=(S.waste||0)+1;S.dirty=(S.dirty||0)+1;return}
   c.sc.push(Math.round(score));c.i++;addXp(3);
   if(c.i>=DRUGS[c.drug].steps.length)finishCook()}
 function finishCook(){
-  const c=S.cook,D=DRUGS[c.drug],q=Math.round(c.sc.reduce((a,b)=>a+b,0)/c.sc.length),u=batchUnits();
+  const c=S.cook,D=DRUGS[c.drug],bu=batchUnits(),dirty=S.dirty||0;
+  // Reinheit = Durchschnitt aller Schritte; verschmutzte Glasware kostet Punkte
+  const q=Math.max(5,Math.round(c.sc.reduce((a,b)=>a+b,0)/c.sc.length)-6*Math.max(0,dirty-0));
+  // Ausbeute: schlechte Kristalle & Verluste beim Waschen/Umfüllen – komplexe Stoffe haben höhere Verluste
+  const u=Math.max(1,Math.round(bu*D.yld*(.55+.7*q/100)));
   const cur=S.drugs[c.drug]||{n:0,q:0};
   S.drugs[c.drug]={n:cur.n+u,q:Math.round((cur.q*cur.n+q*u)/(cur.n+u))};
   addXp(Math.round(D.xp*(.5+q/100)));S.batches=(S.batches||0)+1;S.flags.cooked=1;S.cook=null;
-  msg(`${D.ic} ${u}× ${D.n} fertig – Qualität ${q}% (${QN(q)})`)}
+  S.dirty=dirty+1;S.waste=(S.waste||0)+(D.star>=3?2:1);
+  msg(`${D.ic} ${u}× ${D.n} fertig – Reinheit ${q}% (${QN(q)}) · Ausbeute ${Math.round(u/bu*100)} %`+(dirty?' · Glasware war verschmutzt!':'')+(S.waste>=WASTE_MAX?' · Sondermüll-Fass voll!':''))}
 function mishap(reason,psa){
   if(!NET.remote){$('flash').style.opacity=1;setTimeout(()=>$('flash').style.opacity=0,500)}
   if(psa)msg('💥 '+reason+' – Ansatz verloren, aber die Schutzausrüstung hat dich gerettet.');
@@ -1053,7 +1075,7 @@ function setBtns(list){const b=$('mb');b.innerHTML='';list.forEach(([t,fn])=>{co
 function startMini(k){
   const c=S.cook,D=DRUGS[c.drug],ST=STEP[k],W=(1+S.up.ease*.18)/D.d;
   openMini(ST.ic+' '+ST.n+' – '+STATION[ST.st],ST.h);
-  mg=({weigh:gPour,mix:gStir,heat:gGauge,cool:gGauge,filter:gGauge,dry:gTiming,press:gTiming})[k](k,D,W);
+  mg=({weigh:gPour,mix:gStir,heat:gGauge,cool:gGauge,filter:gGauge,dry:gTiming,press:gTiming})[ST.g](ST.g,D,W,ST.bk||ST.g);
   mg.hold=false;mg.mx=320;mg.my=130;mg.fin=false;mg.cid=c.id;mg.si=c.i;   // Ansatz + Schritt beim Start festhalten
   if(mg.btns)setBtns(mg.btns)}
 function mgFinish(score,fail,note){
@@ -1117,13 +1139,13 @@ function gStir(k,D,W){
   return o}
 
 // ---- Heizen / Kühlen / Filtern (Anzeige im Zielbereich halten) ----
-function gGauge(k,D,W){
+function gGauge(k,D,W,bk){
   const hw=Math.max(5,11*W),ease=1+S.up.ease*.1;
   const cfg={
     heat:{v0:12,hold:26,rel:-13/ease,dur:15,danger:95,col:'#ffb347'},
     cool:{v0:88,hold:-20,rel:9/ease,dur:15,col:'#bfe6ff'},
     filter:{v0:30,tap:11,rel:-14/ease,dur:13,col:'#e8e8d8'}
-  }[k],ctr=D.band[k];
+  }[k],ctr=D.band[bk||k];
   const o={v:cfg.v0,t:0,inb:0,dang:0,nz:0,nzT:0,nzG:0};
   o.press=()=>{if(cfg.tap)o.v=Math.min(100,o.v+cfg.tap)};
   o.upd=dt=>{if(o.fin)return;o.t+=dt;
