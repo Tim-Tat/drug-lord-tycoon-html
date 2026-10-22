@@ -1170,7 +1170,8 @@ let S={cash:500,xp:0,level:1,day:1,dayT:0,raw:0,trim:0,pack:0,tool:0,water:8,wat
   lab:0,psa:false,reag:{},drugs:{},recipes:{},up:{yield:0,ease:0},cook:null,dm:{},batches:0,dirty:0,waste:0,coins:0,cp:40,cpT:4,evT:60,
   news:'📰 SchwarzCoin (SCN): ein Kurs, so stabil wie Onkel Ricks Laune.',rig:{gpu:0,fan:0},scams:0,heat:0,orders:[],ordId:0,ordT:20,hp:100,vent:0,high:null,crash:0,dw:{rating:4.5,sales:0,list:{},parcels:[],log:[],pid:1}};
 function save(){if(window.DLT&&DLT.noSave)return;if(NET.role==="client"||NET.role==="lost")return;try{S.potsState=pots.map(p=>({o:p.owned,s:p.stage,t:p.t,w:p.wet}));localStorage.setItem('dlt3d',JSON.stringify(S))}catch(e){}}
-function load(){try{const s=JSON.parse(localStorage.getItem('dlt3d'));if(s&&s.cash!==undefined)S=Object.assign(S,s)}catch(e){}}
+function releaseCarried(pid){(S.orders||[]).forEach(o=>{if(o.status==='carried'&&(pid===undefined||o.carrier===pid)){o.status='packed';delete o.carrier}})}   // Träger weg -> Paket am Versandtisch wieder abholbar
+function load(){try{const s=JSON.parse(localStorage.getItem('dlt3d'));if(s&&s.cash!==undefined)S=Object.assign(S,s)}catch(e){}releaseCarried()}
 load();
 pots.forEach((p,i)=>{const st=S.potsState&&S.potsState[i];p.owned=st?st.o:i<S.potsOwned;if(st){p.stage=st.s;p.t=st.t;p.wet=st.w}});
 if(!pots.some(p=>p.owned))for(let i=0;i<3;i++)pots[i].owned=true;
@@ -1183,7 +1184,7 @@ for(let i=0;i<S.workers;i++)spawnWorker();
 
 function msg(t){const e=$('msg');e.textContent=t;e.style.opacity=1;clearTimeout(msg.t);msg.t=setTimeout(()=>e.style.opacity=0,2600)}
 const need=l=>Math.floor(40*Math.pow(l,1.5));
-function addXp(n){S.xp+=n;while(S.xp>=need(S.level)){S.xp-=need(S.level);S.level++;msg('Level '+S.level+'!')}}
+function addXp(n){n=Number.isFinite(+n)?clamp(+n,0,1e6):0;S.xp+=n;while(S.xp>=need(S.level)){S.xp-=need(S.level);S.level++;msg('Level '+S.level+'!')}}
 const lightMult=()=>1+S.lights*.35;
 const potCost=()=>Math.floor(150*Math.pow(1.5,S.potsOwned-3));
 const hireCost=()=>Math.floor(400*Math.pow(1.6,S.workers));
@@ -1894,8 +1895,8 @@ function boardMenu(){
   }else{
     const full=(S.waste||0)>=WASTE_MAX;
     line='REZEPT-BOARD\nZutaten werden beim Start verbraucht. '+(S.psa?'':'⚠ Du trägst keine Schutzausrüstung!')+`\nGlasware: ${S.dirty?'verschmutzt ('+S.dirty+'× benutzt)':'sauber'} · Sondermüll: ${S.waste||0}/${WASTE_MAX}${full?' – VOLL':''}`;
-    if(S.dirty)items.push([`🧽 Glasware reinigen – ${money(CLEAN_COST)}`,S.cash>=CLEAN_COST,()=>{S.cash-=CLEAN_COST;S.dirty=0;msg('🧽 Glasware gespült und getrocknet – wieder sauber.')},'Rückstände senken die Reinheit']);
-    if(S.waste)items.push([`🛢 Sondermüll abholen lassen – ${money(S.waste*WASTE_COST)}`,S.cash>=S.waste*WASTE_COST,()=>{const c=S.waste*WASTE_COST;S.cash-=c;S.waste=0;msg('🛢 Entsorgungsfirma hat das Fass geleert −'+money(c))},'Lösungsmittel & Filtrate gehören nicht in den Abfluss']);
+    if(S.dirty)items.push([`🧽 Glasware reinigen – ${money(CLEAN_COST)}`,S.cash>=CLEAN_COST,()=>{S.cash-=CLEAN_COST;S.dirty=0;msg('🧽 Glasware gespült und getrocknet – wieder sauber.')},'Rückstände senken die Reinheit','clean']);
+    if(S.waste)items.push([`🛢 Sondermüll abholen lassen – ${money(S.waste*WASTE_COST)}`,S.cash>=S.waste*WASTE_COST,()=>{const c=S.waste*WASTE_COST;S.cash-=c;S.waste=0;msg('🛢 Entsorgungsfirma hat das Fass geleert −'+money(c))},'Lösungsmittel & Filtrate gehören nicht in den Abfluss','waste']);
     for(const id in DRUGS){const D=DRUGS[id];
       if(!S.recipes[id])items.push([`🔒 ${D.ic} ${D.n} – Anleitung im Darknet besorgen (Laptop)`,false,()=>{},`${stars(D)} · ab Level ${D.lvl} · ${D.coin} SCN`,'locked:'+id]);
       else items.push([`${D.ic} Ansatz starten: ${D.n} ${D.s}`,canMake(id)&&!full,()=>{startCook(id);closeMenu()},`${stars(D)} · ${D.steps.length} Schritte · ${costTxt(id)}${full?' · Sondermüll-Fass voll!':''}`,'start:'+id]);
@@ -2049,11 +2050,16 @@ function takeGoods(k,n){if(k==='pack')S.pack-=n;else{S.drugs[k].n-=n;if(S.drugs[
 let dead=false,spdMul=1,highShake=0,highRoll=0;
 function hurt(dmg,why){if(dead)return;S.hp=Math.max(0,S.hp-dmg);if(S.hp<=0)die(why||'Du bist gestorben.')}
 // Tod samt Konsequenzen wird sofort angewendet und gespeichert (S.dead) – Neuladen im Todesbildschirm hilft nicht.
+function applyDeathLoss(){
+  const loss=Math.round(S.cash*.3);S.cash-=loss;
+  for(const k in S.drugs)if(S.drugs[k]){S.drugs[k].n=Math.floor(S.drugs[k].n/2);if(!S.drugs[k].n)S.drugs[k]={n:0,q:0}}
+  return loss}
 function die(why){
   S.cook=null;S.high=null;S.crash=0;
   if(!S.dead){
-    const loss=Math.round(S.cash*.3);S.cash-=loss;
-    for(const k in S.drugs)if(S.drugs[k]){S.drugs[k].n=Math.floor(S.drugs[k].n/2);if(!S.drugs[k].n)S.drugs[k]={n:0,q:0}}
+    let loss;
+    if(isClient()){loss=Math.round(S.cash*.3);netSend({t:'death'})}   // gemeinsame Verluste wendet der Host einmalig an – sonst setzt der nächste Snapshot sie zurück
+    else loss=applyDeathLoss();
     S.hp=0;S.dead=1;
     S.deathTxt=why+'<br><small>Krankenhaus: Behandlung −'+money(loss)+'. Labor-Ware zur Hälfte weg, Gesundheit 40 %.</small>';
     save()}
@@ -2167,6 +2173,7 @@ function useStation(id){
   if(ST.st!==id){msg('Jetzt dran: '+ST.n+' → '+STATION[ST.st]);return}
   startMini(k)}
 function cookStepDone(score,fail,cid,si,psa,hz){
+  score=Number.isFinite(+score)?clamp(+score,0,100):0;
   if(isClient()){netSend({t:'cookstep',score,fail,cid,i:si,psa:S.psa,hz});return}
   const c=S.cook;if(!c||c.id!==cid||c.i!==si){msg('Dieser Schritt wurde schon von jemand anderem erledigt – dein Ergebnis zählt nicht.');return}
   if(fail){mishap(fail,psa===undefined?S.psa:psa,hz);S.cook=null;S.waste=(S.waste||0)+1;S.dirty=(S.dirty||0)+1;return}
@@ -2249,7 +2256,8 @@ function startMini(k){
 function mgFinish(score,fail,note,hz){
   if(!mg||mg.fin)return;mg.fin=true;
   $('mr').innerHTML=fail?`<span style="color:#f66">💥 ${fail}</span>`:`<span style="color:${score>=80?'#7f7':score>=50?'#ff6':'#fa6'}">${note||''} Ergebnis: <b>${Math.round(score)}%</b></span>`;
-  const cid=mg.cid,si=mg.si;const next=()=>{closeMini();cookStepDone(score,fail,cid,si,undefined,hz)};mg.next=next;
+  const cid=mg.cid,si=mg.si;const next=()=>closeMini();mg.next=next;
+  cookStepDone(score,fail,cid,si,undefined,hz);   // Ergebnis/Schaden sofort werten – nicht erst beim Klick auf „Weiter“ (sonst Regeneration abwarten)
   setBtns([[fail?'Weiter':'Weiter ▶',next]])}
 function mgDown(){if(!mg||mg.fin)return;mg.hold=true;mg.press&&mg.press()}
 function mgUp(){if(!mg)return;const was=mg.hold;mg.hold=false;was&&mg.release&&mg.release()}
@@ -2689,7 +2697,7 @@ function applyPenalty(cash,heat){cash=clamp(+cash||0,0,500);heat=clamp(+heat||0,
 function penalty(cash,heat){if(isClient())netSend({t:'pen',cash,heat});else applyPenalty(cash,heat)}
 const sellBase=k=>k==='pack'?S.price*1.3:unitPrice(k)*1.4;
 function applyStreetSale(k,n,v){
-  if(!Number.isInteger(n)||n<1||n>12)return;
+  if(!Number.isInteger(n)||n<1||n>12||!Number.isFinite(+v))return;
   let have;if(k==='pack')have=S.pack;else if(DRUGS[k]){const d=S.drugs[k];have=d?d.n:0}else return;
   if(have<n)return;
   const val=Math.max(0,Math.min(Math.round(v),Math.ceil(n*sellBase(k)*1.9)));
@@ -2726,9 +2734,12 @@ function expireOrders(){
 function shipMenu(){
   const items=[],acc=S.orders.filter(o=>o.status==='accepted'),pk=S.orders.filter(o=>o.status==='packed');
   acc.forEach(o=>{const D=DRUGS[o.drug],d=S.drugs[o.drug],ok=d&&d.n>=o.n&&d.q>=o.minQ;
-    items.push([`📦 Paket packen: ${o.n}× ${D.n}`,!!ok,()=>{S.drugs[o.drug].n-=o.n;o.status='packed';msg('📦 Paket gepackt – Versandlabel #'+o.id)},
-      `Qualität ≥ ${o.minQ} % · Vorrat ${d?d.n:0}× (${d?d.q:0} %) · Lohn ${o.reward.toFixed(3)} SCN`])});
-  if(pk.length)items.push([`🚚 ${pk.length} Paket(e) mitnehmen (Auto → Post)`,true,()=>takeParcels(),'Zur Postfiliale fahren und am Schalter abgeben – nicht rammen!']);
+    items.push([`📦 Paket packen: ${o.n}× ${D.n}`,!!ok,()=>{
+      const dd=S.drugs[o.drug];   // Bestand/Qualität/Status beim Klick erneut prüfen (Menü kann veraltet sein)
+      if(o.status!=='accepted'||!dd||dd.n<o.n||dd.q<o.minQ){msg('Paket nicht mehr packbar – Menge, Qualität oder Auftrag haben sich geändert.');return}
+      dd.n-=o.n;o.status='packed';msg('📦 Paket gepackt – Versandlabel #'+o.id)},
+      `Qualität ≥ ${o.minQ} % · Vorrat ${d?d.n:0}× (${d?d.q:0} %) · Lohn ${o.reward.toFixed(3)} SCN`,'pack:'+o.id])});
+  if(pk.length)items.push([`🚚 ${pk.length} Paket(e) mitnehmen (Auto → Post)`,true,()=>takeParcels(),'Zur Postfiliale fahren und am Schalter abgeben – nicht rammen!','take']);
   if(!acc.length&&!pk.length)items.push(['Keine angenommenen Aufträge – am Laptop (Tab „Aufträge“) annehmen.',false,()=>{}]);
   items.push(['Schließen',true,closeMenu]);
   return{line:'VERSANDTISCH\nAngenommene Darknet-Aufträge packen, dann sicher mit dem Auto zur Post.',items}}
@@ -2759,6 +2770,10 @@ function postHandIn(){
 
 // ---------------- Kunden (lokal pro Spieler) ----------------
 const custList=[];
+function disposeObj(o){   // Geometrien, Materialien und Texturen einer ausgeschiedenen Figur freigeben (gemeinsames hitMat bleibt)
+  o.traverse(n=>{
+    if(n.geometry&&n.geometry.dispose)n.geometry.dispose();
+    if(n.material&&n.material!==hitMat)(Array.isArray(n.material)?n.material:[n.material]).forEach(m=>{if(m===hitMat)return;if(m.map&&m.map.dispose)m.map.dispose();m.dispose&&m.dispose()})})}
 const PHRASES=['Psst – haste was?','Hey, du bist doch der Typ vom Gewächshaus …','Ich hab nur 5 Minuten Pause.','Meine Oma schickt mich.','Ich war nie hier, klar?','Mach’s kurz, die Nachbarn gucken.'];
 const outdoors=()=>yardOpen()&&player.x>HX+.8;
 const inPost=()=>player.x>29.4&&player.x<40.6&&player.z>-125.6&&player.z<-116.4;
@@ -2773,7 +2788,7 @@ function spawnCustomer(hot){
   const m=makeCharacter({sk:rint(6),hc:rint(6),hs:rint(5),sh:rint(8),pa:rint(4),ac:rint(4)});scene.add(m);m.position.set(sx,0,z);
   const bubble=emojiSprite('💬',.6);bubble.position.set(0,2.1,0);bubble.visible=false;m.add(bubble);
   custList.push({m,bubble,x:sx,z,state:'walk',t:0,ph:Math.random()*6,req:{k:it.k,n,minQ,unit},phrase:PHRASES[rint(PHRASES.length)],pushed:false})}
-function removeCust(i){scene.remove(custList[i].m);custList.splice(i,1)}
+function removeCust(i){scene.remove(custList[i].m);disposeObj(custList[i].m);custList.splice(i,1)}
 function clearCust(){while(custList.length)removeCust(custList.length-1)}
 const nearCust=()=>custList.find(c=>c.state==='wait'&&Math.hypot(player.x-c.x,player.z-c.z)<3.4);
 function custDone(c){c.state='leave';c.lt=0;c.bubble.visible=false}
@@ -2781,7 +2796,9 @@ function customerMenu(c){
   const r=c.req,total=r.n*r.unit,have=r.k==='pack'?S.pack:(S.drugs[r.k]?S.drugs[r.k].n:0),q=r.k==='pack'?100:(S.drugs[r.k]?S.drugs[r.k].q:0);
   c.t=0;
   const items=[];
-  items.push([`✅ Verkaufen: ${r.n}× ${prodName(r.k)} – ${money(total)}`,custList.includes(c)&&have>=r.n&&q>=r.minQ,()=>{streetSell(r.k,r.n,total);custDone(c,true);closeMenu()},
+  items.push([`✅ Verkaufen: ${r.n}× ${prodName(r.k)} – ${money(total)}`,custList.includes(c)&&have>=r.n&&q>=r.minQ,()=>{const hv=r.k==='pack'?S.pack:(S.drugs[r.k]?S.drugs[r.k].n:0),qq=r.k==='pack'?100:(S.drugs[r.k]?S.drugs[r.k].q:0);
+      if(!custList.includes(c)||hv<r.n||qq<r.minQ){msg('Kunde: „Das ist nicht die Ware, die ich wollte.“');custDone(c,false);closeMenu();return}
+      streetSell(r.k,r.n,total);custDone(c,true);closeMenu()},
     `${r.minQ?`Qualität ≥ ${r.minQ} % (deine: ${q} %) · `:''}Vorrat ${have}×`]);
   items.push(['💬 Mehr verlangen (+25 %)',!c.pushed,()=>{c.pushed=true;
     if(Math.random()<.55){r.unit=Math.round(r.unit*1.25);msg('Kunde: „Na gut …“')}
@@ -2908,7 +2925,7 @@ function ensureAvatar(id,name,app){
   const lb=labelSprite(name,2.2,true);lb.position.set(0,2.15,0);m.add(lb);
   m.position.set(0,0,4.6);
   return AV[id]={m,name,tx:0,tz:4.6,tyaw:0,init:false}}
-function dropAvatar(id){const a=AV[id];if(a){scene.remove(a.m);delete AV[id]}}
+function dropAvatar(id){const a=AV[id];if(a){scene.remove(a.m);disposeObj(a.m);delete AV[id]}}
 function syncAvatars(list,selfId){
   const seen={};
   list.forEach(p=>{if(p.id===selfId)return;seen[p.id]=1;const a=ensureAvatar(p.id,p.name,p.app);a.tx=p.x;a.tz=p.z;a.tyaw=p.yaw;a.m.userData.setPsa(p.psa);a.m.userData.setCar(p.veh);if(!a.init){a.init=true;a.m.position.set(p.x,0,p.z)}});
@@ -2964,6 +2981,7 @@ function hostAccept(conn){
   const drop=()=>hostDrop(conn);conn.on('close',drop);conn.on('error',drop)}
 function hostDrop(conn){
   const i=NET.conns.indexOf(conn);if(i>=0)NET.conns.splice(i,1);
+  if(conn.pid!==undefined)releaseCarried(conn.pid);
   if(conn.pid!==undefined&&NET.pl[conn.pid]){const nm=NET.pl[conn.pid].name;delete NET.pl[conn.pid];dropAvatar(conn.pid);
     addChat('📢',nm+' hat das Spiel verlassen.');hostBroadcast({t:'chat',from:'📢',text:nm+' hat das Spiel verlassen.'});netHud()}}
 function asRemote(conn,fn){
@@ -2989,11 +3007,12 @@ function hostData(conn,d){
     case 'act':if(['plant','water','harvest','trim','pack'].includes(d.k)&&(d.n===undefined||Number.isInteger(d.n)))asRemote(conn,()=>doAct(d.k,d.n));break;
     case 'menu':if(MENUS[d.id]&&typeof d.a==='string')asRemote(conn,()=>{const it=MENUS[d.id]().items.find(x=>x[4]===d.a);if(it&&it[1])it[2]()});break;
     case 'lap':if(typeof d.a==='string'&&d.a!=='tab')asRemote(conn,()=>{if(d.a==='welcome')lapWelcome();else lapAct(d.a,d.k)});break;
-    case 'cookstep':asRemote(conn,()=>cookStepDone(+d.score||0,d.fail?String(d.fail).slice(0,80):null,d.cid,d.i,!!d.psa,String(d.hz||'').slice(0,8)));break;
+    case 'cookstep':asRemote(conn,()=>cookStepDone(+d.score,d.fail?String(d.fail).slice(0,80):null,d.cid,d.i,!!d.psa,String(d.hz||'').slice(0,8)));break;
     case 'flag':if(['talked','psa','inlab'].includes(d.k))S.flags[d.k]=1;break;
     case 'ssell':if(typeof d.k==='string'&&Number.isInteger(d.n)&&isFinite(d.v))asRemote(conn,()=>applyStreetSale(d.k,d.n,+d.v));break;
     case 'arrest':asRemote(conn,()=>applyArrest(pl.id,Array.isArray(d.carry)?d.carry.filter(Number.isInteger):[]));break;
     case 'post':asRemote(conn,()=>applyPost(pl.id,Array.isArray(d.ids)?d.ids.filter(Number.isInteger):[],clamp(+d.integ||0,0,100)));break;
+    case 'death':if(performance.now()-(pl.lastDeath||-1e9)>10000){pl.lastDeath=performance.now();asRemote(conn,()=>{applyDeathLoss()})}break;
     case 'pen':asRemote(conn,()=>applyPenalty(+d.cash||0,+d.heat||0));break;
     case 'chat':{const t=String(d.text||'').slice(0,120);if(t){addChat(pl.name,t);hostBroadcast({t:'chat',from:pl.name,text:t})}break}
   }}
