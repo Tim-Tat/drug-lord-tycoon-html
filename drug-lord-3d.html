@@ -1124,15 +1124,21 @@ S.orders.forEach(o=>spawnCust('order',o));   // gespeicherte Aufträge wieder au
 let dead=false,spdMul=1,highShake=0,highRoll=0;
 function hurt(dmg,why){if(dead)return;S.hp=Math.max(0,S.hp-dmg);if(S.hp<=0)die(why||'Du bist gestorben.')}
 function die(why){
-  dead=true;modal=true;mg=null;S.cook=null;S.high=null;S.crash=0;menuOpen=false;menuCust=null;lapOpen=false;
+  // Folgen sofort und dauerhaft anwenden – Neuladen im Todesbildschirm darf nichts umgehen
+  const loss=Math.round(S.cash*.3);
+  S.cash-=loss;
+  for(const k in S.drugs)if(S.drugs[k]){S.drugs[k].n=Math.floor(S.drugs[k].n/2);if(!S.drugs[k].n)S.drugs[k]={n:0,q:0}}
+  S.cook=null;S.high=null;S.crash=0;S.hp=0;S.dead={why,loss};
+  save();showDeath()}
+function showDeath(){
+  const D=S.dead;if(!D)return;
+  dead=true;modal=true;mg=null;menuOpen=false;menuCust=null;lapOpen=false;
   $('mini').style.display='none';$('lap').style.display='none';$('menu').style.display='none';
   if(document.pointerLockElement)document.exitPointerLock();
-  const loss=Math.round(S.cash*.3);
-  $('deathTxt').innerHTML=why+'<br><small>Krankenhaus: Behandlung −'+money(loss)+'. Labor-Ware zur Hälfte weg, Gesundheit 40 %.</small>';
+  $('deathTxt').innerHTML=D.why+'<br><small>Krankenhaus: Behandlung −'+money(D.loss)+'. Labor-Ware zur Hälfte weg, Gesundheit 40 %.</small>';
   $('flash').style.opacity=1;$('death').style.display='grid';
-  $('respawn').onclick=()=>{S.cash-=loss;for(const k in S.drugs)if(S.drugs[k]){S.drugs[k].n=Math.floor(S.drugs[k].n/2);if(!S.drugs[k].n)S.drugs[k]={n:0,q:0}}
-    S.hp=40;player.x=0;player.z=4.6;yaw=0;pitch=0;$('death').style.display='none';$('flash').style.opacity=0;dead=false;modal=false;relock()}}
-function hpTick(dt){if(dead)return;if(S.hp<100)S.hp=Math.min(100,S.hp+dt*.4)}
+  $('respawn').onclick=()=>{S.dead=null;S.hp=40;player.x=0;player.z=4.6;yaw=0;pitch=0;$('death').style.display='none';$('flash').style.opacity=0;dead=false;modal=false;save();relock()}}
+function hpTick(dt){if(dead||S.dead)return;if(S.hp<100)S.hp=Math.min(100,S.hp+dt*.4)}
 $('hpnum').textContent='';
 
 // ---- Rausch (Eigenkonsum) ----
@@ -1212,7 +1218,11 @@ function dwDay(){
 function postMenu(){
   const pend=S.dw.parcels.filter(p=>p.st==='pending'),ship=S.dw.parcels.filter(p=>p.st==='shipped'),cost=pend.length*POSTAGE;
   return{line:`PACKSTATION\n${pend.length} Paket(e) bereit · ${ship.length} unterwegs · Porto ${money(POSTAGE)} pro Paket`,
-    items:[[`📮 Alle Pakete aufgeben (${pend.length}) – ${money(cost)}`,pend.length>0&&S.cash>=cost,()=>{S.cash-=cost;pend.forEach(p=>{p.st='shipped';p.ship=S.day});S.flags.posted=1;dwLog(`📮 ${pend.length} Paket(e) aufgegeben.`);msg('📮 Aufgegeben – Ankunft zum Tageswechsel (der Zoll schaut manchmal rein).')},pend.length?'':'Bestellungen kommen über den Laptop (Darknet-Verkauf).'],['Schließen',true,closeMenu]]}}
+    items:[[`📮 Alle Pakete aufgeben (${pend.length}) – ${money(cost)}`,pend.length>0&&S.cash>=cost,()=>{   // beim Klick neu ermitteln: das Menü kann über Fristablauf/Tageswechsel offen geblieben sein
+      const now=S.dw.parcels.filter(p=>p.st==='pending'),c=now.length*POSTAGE;
+      if(!now.length){msg('Keine Pakete mehr zum Aufgeben – Bestellungen wurden storniert.');return}
+      if(S.cash<c){msg('Nicht genug Bargeld für das Porto ('+money(c)+').');return}
+      S.cash-=c;now.forEach(p=>{p.st='shipped';p.ship=S.day});S.flags.posted=1;dwLog(`📮 ${now.length} Paket(e) aufgegeben.`);msg('📮 Aufgegeben – Ankunft zum Tageswechsel (der Zoll schaut manchmal rein).')},pend.length?'':'Bestellungen kommen über den Laptop (Darknet-Verkauf).'],['Schließen',true,closeMenu]]}}
 
 // ---------------- Ansatz (Kochablauf) ----------------
 function startCook(id){
@@ -1437,7 +1447,7 @@ function frame(){
   // Rick schaut zum Spieler
   rick.rotation.y+=((Math.atan2(player.x-rick.position.x,player.z-rick.position.z))-rick.rotation.y)*.05;rick.position.y=Math.sin(time*2)*.01;
   // Tag / Gehalt
-  S.dayT+=dt;if(S.dayT>=DAYLEN){S.dayT=0;S.day++;const pay=Math.min(S.cash,S.workers*SALARY);S.cash-=pay;if(pay>0)msg('Tag '+S.day+': Gehälter −'+money(pay));S.price=Math.round(40+Math.random()*45+S.level*2);labDay();orderDay();dwDay()}
+  S.dayT+=dt;if(S.dayT>=DAYLEN){S.dayT=0;S.day++;const pay=Math.min(S.cash,S.workers*SALARY);S.cash-=pay;if(pay>0)msg('Tag '+S.day+': Gehälter −'+money(pay));S.price=Math.round(40+Math.random()*45+S.level*2);labDay();orderDay();dwDay();if(menuOpen)renderMenu()}
   // Pflanzen
   for(const p of pots){
     p.g.visible=p.owned;if(!p.owned)continue;
@@ -1486,6 +1496,7 @@ function frame(){
   $('sl0').textContent='Samen '+money(SEED);$('sl1').textContent='Wasser '+S.water+'/'+S.waterCap;$('sl2').textContent='Schere';
   renderer.render(scene,camera);
 }
+if(S.dead)showDeath();   // Tod überlebt Neuladen: Todesbildschirm wiederherstellen (Folgen sind schon angewendet)
 frame();
 </script>
 </body>
