@@ -1208,7 +1208,10 @@ const OBJ=[
  ['Verpacke 3 getrimmte Blüten am Tisch (E)',()=>S.flags.packed],
  ['Verkaufe das Paket an Onkel Rick',()=>S.flags.sold],
  ['Stelle einen Arbeiter bei Rick ein',()=>S.workers>0],
- ['Rick: Hinterraum-Labor freischalten (ab Level 3)',()=>S.lab],
+  if(!S.lab){
+    const miss=[];if(!S.flags.sold)miss.push('Paket verkaufen');if(S.workers<1)miss.push('Arbeiter einstellen');if(S.level<3)miss.push('Level 3');if(S.cash<LAB_COST)miss.push(money(LAB_COST));
+    b.push([`🔑 Labor-Schlüssel kaufen – ${money(LAB_COST)}`,!miss.length,()=>{S.cash-=LAB_COST;S.lab=1;msg('🔑 Onkel Rick gibt dir den Schlüssel – Stahltür aufgeschlossen!')},miss.length?'Fehlt noch: '+miss.join(' · '):'2 Räume + Laptop mit Darknet','lab']);
+  }
  ['Betritt das Labor – Stahltür in der Frontwand',()=>S.flags.inlab],
  ['Zieh Schutzausrüstung an – Spinde links (E)',()=>S.flags.psa],
  ['Laptop: minen & im Darknet eine Anleitung kaufen (E)',()=>S.flags.guide],
@@ -1290,7 +1293,7 @@ function interact(viaE){
   if(!aimed)return;
   const r=aimed;
   if(r.type==='rick'){if(viaE||true)openMenu();return}
-  if(r.type==='labdoor'){msg('Die Stahltür ist abgeschlossen – Onkel Rick hat den Schlüssel.');return}
+  if(r.type==='labdoor'){msg('Die Stahltür ist abgeschlossen – den Schlüssel gibt es bei Onkel Rick.');return}
   if(r.type==='yarddoor'){msg('Die Hintertür ist zu – verkaufe erst ein Paket an Onkel Rick.');return}
   if(r.type==='post'){postHandIn();return}
   if(r.type==='st'){labInteract(r.id);return}
@@ -3344,7 +3347,7 @@ function frame(){
   if(aimed&&!menuOpen&&!modal){
     const r=aimed;
     if(r.type==='rick')pr='[E] Mit Onkel Rick reden';
-    else if(r.type==='labdoor')pr='🔒 Stahltür – abgeschlossen (Onkel Rick hat den Schlüssel)';
+    else if(r.type==='labdoor')pr='🔒 Stahltür – abgeschlossen (Schlüssel bei Onkel Rick kaufen)';
     else if(r.type==='st')pr=stPrompt(r.id);
     else if(r.type==='yarddoor')pr='🔒 Hintertür – erst ein Paket an Onkel Rick verkaufen';
     else if(r.type==='post'&&!MY.carry.length&&S.dw.parcels.some(p=>p.st==='pending'))pr='[E] Postschalter – '+S.dw.parcels.filter(p=>p.st==='pending').length+' Darknet-Paket(e) aufgeben';
