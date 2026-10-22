@@ -3,103 +3,188 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#07090c">
 <title>Drug Lord Tycoon 3D (Fan-Nachbau)</title>
+<link rel="stylesheet" href="ui/dlt-ui.css">
 <style>
-:root{--yel:#ffe83a}
-*{box-sizing:border-box;user-select:none}
-html,body{margin:0;height:100%;overflow:hidden;background:#000;font-family:"Trebuchet MS",Segoe UI,sans-serif;color:#fff}
+:root{--yel:#ffe83a;--acc:#3ddc84;--gold:#ffc83d;--red:#ff4d5e;--blue:#4da3ff;--pur:#a06bff;--hud:1;--glass:rgba(10,14,20,.72);--glass-line:rgba(255,255,255,.14);--font:"Bahnschrift","Segoe UI Variable","Segoe UI",system-ui,-apple-system,Arial,sans-serif;--display:"Impact","Haettenschweiler","Arial Narrow Bold",sans-serif}
+*{box-sizing:border-box;user-select:none;-webkit-user-select:none}
+html,body{margin:0;height:100%;overflow:hidden;background:#000;font-family:var(--font);color:#fff}
 canvas{display:block;width:100vw;height:100vh}
-.sh{text-shadow:0 0 3px #000,0 2px 4px #000,1px 1px 0 #000,-1px -1px 0 #000}
-#obj{position:fixed;top:12px;left:12px;background:#0009;border:1px solid #9a8a3a;padding:8px 14px 8px 10px;display:flex;gap:8px;align-items:center;font-size:17px;max-width:420px}
-#obj i{width:24px;height:24px;border:2px solid #fff;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:14px;flex:none}
-#top{position:fixed;top:12px;right:14px;width:300px;text-align:right}
-#xpbar{background:#0009;border-radius:6px;height:26px;position:relative;overflow:hidden}
-#xpfill{position:absolute;inset:0 auto 0 0;background:var(--yel);width:10%}
-#xpnum{position:absolute;inset:0;display:grid;place-items:center;font-weight:700;font-size:20px}
-#money{font-size:34px;font-weight:700;margin-top:6px}
-#day{font-size:13px;opacity:.85}
-#inv{position:fixed;left:14px;bottom:14px;background:#0009;padding:8px 12px;border-radius:6px;font-size:15px;line-height:1.5}
-#hotbar{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:10px}
-.slot{width:96px;height:96px;border:3px solid #ffffff55;border-radius:10px;background:#0007;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:30px}
-.slot small{font-size:12px;margin-top:2px}
-.slot b{position:absolute;top:3px;left:7px;font-size:12px;opacity:.8}
-.slot.sel{border-color:#fff;background:#fff3;box-shadow:0 0 14px #fff8}
-#cross{position:fixed;left:50%;top:50%;width:5px;height:5px;margin:-2px;background:#fff;border-radius:50%;box-shadow:0 0 3px #000}
-#prompt{position:fixed;left:50%;top:57%;transform:translateX(-50%);font-size:20px;text-align:center}
-#msg{position:fixed;left:50%;top:22%;transform:translateX(-50%);font-size:24px;text-align:center;opacity:0;transition:opacity .3s;max-width:70vw}
-#title{position:fixed;top:6px;left:50%;transform:translateX(-50%);font-size:34px;font-weight:700}
-#overlay{position:fixed;inset:0;background:#000b;display:grid;place-items:center;text-align:center;z-index:5}
-#overlay .box{max-width:560px;padding:24px}
-#overlay h1{font-size:44px;margin:0 0 6px;color:var(--yel)}
-#overlay p{margin:8px 0;color:#ddd;line-height:1.5}
-button{font:inherit;color:#fff;background:#111c;border:none;padding:14px 20px;font-size:21px;font-weight:700;cursor:pointer;border-bottom:3px solid #000}
-button:hover:not(:disabled){background:#333e}
-button:disabled{opacity:.4;cursor:not-allowed}
-#menu{position:fixed;inset:0;display:none;z-index:6;align-items:flex-end;justify-content:center}
-#menu .p{width:460px;margin-bottom:6vh;text-align:center}
-#menu .p .line{font-size:24px;margin-bottom:14px}
-#menu .p button{display:block;width:100%;margin-bottom:8px;background:#151515ee}
-#info{position:fixed;right:18px;bottom:20px;width:260px;background:#000a;padding:10px 14px;font-size:14px;display:none;line-height:1.6}
+.sh{text-shadow:0 1px 3px #000,0 0 2px #000}
+kbd{display:inline-block;min-width:22px;text-align:center;padding:1px 7px;margin:0 2px;border-radius:5px;border:1px solid #ffffff66;border-bottom-width:3px;background:linear-gradient(180deg,#39465a,#222c3b);font:700 .78em var(--font);color:#fff;text-shadow:none;vertical-align:.08em}
+.hud{zoom:var(--hud)}
+.glass{background:var(--glass);border:1px solid var(--glass-line);border-radius:12px;box-shadow:0 8px 28px #0008;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+
+/* --- HUD --- */
+#obj{position:fixed;top:14px;left:14px;max-width:min(400px,46vw);padding:9px 14px 9px 10px;display:flex;gap:11px;align-items:center;font-size:15px;line-height:1.3}
+#obj i{width:34px;height:34px;border:2px solid var(--gold);border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:15px;font-weight:700;flex:none;color:var(--gold);background:#ffc83d14}
+#obj small{display:block;font-size:10px;letter-spacing:.2em;color:var(--gold);margin-bottom:2px}
+#obj.done i{border-color:var(--acc);color:var(--acc);background:#3ddc8414}
+#title{position:fixed;top:14px;left:50%;transform:translateX(-50%);font-size:15px;letter-spacing:.18em;text-transform:uppercase;padding:7px 18px;border-radius:99px;background:var(--glass);border:1px solid var(--glass-line);white-space:nowrap;max-width:30vw;overflow:hidden;text-overflow:ellipsis}
+#top{position:fixed;top:14px;right:14px;width:290px;padding:10px 14px;text-align:right}
+#money{font-size:34px;font-weight:700;color:#7dffb0;line-height:1;letter-spacing:.01em;font-variant-numeric:tabular-nums;text-shadow:0 0 18px #3ddc8455,0 2px 3px #000}
+#xprow{display:flex;align-items:center;gap:10px;margin-top:9px}
+#xpnum{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--gold);color:#201800;font-weight:800;font-size:15px;flex:none;text-shadow:none;box-shadow:0 0 12px #ffc83d66}
+#xpbar{flex:1;background:#ffffff1c;border-radius:99px;height:10px;position:relative;overflow:hidden}
+#xpfill{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,#ffb300,var(--yel));border-radius:99px;width:10%;transition:width .3s}
+#day{font-size:12.5px;color:#cfd8e6;margin-top:8px;line-height:1.55;text-align:right}
+#day b{color:#fff}
+#inv{position:fixed;left:14px;bottom:14px;padding:9px 14px;font-size:14px;line-height:1.65;max-width:min(420px,38vw)}
+#inv b{color:var(--gold)}
+#hotbar{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:10px}
+.slot{width:92px;height:92px;border:2px solid var(--glass-line);border-radius:14px;background:var(--glass);position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:30px;transition:transform .12s,border-color .12s,box-shadow .12s,background .12s;backdrop-filter:blur(6px)}
+.slot small{font-size:11.5px;margin-top:3px;color:#d6deea}
+.slot b{position:absolute;top:5px;left:8px;font-size:12px;opacity:.75}
+.slot.sel{border-color:var(--acc);background:#143323cc;box-shadow:0 0 18px #3ddc8466;transform:translateY(-6px) scale(1.04)}
+.slot.sel small{color:#fff}
+#cross{position:fixed;left:50%;top:50%;width:6px;height:6px;margin:-3px;background:#fff;border-radius:50%;box-shadow:0 0 0 1.5px #000a,0 0 6px #000}
+#cross.aim{background:var(--acc);transform:scale(1.5)}
+#prompt{position:fixed;left:50%;top:58%;transform:translateX(-50%);font-size:18px;text-align:center;padding:0;max-width:80vw}
+#prompt:not(:empty){padding:8px 18px;background:var(--glass);border:1px solid var(--glass-line);border-radius:99px;backdrop-filter:blur(6px)}
+#msg{position:fixed;left:50%;top:19%;transform:translateX(-50%) translateY(-6px);font-size:21px;text-align:center;opacity:0;transition:opacity .3s,transform .3s;max-width:70vw;padding:10px 22px;background:var(--glass);border:1px solid var(--glass-line);border-left:4px solid var(--acc);border-radius:10px;pointer-events:none}
+#fps{position:fixed;right:14px;bottom:10px;font:12px ui-monospace,Consolas,monospace;color:#9fe8b8;display:none;text-shadow:0 1px 2px #000}
 #flash{position:fixed;inset:0;background:radial-gradient(circle,#ff2a0066,#ff2a00cc);opacity:0;pointer-events:none;transition:opacity .6s;z-index:7}
 #psa{position:fixed;inset:0;pointer-events:none;display:none;z-index:2;background:radial-gradient(ellipse at center,#0000 52%,#05122899 100%);box-shadow:inset 0 0 0 10px #0a1a3a66}
-#cook{position:fixed;top:64px;left:12px;width:310px;background:#000a;border:1px solid #4aa3a3;padding:8px 12px;font-size:14px;line-height:1.55;display:none}
-#cook b.t{color:#7ff;font-size:16px}#cook .done{color:#7f7}#cook .cur{color:#ff6;font-weight:700}#cook .todo{opacity:.55}
-#mini{position:fixed;inset:0;background:#000c;display:none;place-items:center;z-index:9}
-#mini .mp{width:min(680px,94vw);background:#10151cf2;border:2px solid #4aa3a3;padding:16px 18px;text-align:center}
-#mini h2{margin:0 0 4px;color:#7ff;font-size:26px}#mini p{margin:4px 0 10px;color:#ccd;font-size:15px;line-height:1.4}
-#mini canvas{width:100%;height:auto;background:#05080c;border:1px solid #234;display:block;margin:0 auto;cursor:crosshair}
-#mr{min-height:30px;font-size:20px;margin:10px 0 4px}#mb button{margin:4px;padding:10px 18px;font-size:18px}
-#lap{position:fixed;inset:0;background:#000d;display:none;place-items:center;z-index:9}
-#lap .win{width:min(780px,96vw);max-height:92vh;overflow:auto;background:#12081c;border:2px solid #8a4bd8;box-shadow:0 0 30px #8a4bd855;font-size:15px}
-#lap .bar{display:flex;justify-content:space-between;align-items:center;background:#2a1342;padding:6px 10px;color:#d9b8ff;font-size:14px}
-#lap .bar button{padding:2px 10px;font-size:16px;background:#5a1f3a}
-#lapTabs{display:flex;flex-wrap:wrap;gap:4px;padding:8px 8px 0}
-#lapTabs button{font-size:15px;padding:8px 12px;background:#1d1030;border:1px solid #4a2a70}
-#lapTabs button.on{background:#4a2a70}
-#lapBody{padding:10px 14px 14px;line-height:1.5}
-#lap .lh{display:flex;flex-wrap:wrap;gap:16px;background:#0b0412;padding:8px 10px;margin-bottom:8px;color:#4dff88;font-family:monospace;font-size:16px}
-#lap .card{background:#1a0e2b;border:1px solid #3a2060;padding:8px 10px;margin:6px 0}
-#lap .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:6px}
-#lap button{font-size:15px;padding:8px 12px;margin-top:4px}#lap button.big{display:block;width:100%;font-size:17px;padding:14px;background:#2a5a2a}
-#lap h3{margin:12px 0 2px;color:#d9b8ff}#lap .news{color:#ffd23a;background:#1d1507;padding:6px 8px}
-#lap .ok{color:#7f7}#lap .tg{color:#fc6}#lap small{color:#bba;font-size:13px}#lap .tip{color:#9fd}
-#lap ol{margin:6px 0;padding-left:22px}#lap .ld{text-align:center;padding:40px 0;color:#d9b8ff}#lap .spin{font-size:46px;animation:sp 1s linear infinite;display:inline-block}
+#cook{position:fixed;top:78px;left:14px;width:300px;padding:10px 14px;font-size:14px;line-height:1.6;display:none;border-color:#4aa3a366}
+#cook b.t{color:#7ff;font-size:15px;letter-spacing:.04em;display:block;margin-bottom:4px}
+#cook .done{color:#8cf59a}#cook .cur{color:#ffe36a;font-weight:700;background:#ffe36a14;border-radius:5px;padding:0 4px;margin:0 -4px}#cook .todo{opacity:.5}
+body.nocross #cross{display:none}body.noobj #obj{display:none}
+
+/* --- Dialog-Menü (Rick, Schrank, Rezept-Board) --- */
+button{font:inherit;color:#fff;cursor:pointer}
+#menu{position:fixed;inset:0;display:none;z-index:6;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#0005,#000b);padding:14px}
+#menu .p{width:min(520px,100%);max-height:92vh;overflow:auto;background:linear-gradient(180deg,#141b25f2,#0d1219f6);border:1px solid var(--glass-line);border-radius:16px;padding:18px;box-shadow:0 30px 80px #000c;animation:mIn .2s ease both;scrollbar-width:thin;scrollbar-color:#3a4458 transparent}
+@keyframes mIn{from{opacity:0;transform:translateY(12px) scale(.98)}}
+#menu .mh{display:flex;align-items:center;gap:10px;margin:0 0 12px}
+#menu .mt{font-size:19px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;flex:1}
+#menu .mt.warn{color:#ffd166}
+#menu .mc{font-size:14px;font-weight:700;color:#7dffb0;background:#3ddc8414;border:1px solid #3ddc8444;border-radius:99px;padding:3px 12px;white-space:nowrap}
+#menuLine{white-space:pre-line;color:#c9d3e0;line-height:1.5;font-size:15px;margin:0 0 14px;padding:11px 13px;background:#ffffff0b;border-radius:10px;border-left:3px solid var(--acc)}
+#menuLine.warn{border-left-color:#ffd166;background:#ffd16610}
+#menuLine.rick{border-left-color:var(--gold);font-style:italic}
+#menuBtns{display:grid;gap:7px}
+#menuBtns button{display:flex;align-items:center;gap:12px;text-align:left;width:100%;padding:11px 14px;border:1px solid #ffffff14;border-radius:10px;background:linear-gradient(180deg,#1c2533,#151c27);font-size:15px;font-weight:600;line-height:1.3;transition:transform .1s,border-color .1s,background .1s}
+#menuBtns button .n{flex:none;width:24px;height:24px;border-radius:6px;display:grid;place-items:center;font-size:12px;font-weight:800;background:#ffffff14;color:#9fb0c6}
+#menuBtns button .tx{flex:1;min-width:0}
+#menuBtns button small{display:block;font-size:12px;font-weight:400;color:#93a2b8;margin-top:2px}
+#menuBtns button:hover:not(:disabled),#menuBtns button:focus-visible{border-color:#3ddc8499;background:linear-gradient(180deg,#223142,#18222f);transform:translateX(3px);outline:none}
+#menuBtns button:hover:not(:disabled) .n{background:var(--acc);color:#04210f}
+#menuBtns button:disabled{opacity:.42;cursor:not-allowed}
+#menuBtns button.ghost{background:transparent;border-style:dashed;justify-content:center;color:#b8c3d3}#menuBtns button.ghost .tx{text-align:center}
+#menuBtns button.danger{border-color:#ff4d5e44}#menuBtns button.danger:hover:not(:disabled){border-color:var(--red);background:#2a1519}
+#menuBtns button.main{border-color:#3ddc8466}
+.mhint{margin-top:10px;text-align:center;font-size:12px;color:#7d8aa0}
+
+/* --- Minispiele --- */
+#mini{position:fixed;inset:0;background:radial-gradient(ellipse at center,#000a,#000e);display:none;place-items:center;z-index:9}
+#mini .mp{width:min(700px,94vw);background:linear-gradient(180deg,#101a22f6,#0a1016f8);border:1px solid #4aa3a399;border-radius:16px;padding:18px 20px;text-align:center;box-shadow:0 0 50px #4aa3a333,0 30px 80px #000}
+#mini h2{margin:0 0 4px;color:#7ff;font-size:24px;letter-spacing:.05em}#mini p{margin:4px 0 12px;color:#bfcad6;font-size:14.5px;line-height:1.45}
+#mini canvas{width:100%;height:auto;background:#05080c;border:1px solid #2b4150;border-radius:10px;display:block;margin:0 auto;cursor:crosshair}
+#mr{min-height:30px;font-size:19px;margin:12px 0 4px}#mb{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+#mb button{margin:4px 0;padding:10px 20px;font-size:16px;font-weight:700;border-radius:9px;border:1px solid #4aa3a399;background:#16303a}
+#mb button:hover{background:#1f4452}
+
+/* --- Laptop / Darkweb --- */
+#lap{position:fixed;inset:0;background:radial-gradient(ellipse at center,#0a0414cc,#000e);display:none;place-items:center;z-index:9;padding:10px}
+#lap .win{width:min(840px,100%);max-height:94vh;overflow:auto;background:#0d0716;border:1px solid #6a3fb0;border-radius:12px;box-shadow:0 0 60px #8a4bd844,0 30px 80px #000;font-size:15px;position:relative;scrollbar-width:thin;scrollbar-color:#4a2a70 transparent}
+#lap .win::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,#ffffff05 0 1px,transparent 1px 3px);border-radius:12px}
+#lap .bar{display:flex;align-items:center;gap:12px;background:#1a0d2b;padding:8px 12px;color:#d9b8ff;font-size:13px;position:sticky;top:0;z-index:2;border-bottom:1px solid #3a2060}
+#lap .dots{display:flex;gap:6px}#lap .dots i{width:11px;height:11px;border-radius:50%;background:#ff5f57}#lap .dots i:nth-child(2){background:#febc2e}#lap .dots i:nth-child(3){background:#28c840}
+#lapUrl{flex:1;background:#0a0512;border:1px solid #3a2060;border-radius:99px;padding:5px 14px;font:13px ui-monospace,Consolas,monospace;color:#b99be0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#lap .bar button{padding:4px 12px;font-size:13px;background:#4a1d38;border:1px solid #8a3a62;border-radius:7px;font-weight:700}
+#lap .bar button:hover{background:#6a2850}
+#lapTabs{display:flex;flex-wrap:wrap;gap:4px;padding:10px 12px 0;border-bottom:1px solid #2a1745}
+#lapTabs button{font-size:14px;padding:8px 14px;background:#150a22;border:1px solid #3a2060;border-bottom:0;border-radius:9px 9px 0 0;color:#b99be0;font-weight:600;margin-bottom:-1px}
+#lapTabs button:hover{background:#1f1033}
+#lapTabs button.on{background:#0d0716;color:#fff;border-color:#8a4bd8;box-shadow:inset 0 2px 0 #8a4bd8}
+#lapBody{padding:12px 16px 16px;line-height:1.5;color:#e2d6f2}
+#lap .lh{display:flex;flex-wrap:wrap;gap:8px 18px;background:#050208;border:1px solid #1d4a2c;border-radius:9px;padding:9px 12px;margin-bottom:10px;color:#4dff88;font-family:ui-monospace,Consolas,monospace;font-size:15px;text-shadow:0 0 8px #4dff8855}
+#lap .card{background:linear-gradient(180deg,#1a0e2b,#150a24);border:1px solid #3a2060;border-radius:10px;padding:10px 12px;margin:8px 0;transition:border-color .15s}
+#lap .card:hover{border-color:#6a3fb0}
+#lap .card.scam{border-color:#ff4d5e55;background:linear-gradient(180deg,#2a0e18,#1d0a12)}
+#lap .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px}
+#lap button{font-size:14px;padding:8px 14px;margin-top:6px;border:1px solid #ffffff22;border-radius:8px;background:#2a1a45;font-weight:700}
+#lap button:hover:not(:disabled){background:#3d2765;border-color:#a06bff}
+#lap button.big{display:block;width:100%;font-size:16px;padding:14px;background:linear-gradient(180deg,#2c7a3c,#1e5a2c);border-color:#4dff8855}
+#lap button.big:hover:not(:disabled){background:linear-gradient(180deg,#379a4a,#256f35)}
+#lap button:disabled{opacity:.4;cursor:not-allowed}
+#lap h3{margin:16px 0 4px;color:#d9b8ff;font-size:15px;letter-spacing:.06em;text-transform:uppercase}
+#lap .news{color:#ffd23a;background:#1d1507;border:1px solid #ffd23a33;border-radius:8px;padding:8px 11px;font-size:14px}
+#lap .ok{color:#7ff59a;font-weight:700}#lap .tg{color:#fc6}#lap small{color:#b3a5c9;font-size:12.5px}#lap .tip{color:#9fe8ff}
+#lap ol{margin:8px 0;padding-left:24px}#lap li{margin:4px 0}
+#lap .ld{text-align:center;padding:50px 0;color:#d9b8ff}#lap .spin{font-size:50px;animation:sp 1s linear infinite;display:inline-block}
+#lap .ldbar{width:220px;height:5px;margin:10px auto 0;background:#2a1745;border-radius:99px;overflow:hidden}#lap .ldbar i{display:block;height:100%;background:linear-gradient(90deg,#8a4bd8,#c79bff);border-radius:99px}
 @keyframes sp{to{transform:rotate(360deg)}}
-#lap .foot{padding:6px 12px;color:#a88;font-size:12px;border-top:1px solid #3a2060}
-#menu .p{max-height:92vh;overflow:auto}
-#menu .p button small{display:block;font-size:12px;font-weight:400;opacity:.8;margin-top:2px}
-#menuLine{white-space:pre-line}
+#lap .foot{padding:8px 14px;color:#a88;font-size:12px;border-top:1px solid #3a2060;background:#0a0512}
+
+/* Einstiegshinweis für Geräte ohne Maus/Tastatur */
+#touchwarn{display:none;position:fixed;left:12px;right:12px;bottom:12px;z-index:1300;padding:10px 14px;background:#2a2206;border:1px solid #ffc83d66;border-radius:10px;color:#ffdf8a;font-size:13px;text-align:center}
+@media (pointer:coarse){#touchwarn{display:block}}
+@media (max-width:900px){
+  #title{display:none}#top{width:230px}#money{font-size:28px}#obj{max-width:calc(100vw - 270px);font-size:13px}#cook{top:84px;width:250px}
+  #inv{font-size:12px;max-width:50vw}.slot{width:66px;height:66px;font-size:22px}.slot small{font-size:9px}
+}
+@media (prefers-reduced-motion:reduce){#menu .p,#xpfill,#msg{animation:none;transition:none}}
+html[data-motion=reduced] #menu .p,html[data-motion=reduced] #lap .spin{animation:none}
 </style>
 </head>
 <body>
-<div id="obj" class="sh"><i>?</i><span id="objtxt">Rede mit Onkel Rick</span></div>
-<div id="title" class="sh">Dragon Smoke</div>
-<div id="top" class="sh"><div id="xpbar"><div id="xpfill"></div><div id="xpnum">1</div></div><div id="money">$500</div><div id="day"></div></div>
-<div id="inv" class="sh"></div>
-<div id="hotbar"></div>
+<div id="obj" class="hud glass sh"><i id="objn">1</i><div><small>AKTUELLES ZIEL</small><span id="objtxt">Rede mit Onkel Rick</span></div></div>
+<div id="title" class="hud sh">Dragon Smoke</div>
+<div id="top" class="hud glass sh"><div id="money">$500</div><div id="xprow"><div id="xpnum">1</div><div id="xpbar"><div id="xpfill"></div></div></div><div id="day"></div></div>
+<div id="inv" class="hud glass sh"></div>
+<div id="hotbar" class="hud"></div>
 <div id="cross"></div>
-<div id="prompt" class="sh"></div>
-<div id="msg" class="sh"></div>
-<div id="info" class="sh"></div>
-<div id="menu"><div class="p"><div class="line sh" id="menuLine"></div><div id="menuBtns"></div></div></div>
+<div id="prompt" class="hud sh"></div>
+<div id="msg" class="hud sh"></div>
+<div id="fps"></div>
+<div id="menu"><div class="p"><div class="mh"><div class="mt" id="menuTitle"></div><div class="mc" id="menuCash"></div></div><div id="menuLine"></div><div id="menuBtns"></div><div class="mhint">Zahlentasten wählen · <kbd>Esc</kbd> schließen</div></div></div>
 <div id="flash"></div>
 <div id="psa"></div>
-<div id="cook" class="sh"></div>
+<div id="cook" class="hud glass sh"></div>
 <div id="mini"><div class="mp"><h2 id="mt"></h2><p id="mi"></p><canvas id="mc" width="640" height="260"></canvas><div id="mr"></div><div id="mb"></div></div></div>
-<div id="lap"><div class="win"><div class="bar"><span id="lapUrl">🧅 Onion-Browser</span><button id="lapX">✕ (Esc)</button></div><div id="lapTabs"></div><div id="lapBody"></div>
+<div id="lap"><div class="win"><div class="bar"><span class="dots"><i></i><i></i><i></i></span><span id="lapUrl">🧅 Onion-Browser</span><button id="lapX">✕ Esc</button></div><div id="lapTabs"></div><div id="lapBody"></div>
 <div class="foot">⚠ Satire/Spiel: Alle „Anleitungen“, Stoffe und Werte hier sind frei erfunden – keine echte Chemie, keine Anleitung zu irgendetwas. SchwarzCoin (SCN) gibt es nicht.</div></div></div>
-<div id="overlay"><div class="box sh">
-  <h1>DRUG LORD TYCOON 3D</h1>
-  <p>Fan-Nachbau als Low-Poly-Gewächshaus. Pflanze, gieße, ernte, trimme, verpacke und verkaufe an Onkel Rick – und stelle Arbeiter ein.</p>
-  <p><b>WASD</b> laufen · <b>Shift</b> rennen · <b>Maus</b> umschauen<br><b>1 / 2 / 3</b> Werkzeug (Samen / Gießkanne / Schere) · <b>Linksklick</b> benutzen<br><b>E</b> interagieren (Topf, Rick, Trockengestell, Tisch, Wasserfass) · <b>Esc</b> Maus freigeben</p>
-  <p style="font-size:13px;color:#cbb">Satire-Spiel: Alle Stoffe, Abläufe und „Anleitungen“ sind frei erfunden – keine echten Anleitungen. Drogenherstellung ist in der Realität illegal und gefährlich.</p>
-  <button id="play">▶ Spielen</button>
-  <p id="warn" style="font-size:13px;color:#fb8"></p>
-</div></div>
+<div id="touchwarn">📱 Dieses Spiel braucht Tastatur &amp; Maus – auf Touch-Geräten ist es nicht bedienbar.</div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="ui/dlt-ui.js"></script>
 <script>
-if(typeof THREE==='undefined'){document.getElementById('warn').textContent='three.js konnte nicht geladen werden – bitte Internetverbindung prüfen.'}
+// Startmenü / Pause / Einstellungen / Multiplayer-Lobby (gemeinsames UI, siehe ui/dlt-ui.js)
+DLT.init({
+  gameId:'3d',storageKey:'dlt3d',version:'3D · Dragon Smoke',
+  logo:['DRUG LORD','TYCOON'],sub:'<b>3D</b> · Dragon Smoke',
+  tagline:'Pflanze, gieße, ernte, verpacke und verkaufe an Onkel Rick – stelle Arbeiter ein und baue dir ein Labor mit Darknet-Laptop.',
+  startHint:'First-Person-Gewächshaus',
+  hasSave:()=>{try{const s=JSON.parse(localStorage.getItem('dlt3d'));return !!(s&&s.cash!==undefined&&(s.xp>0||s.level>1||s.flags&&s.flags.talked))}catch(e){return false}},
+  saveInfo:()=>{try{return `Level ${S.level} · Tag ${S.day} · ${money(S.cash)}`}catch(e){return 'Spielstand fortsetzen'}},
+  onPlay:()=>{if(typeof startGame==='function')startGame()},
+  onSave:()=>{if(typeof save==='function')save()},
+  onOpen:()=>{if(typeof uiOpened==='function')uiOpened()},
+  validateSave:o=>o&&typeof o==='object'&&o.cash!==undefined&&o.level!==undefined,
+  settings:[
+    {id:'sens',tab:'Steuerung',label:'Mausempfindlichkeit',type:'range',min:.3,max:3,step:.05,def:1,fmt:v=>v.toFixed(2)+'×'},
+    {id:'invertY',tab:'Steuerung',label:'Y-Achse invertieren',desc:'Maus nach oben = nach unten schauen.',type:'toggle',def:false},
+    {id:'fov',tab:'Grafik',label:'Sichtfeld (FOV)',type:'range',min:55,max:100,step:1,def:70,fmt:v=>v+'°'},
+    {id:'quality',tab:'Grafik',label:'Renderauflösung',desc:'Niedriger = mehr FPS auf schwachen Geräten.',type:'select',options:[['low','Niedrig'],['mid','Mittel'],['high','Hoch']],def:'high'},
+    {id:'shadows',tab:'Grafik',label:'Schatten',desc:'Schatten aus = deutlich bessere Leistung.',type:'toggle',def:true},
+    {id:'bob',tab:'Grafik',label:'Kopfwippen beim Laufen',type:'toggle',def:true},
+    {id:'fps',tab:'Grafik',label:'FPS-Anzeige',type:'toggle',def:false},
+    {id:'hudScale',tab:'Anzeige',label:'HUD-Größe',desc:'Ziel, Geld, Inventar und Werkzeugleiste.',type:'range',min:.7,max:1.4,step:.05,def:1,fmt:v=>Math.round(v*100)+' %',cssVar:'--hud'},
+    {id:'crosshair',tab:'Anzeige',label:'Fadenkreuz',type:'toggle',def:true},
+    {id:'objective',tab:'Anzeige',label:'Ziel-Anzeige',desc:'Zeigt das aktuelle Tutorial-Ziel oben links.',type:'toggle',def:true},
+  ],
+  controls:[
+    {title:'Bewegung',rows:[[['W','A','S','D'],'Laufen'],[['Shift'],'Rennen'],[['Maus'],'Umschauen'],[['Q'],'Kamera nach links drehen']]},
+    {title:'Aktionen',rows:[[['E'],'Interagieren (Topf, Rick, Gestell, Tisch, Fass, Labor)'],[['Linksklick'],'Werkzeug benutzen'],[['1','2','3'],'Samen / Gießkanne / Schere'],[['Mausrad'],'Werkzeug wechseln']]},
+    {title:'Menüs & Minispiele',rows:[[['1…9'],'Option im Dialog wählen'],[['Esc'],'Dialog schließen / Pause'],[['Leertaste'],'Halten, dosieren, stoppen'],[['Enter'],'Bestätigen'],[['R'],'Tara (Waage)']]},
+  ],
+  about:'Fan-Nachbau als Low-Poly-Gewächshaus mit angebautem Labor, Mining-Laptop und Darknet-Markt. Läuft mit three.js im Browser; der Spielstand bleibt lokal.',
+});
+DLT.open('main',{mode:'start'});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" onerror="DLT.warn('three.js konnte nicht geladen werden – bitte Internetverbindung prüfen.')"></script>
+<script>
 const T=THREE;
 const $=id=>document.getElementById(id);
 const money=n=>'$'+Math.floor(n).toLocaleString('en-US');
@@ -305,7 +390,7 @@ const SEED=10,DAYLEN=90,SALARY=50;
 let S={cash:500,xp:0,level:1,day:1,dayT:0,raw:0,trim:0,pack:0,tool:0,water:8,waterCap:8,lights:0,potsOwned:3,workers:0,canUp:0,flags:{},price:55,priceT:0,potsState:[],
   lab:0,psa:false,reag:{},drugs:{},recipes:{},up:{yield:0,ease:0},cook:null,dm:{},batches:0,coins:0,cp:40,cpT:4,evT:60,
   news:'📰 SchwarzCoin (SCN): ein Kurs, so stabil wie Onkel Ricks Laune.',rig:{gpu:0,fan:0},scams:0};
-function save(){try{S.potsState=pots.map(p=>({o:p.owned,s:p.stage,t:p.t,w:p.wet}));localStorage.setItem('dlt3d',JSON.stringify(S))}catch(e){}}
+function save(){if(window.DLT&&DLT.noSave)return;try{S.potsState=pots.map(p=>({o:p.owned,s:p.stage,t:p.t,w:p.wet}));localStorage.setItem('dlt3d',JSON.stringify(S))}catch(e){}}
 function load(){try{const s=JSON.parse(localStorage.getItem('dlt3d'));if(s&&s.cash!==undefined)S=Object.assign(S,s)}catch(e){}}
 load();
 pots.forEach((p,i)=>{const st=S.potsState&&S.potsState[i];p.owned=st?st.o:i<S.potsOwned;if(st){p.stage=st.s;p.t=st.t;p.wet=st.w}});
@@ -317,7 +402,7 @@ const workers=[];
 function spawnWorker(){const w=makeWorker();w.position.set(rnd(2.5,4.5),0,4.8);scene.add(w);workers.push({m:w,job:null,tw:0,ph:Math.random()*6})}
 for(let i=0;i<S.workers;i++)spawnWorker();
 
-function msg(t){const e=$('msg');e.textContent=t;e.style.opacity=1;clearTimeout(msg.t);msg.t=setTimeout(()=>e.style.opacity=0,2600)}
+function msg(t){const e=$('msg');e.textContent=t;e.style.opacity=1;e.style.transform='translateX(-50%)';clearTimeout(msg.t);msg.t=setTimeout(()=>{e.style.opacity=0;e.style.transform='translateX(-50%) translateY(-6px)'},2600)}
 const need=l=>Math.floor(40*Math.pow(l,1.5));
 function addXp(n){S.xp+=n;while(S.xp>=need(S.level)){S.xp-=need(S.level);S.level++;msg('Level '+S.level+'!')}}
 const lightMult=()=>1+S.lights*.35;
@@ -357,7 +442,7 @@ const OBJ=[
  ['Expandiere: mehr Töpfe, Lampen, Arbeiter, Rezepte!',()=>false],
 ];
 let objI=0;
-function objUpdate(){while(objI<OBJ.length-1&&OBJ[objI][1]()){objI++;msg('Ziel erreicht!')}$('objtxt').textContent=OBJ[objI][0]}
+function objUpdate(){while(objI<OBJ.length-1&&OBJ[objI][1]()){objI++;msg('Ziel erreicht!')}$('objtxt').textContent=OBJ[objI][0];$('objn').textContent=objI+1;$('obj').classList.toggle('done',objI===OBJ.length-1)}
 
 // ---------------- Menüs (Rick u. a.) ----------------
 const menu=$('menu');let menuOpen=false,menuFn=null;
@@ -366,35 +451,69 @@ function openMenuX(fn){menuOpen=true;menuFn=fn;if(document.pointerLockElement)do
 function openMenu(){S.flags.talked=1;openMenuX(rickMenu)}
 function closeMenu(){menuOpen=false;menu.style.display='none';relock()}
 function renderMenu(){
-  const {line,items}=menuFn();const ml=$('menuLine');ml.textContent=line;ml.style.fontSize=line.length>90?'16px':'24px';
-  const bx=$('menuBtns');bx.innerHTML='';
-  items.forEach(([t,en,fn,sub])=>{const el=document.createElement('button');el.innerHTML=t+(sub?'<small>'+sub+'</small>':'');el.disabled=!en;el.onclick=()=>{fn();if(menuOpen)renderMenu()};bx.appendChild(el)});
+  const {line,items}=menuFn();
+  const parts=line.split('\n'),multi=parts.length>1;
+  const mt=$('menuTitle'),ml=$('menuLine');
+  mt.textContent=multi?parts[0]:'Onkel Rick';mt.className='mt'+(multi&&/⚠/.test(parts[0])?' warn':'');
+  ml.textContent=multi?parts.slice(1).join('\n'):line;ml.className=(multi?'':'rick')+(multi&&/⚠/.test(parts[0])?' warn':'');
+  $('menuCash').textContent='💵 '+money(S.cash);
+  const bx=$('menuBtns'),keep=menu.querySelector('.p').scrollTop;bx.innerHTML='';
+  items.forEach(([t,en,fn,sub],i)=>{const el=document.createElement('button');
+    const close=i===items.length-1&&/^Schließen$|^Verstanden/.test(t);
+    el.className=close?'ghost':/entlassen|verwerfen/.test(t)?'danger':'';
+    el.innerHTML=(close?'':`<span class="n">${i<9?i+1:''}</span>`)+`<span class="tx">${t}${sub?'<small>'+sub+'</small>':''}</span>`;
+    el.disabled=!en;el.onclick=()=>{fn();if(menuOpen)renderMenu()};bx.appendChild(el)});
+  menu.querySelector('.p').scrollTop=keep;
+  if(!menu.contains(document.activeElement)){const f=bx.querySelector('button:not(:disabled)');f&&f.focus({preventScroll:true})}
 }
 
 // ---------------- Eingabe ----------------
 let yaw=0,pitch=0,locked=false,fallback=false,started=false;
 const keys={};
-addEventListener('keydown',e=>{keys[e.code]=true;
+function uiOpened(){for(const k in keys)keys[k]=false;if(mg&&mg.hold)mgUp();if(document.pointerLockElement)document.exitPointerLock()}
+function startGame(){started=true;relock()}
+addEventListener('blur',()=>{for(const k in keys)keys[k]=false;if(mg&&mg.hold)mgUp()});
+addEventListener('keydown',e=>{
+  if(DLT.isOpen())return;
+  if(e.code==='Escape'&&started&&!locked&&!menuOpen&&!modal){DLT.open('main',{mode:'pause'});return}
+  keys[e.code]=true;
   if(modal){modalKey(e);return}
-  if(menuOpen){if(e.code==='Escape'||e.code==='KeyE')closeMenu();return}
+  if(menuOpen){
+    if(e.code==='Escape'||e.code==='KeyE')closeMenu();
+    else if(/^Digit[1-9]$/.test(e.code)){const b=$('menuBtns').children[+e.code.slice(5)-1];if(b&&!b.disabled&&!b.classList.contains('ghost'))b.click()}
+    return}
   if(e.code==='Digit1')S.tool=0;if(e.code==='Digit2')S.tool=1;if(e.code==='Digit3')S.tool=2;
   if(e.code==='KeyE')interact(true);
 });
 addEventListener('keyup',e=>{keys[e.code]=false;if(e.code==='Space'&&mg)mgUp()});
-addEventListener('wheel',e=>{if(!menuOpen&&!modal)S.tool=(S.tool+(e.deltaY>0?1:2))%3});
-$('play').onclick=()=>{started=true;$('overlay').style.display='none';renderer.domElement.requestPointerLock&&renderer.domElement.requestPointerLock()};
-document.addEventListener('pointerlockchange',()=>{locked=document.pointerLockElement===renderer.domElement;if(!locked&&!menuOpen&&!modal&&started){$('overlay').style.display='grid';$('play').textContent='▶ Weiter'}});
-document.addEventListener('pointerlockerror',()=>{fallback=true;$('overlay').style.display='none';$('warn').textContent=''});
+addEventListener('wheel',e=>{if(!menuOpen&&!modal&&!DLT.isOpen())S.tool=(S.tool+(e.deltaY>0?1:2))%3});
+document.addEventListener('pointerlockchange',()=>{locked=document.pointerLockElement===renderer.domElement;if(!locked&&!menuOpen&&!modal&&started&&!DLT.isOpen())DLT.open('main',{mode:'pause'})});
+document.addEventListener('pointerlockerror',()=>{fallback=true});
 let drag=null;
-renderer.domElement.addEventListener('mousedown',e=>{if(menuOpen||modal)return;if(locked){interact(false);return}
+renderer.domElement.addEventListener('mousedown',e=>{if(menuOpen||modal||DLT.isOpen())return;if(locked){interact(false);return}
   if(started){drag={x:e.clientX,y:e.clientY,moved:0}}});
 addEventListener('mouseup',e=>{if(drag&&drag.moved<4&&!locked)interact(false);drag=null});
 addEventListener('mousemove',e=>{
-  if(menuOpen||modal)return;
-  if(locked){yaw-=e.movementX*.0023;pitch-=e.movementY*.0023}
-  else if(drag){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.moved+=Math.abs(dx)+Math.abs(dy);yaw-=dx*.004;pitch-=dy*.004;drag.x=e.clientX;drag.y=e.clientY}
+  if(menuOpen||modal||DLT.isOpen())return;
+  const sens=DLT.get('sens'),inv=DLT.get('invertY')?-1:1;
+  if(locked){yaw-=e.movementX*.0023*sens;pitch-=e.movementY*.0023*sens*inv}
+  else if(drag){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.moved+=Math.abs(dx)+Math.abs(dy);yaw-=dx*.004*sens;pitch-=dy*.004*sens*inv;drag.x=e.clientX;drag.y=e.clientY}
   pitch=Math.max(-1.4,Math.min(1.4,pitch));
 });
+
+// Einstellungen anwenden (Menü → Einstellungen)
+const QUAL={low:.5,mid:.75,high:1};
+function applyQuality(){renderer.setPixelRatio(Math.min(devicePixelRatio,2)*QUAL[DLT.get('quality')||'high']);renderer.setSize(innerWidth,innerHeight)}
+let bobOn=true,fpsOn=false;
+DLT.onChange((id,v)=>{
+  if(id==='fov'){camera.fov=v;camera.updateProjectionMatrix()}
+  else if(id==='quality')applyQuality();
+  else if(id==='shadows'){renderer.shadowMap.enabled=v;sun.castShadow=v;scene.traverse(o=>{if(o.material)[].concat(o.material).forEach(m=>m.needsUpdate=true)})}
+  else if(id==='bob')bobOn=v;
+  else if(id==='fps'){fpsOn=v;$('fps').style.display=v?'block':'none'}
+  else if(id==='crosshair')document.body.classList.toggle('nocross',!v);
+  else if(id==='objective')document.body.classList.toggle('noobj',!v);
+},true);
 
 // Zielobjekt unter Fadenkreuz
 const ray=new T.Raycaster();ray.far=3.8;
@@ -815,7 +934,7 @@ function rickMenu(){
   b.push([`Arbeiter einstellen (${money(hireCost())}) – ${money(SALARY)}/Tag`,S.workers<6&&S.cash>=hireCost(),()=>{S.cash-=hireCost();S.workers++;spawnWorker()}]);
   b.push([`Wachstumslampen Lvl ${S.lights}/5 (${money(lightCost())})`,S.lights<5&&S.cash>=lightCost(),()=>{S.cash-=lightCost();S.lights++}]);
   b.push([`Größere Gießkanne ${S.waterCap}→${S.waterCap+4} (${money(canCost())})`,S.canUp<3&&S.cash>=canCost(),()=>{S.cash-=canCost();S.canUp++;S.waterCap+=4;S.water=S.waterCap}]);
-  if(!S.lab&&S.flags.sold&&S.workers>0)b.push([`🔬 Hinterraum-Labor freischalten – ${money(LAB_COST)}`,S.level>=3&&S.cash>=LAB_COST,()=>{S.cash-=LAB_COST;S.lab=1;msg('🔬 Labor freigeschaltet – Stahltür an der rechten Wand!')},'ab Level 3 · 2 Räume + Laptop mit Darknet']);
+  if(!S.lab&&S.flags.sold&&S.workers>0)b.push([`🔬 Hinterraum-Labor freischalten – ${money(LAB_COST)}`,S.level>=3&&S.cash>=LAB_COST,()=>{S.cash-=LAB_COST;S.lab=1;msg('🔬 Labor freigeschaltet – Stahltür in der Frontwand!')},'ab Level 3 · 2 Räume + Laptop mit Darknet']);
   if(S.workers>0)b.push(['Arbeiter entlassen',true,()=>{const w=workers.pop();if(w.job&&w.job.p)w.job.p.claim=null;scene.remove(w.m);S.workers--}]);
   b.push(['Schließen',true,closeMenu]);
   return{line:S.lab?'Das Labor läuft? Dann bring mir die Ware, Kleiner.':lines[Math.floor((S.day+S.level)%lines.length)],items:b}}
@@ -849,7 +968,7 @@ function renderLap(){
   $('lapUrl').textContent=lapTab==='market'?'🧅 totally-legit-7x3kq2.onion/markt':'🧅 Onion-Browser – gesicherte Verbindung (angeblich)';
   const head=`<div class="lh"><span>🪙 <b id="lapC">${cn(S.coins)}</b> SCN</span><span>≈ <b id="lapV">${money(S.coins*S.cp)}</b></span><span>Kurs <b id="lapP">${money(S.cp)}</b></span><span>💵 <b id="lapM">${money(S.cash)}</b></span></div>`;
   let h=head;
-  if(lapLoad>0){h+=`<div class="ld"><div class="spin">🧅</div><p>${LOAD_TXT[Math.min(3,Math.floor((1-lapLoad/1.6)*4))]}</p></div>`}
+  if(lapLoad>0){h+=`<div class="ld"><div class="spin">🧅</div><p>${LOAD_TXT[Math.min(3,Math.floor((1-lapLoad/1.6)*4))]}</p><div class="ldbar"><i style="width:${Math.round((1-lapLoad/1.6)*100)}%"></i></div></div>`}
   else if(lapTab==='mine'){
     h+=`<p class="news">${S.news}</p>
     <div class="grid">
@@ -868,8 +987,8 @@ function renderLap(){
     h+=`<h3>📦 Drohnen-Lieferung (5er-Pack, 40 % günstiger)</h3><div class="grid">`;
     for(const k in ING){const c=+(ING[k].p*5*.6/40).toFixed(2);h+=`<div class="card">${ING[k].n} ×5<br><button data-a="drone" data-k="${k}" ${S.coins<c?'disabled':''}>${c.toFixed(2)} SCN</button></div>`}
     h+=`</div><h3>⚠ Sonderangebote</h3>
-    <div class="card"><b>🎁 100 % ECHTE GRATIS-COINS – nur heute!!!</b><br><small>Verkäufer: Prinz_Abubakar_Offiziell ★1.0 (47.113)</small><br><button data-a="scam">Jetzt abholen</button></div>
-    <div class="card"><b>🚐 „Definitiv-kein-FBI-Van“ – Lieferwagen zu vermieten</b><br><small>Verkäufer: Agent_Smith_privat ★4.2 (1)</small><br><button data-a="van">Mieten</button></div>`}
+    <div class="card scam"><b>🎁 100 % ECHTE GRATIS-COINS – nur heute!!!</b><br><small>Verkäufer: Prinz_Abubakar_Offiziell ★1.0 (47.113)</small><br><button data-a="scam">Jetzt abholen</button></div>
+    <div class="card scam"><b>🚐 „Definitiv-kein-FBI-Van“ – Lieferwagen zu vermieten</b><br><small>Verkäufer: Agent_Smith_privat ★4.2 (1)</small><br><button data-a="van">Mieten</button></div>`}
   else if(lapTab==='gear'){
     h+=`<h3>🧪 Labor-Ausrüstung (Bargeld)</h3>`;
     [['yield','Bessere Glasware: +1 Einheit pro Ansatz',3,n=>1200*Math.pow(2,n)],['ease','Präzisions-Ausrüstung: größere Zielzonen',3,n=>900*Math.pow(2,n)]].forEach(([k,t,mx,cf])=>{const n=S.up[k],c=cf(n);
@@ -1098,12 +1217,13 @@ const hb=$('hotbar');
 const slotEls=[...hb.children];
 const player={x:0,z:4.6};
 const solids=[...pots.map(p=>({o:p,r:.75,t:'pot'})),{x:stations.rack.x,z:stations.rack.z,r:1.0,t:'rack'},{x:stations.table.x,z:stations.table.z,r:1.1,t:'table'},{x:stations.barrel.x,z:stations.barrel.z,r:.65},{x:rick.position.x,z:rick.position.z,r:.5}];
-const clock=new T.Clock();let bob=0;
+const clock=new T.Clock();let bob=0,fpsN=0,fpsT=0;
+const setH=(el,h)=>{if(el._h!==h){el._h=h;el.innerHTML=h}};
 function frame(){
   requestAnimationFrame(frame);
   const dt=Math.min(clock.getDelta(),.05),time=clock.elapsedTime;
   // Bewegung
-  if(!menuOpen&&!modal&&started){
+  if(!menuOpen&&!modal&&started&&!DLT.isOpen()){
     const ox=player.x,oz=player.z;
     const f=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0),r=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0);
     if(f||r){const sp=(keys.ShiftLeft?5.6:3.6)*dt,l=Math.hypot(f,r);
@@ -1113,7 +1233,7 @@ function frame(){
     walkCollide(ox,oz);
     for(const s of solids){const sx=s.o?s.o.x:s.x,sz=s.o?s.o.z:s.z;if(s.o&&!s.o.owned)continue;const dx=player.x-sx,dz=player.z-sz,d=Math.hypot(dx,dz),R=s.r+.3;if(d<R&&d>0){player.x=sx+dx/d*R;player.z=sz+dz/d*R}}
   }
-  camera.position.set(player.x,1.7+Math.sin(bob)*.035,player.z);camera.rotation.set(pitch,yaw,0);
+  camera.position.set(player.x,1.7+(bobOn?Math.sin(bob)*.035:0),player.z);camera.rotation.set(pitch,yaw,0);
   // Rick schaut zum Spieler
   rick.rotation.y+=((Math.atan2(player.x-rick.position.x,player.z-rick.position.z))-rick.rotation.y)*.05;rick.position.y=Math.sin(time*2)*.01;
   // Tag / Gehalt
@@ -1151,17 +1271,19 @@ function frame(){
     else if(r.type==='table')pr='[E] Verpacken  ('+S.trim+' getrimmt, 3 nötig)';
     else if(r.type==='pot'){const p=r.p;pr=p.stage<0?'[E] Samen pflanzen ('+money(SEED)+')':p.stage===4?'[E] Ernten':p.wet?'Wächst … ('+Math.floor(p.t/8*100)+'% · Stufe '+(p.stage+1)+'/4)':'[E] Gießen'}
   }
-  $('prompt').textContent=pr;
+  setH($('prompt'),pr.replace(/\[E\]/g,'<kbd>E</kbd>'));$('cross').classList.toggle('aim',!!pr);
   objUpdate();
   $('money').textContent=money(S.cash);
   $('xpfill').style.width=(S.xp/need(S.level)*100)+'%';$('xpnum').textContent=S.level;
-  $('day').textContent='Tag '+S.day+' · Markt: '+money(S.price)+'/Paket · Arbeiter: '+S.workers+' · Lampen Lvl '+S.lights;
-  $('inv').innerHTML=`🌿 Roh: <b>${S.raw}</b> &nbsp; ✂️ Getrimmt: <b>${S.trim}</b> &nbsp; 📦 Pakete: <b>${S.pack}</b>`+labInv();
+  setH($('day'),`<b>Tag ${S.day}</b> · Markt <b>${money(S.price)}</b>/Paket<br>👷 ${S.workers} Arbeiter · 💡 Lampen ${S.lights}/5`);
+  setH($('inv'),`🌿 Roh <b>${S.raw}</b> &nbsp; ✂️ Getrimmt <b>${S.trim}</b> &nbsp; 📦 Pakete <b>${S.pack}</b>`+labInv());
   slotEls.forEach((e,i)=>e.classList.toggle('sel',i===S.tool));
   $('sl0').textContent='Samen '+money(SEED);$('sl1').textContent='Wasser '+S.water+'/'+S.waterCap;$('sl2').textContent='Schere';
+  if(fpsOn){fpsN++;fpsT+=dt;if(fpsT>=.5){$('fps').textContent=Math.round(fpsN/fpsT)+' FPS';fpsN=0;fpsT=0}}
   renderer.render(scene,camera);
 }
 frame();
+DLT.refresh();
 </script>
 </body>
 </html>

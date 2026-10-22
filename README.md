@@ -5,7 +5,16 @@ Zwei spielbare Browser-Versionen, inspiriert von *Drug Lord Tycoon* (inoffiziell
 - `drug-lord-3d.html` – First-Person-3D-Gewächshaus (three.js, Low-Poly): pflanzen, gießen, ernten, trimmen, verpacken, verkaufen, Arbeiter einstellen – plus **angebautes Labor (2 Räume)**.
 - `index.html` – 2D-Idle-Tycoon-Variante.
 
-Einfach die HTML-Datei im Browser öffnen (die 3D-Version lädt three.js per CDN, Internet nötig).
+Einfach die HTML-Datei im Browser öffnen (die 3D-Version lädt three.js per CDN, Internet nötig). Der Ordner `ui/` (gemeinsames Menü-Design) muss neben den HTML-Dateien liegen.
+
+## UI (Startmenü, Einstellungen, Lobby)
+
+Beide Spiele nutzen dasselbe UI-Modul (`ui/dlt-ui.css`, `ui/dlt-ui.js`):
+
+- **Startmenü / Pause** mit Weiter, Neues Spiel, Speichern, Tastatur-Navigation (↑/↓, Esc = zurück). Das 2D-Spiel pausiert, solange ein Menü offen ist.
+- **Einstellungen** (sofort wirksam, automatisch gespeichert): Menü-/HUD-Größe, reduzierte Animationen; 3D: Mausempfindlichkeit, Y-Achse, FOV, Renderauflösung, Schatten, Kopfwippen, FPS-Anzeige, Fadenkreuz, Ziel-Anzeige; 2D: Zahlenformat, Log, Benachrichtigungen, Autosave-Intervall. Tab „Daten“: Spielstand kopieren/importieren/löschen.
+- **Steuerung** und **Über & Hinweis** (Satire-Hinweis).
+- **Multiplayer-Lobby – nur UI-Vorschau:** Lobby erstellen (Koop/Wettbewerb, Spielerzahl, Sichtbarkeit), Code teilen, Bereit-Status, Chat, Demo-Bots. Es gibt noch keinen Server/Netzcode; „Beitreten“ per Code endet daher bewusst mit einer Fehlermeldung.
 
 Steuerung 3D: WASD, Maus, Shift, 1/2/3 Werkzeug, Klick benutzen, E interagieren.
 
