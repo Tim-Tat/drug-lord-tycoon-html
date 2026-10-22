@@ -1218,7 +1218,7 @@ function interact(viaE){
   if(!aimed)return;
   const r=aimed;
   if(r.type==='rick'){if(viaE||true)openMenu();return}
-  if(r.type==='labdoor'){msg('Die Stahltür ist abgeschlossen – Onkel Rick hat den Schlüssel.');return}
+  if(r.type==='labdoor'){msg('Die Stahltür ist abgeschlossen – den Schlüssel gibt es bei Onkel Rick.');return}
   if(r.type==='st'){labInteract(r.id);return}
   if(r.type==='barrel'){S.water=S.waterCap;msg('Gießkanne aufgefüllt 💧');return}
   if(r.type==='rack'){if(!A.trim())msg('Keine rohen Blüten – erst ernten!');return}
@@ -1809,7 +1809,10 @@ function rickMenu(){
   b.push([`Arbeiter einstellen (${money(hireCost())}) – ${money(SALARY)}/Tag`,S.workers<6&&S.cash>=hireCost(),()=>{S.cash-=hireCost();S.workers++;spawnWorker()}]);
   b.push([`Wachstumslampen Lvl ${S.lights}/5 (${money(lightCost())})`,S.lights<5&&S.cash>=lightCost(),()=>{S.cash-=lightCost();S.lights++}]);
   b.push([`Größere Gießkanne ${S.waterCap}→${S.waterCap+4} (${money(canCost())})`,S.canUp<3&&S.cash>=canCost(),()=>{S.cash-=canCost();S.canUp++;S.waterCap+=4;S.water=S.waterCap}]);
-  if(!S.lab&&S.flags.sold&&S.workers>0)b.push([`🔬 Hinterraum-Labor freischalten – ${money(LAB_COST)}`,S.level>=3&&S.cash>=LAB_COST,()=>{S.cash-=LAB_COST;S.lab=1;msg('🔬 Labor freigeschaltet – Stahltür an der rechten Wand!')},'ab Level 3 · 2 Räume + Laptop mit Darknet']);
+  if(!S.lab){
+    const miss=[];if(!S.flags.sold)miss.push('Paket verkaufen');if(S.workers<1)miss.push('Arbeiter einstellen');if(S.level<3)miss.push('Level 3');if(S.cash<LAB_COST)miss.push(money(LAB_COST));
+    b.push([`🔑 Labor-Schlüssel kaufen – ${money(LAB_COST)}`,!miss.length,()=>{S.cash-=LAB_COST;S.lab=1;msg('🔑 Onkel Rick gibt dir den Schlüssel – Stahltür aufgeschlossen!')},miss.length?'Fehlt noch: '+miss.join(' · '):'2 Räume + Laptop mit Darknet']);
+  }
   if(S.workers>0)b.push(['Arbeiter entlassen',true,()=>{const w=workers.pop();if(w.job&&w.job.p)w.job.p.claim=null;scene.remove(w.m);S.workers--}]);
   b.push(['Schließen',true,closeMenu]);
   return{line:S.lab?'Das Labor läuft? Dann bring mir die Ware, Kleiner.':lines[Math.floor((S.day+S.level)%lines.length)],items:b}}
@@ -2456,7 +2459,7 @@ function frame(){
   if(aimed&&!menuOpen&&!modal){
     const r=aimed;
     if(r.type==='rick')pr='[E] Mit Onkel Rick reden';
-    else if(r.type==='labdoor')pr='🔒 Stahltür – abgeschlossen (Onkel Rick hat den Schlüssel)';
+    else if(r.type==='labdoor')pr='🔒 Stahltür – abgeschlossen (Schlüssel bei Onkel Rick kaufen)';
     else if(r.type==='st')pr=stPrompt(r.id);
     else if(r.type==='barrel')pr='[E] Gießkanne auffüllen';
     else if(r.type==='rack')pr='[E] Blüten trimmen  ('+S.raw+' roh)';
