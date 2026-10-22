@@ -21,6 +21,12 @@ Freischalten: Tutorial-Ziele abschließen (Paket verkaufen, Arbeiter einstellen)
 - **Ausrüstung:** Glasware (mehr Ausbeute) und Präzisions-Ausrüstung (größere Zielzonen) am Laptop.
 - Verkauf der Produkte bei Onkel Rick.
 
+## Charaktere & Hotbar
+
+- **Charakter-Editor** im Startbildschirm (Live-Vorschau): Haut, Frisur, Haarfarbe, Oberteil, Hose, Extra (Sonnenbrille / Cap / Mundschutz). Wird lokal gespeichert und im Multiplayer an alle gesendet, die anderen sehen deine Figur samt Namen. Mit angelegter Schutzausrüstung trägt sie Kittel, Schutzbrille und Handschuhe.
+- **V** wechselt zwischen 1. und 3. Person (eigenen Charakter ansehen).
+- **Hotbar wechselt automatisch:** im Gewächshaus Samen / Gießen / Schere (1–3), im Labor die Chemie-Leiste (1–4): 🥽 Schutzausrüstung an/aus, 📋 aktueller Ansatz-Schritt (Taste zeigt Hinweis), 🧪 Zutaten-Vorrat, 💻 Laptop öffnen.
+
 ## Multiplayer (Co-op, P2P)
 
 Im Startbildschirm der 3D-Version: **Raum hosten** (zeigt einen 5-stelligen Code) oder mit dem Code **Beitreten**. Bis zu 8 Spieler, Drop-in jederzeit.

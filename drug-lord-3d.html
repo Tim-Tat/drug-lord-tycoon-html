@@ -18,7 +18,7 @@ canvas{display:block;width:100vw;height:100vh}
 #xpnum{position:absolute;inset:0;display:grid;place-items:center;font-weight:700;font-size:20px}
 #money{font-size:34px;font-weight:700;margin-top:6px}
 #day{font-size:13px;opacity:.85}
-#inv{position:fixed;left:14px;bottom:14px;background:#0009;padding:8px 12px;border-radius:6px;font-size:15px;line-height:1.5}
+#inv{position:fixed;left:14px;bottom:14px;max-width:270px;background:#0009;padding:8px 12px;border-radius:6px;font-size:15px;line-height:1.5}
 #hotbar{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:10px}
 .slot{width:96px;height:96px;border:3px solid #ffffff55;border-radius:10px;background:#0007;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:30px}
 .slot small{font-size:12px;margin-top:2px}
@@ -74,6 +74,16 @@ button:disabled{opacity:.4;cursor:not-allowed}
 #chat b{color:#ffd23a}
 #chatIn{position:fixed;left:14px;bottom:160px;width:340px;display:none;font:inherit;font-size:15px;padding:6px 8px;background:#000c;color:#fff;border:1px solid #4aa3a3;z-index:6;user-select:text}
 #players{position:fixed;right:14px;bottom:20px;max-width:300px;background:#0009;padding:6px 10px;font-size:13px;display:none;border-left:3px solid #4aa3a3}
+.slot.lab{border-color:#4ad9d9aa;background:#06222acc}
+.slot.lab.sel{border-color:#7ff;background:#0a4a55cc;box-shadow:0 0 14px #4ad9d9aa}
+#chr{margin:10px 0;padding:10px;background:#0006;border:1px solid #4aa3a3}
+#charPrev{width:190px;height:250px;background:radial-gradient(circle at 50% 40%,#2a3646,#0d1118);border:1px solid #345}
+#charOpts{text-align:left}#charOpts .cr{display:flex;align-items:center;gap:4px;margin:5px 0;flex-wrap:wrap}
+#charOpts .cr span{width:82px;font-size:13px;color:#9ab}
+#charOpts button.sw{width:24px;height:24px;padding:0;border:2px solid #fff3;border-radius:50%;font-size:0}
+#charOpts button.sw.on{border-color:#fff;box-shadow:0 0 6px #fff8}
+#charOpts button.tb{padding:3px 8px;font-size:13px;border-bottom-width:2px}
+#charOpts button.tb.on{background:#2a7a85}
 #menu .p{max-height:92vh;overflow:auto}
 #menu .p button small{display:block;font-size:12px;font-weight:400;opacity:.8;margin-top:2px}
 #menuLine{white-space:pre-line}
@@ -105,6 +115,9 @@ button:disabled{opacity:.4;cursor:not-allowed}
   <p><b>WASD</b> laufen · <b>Shift</b> rennen · <b>Maus</b> umschauen<br><b>1 / 2 / 3</b> Werkzeug (Samen / Gießkanne / Schere) · <b>Linksklick</b> benutzen<br><b>E</b> interagieren (Topf, Rick, Trockengestell, Tisch, Wasserfass) · <b>Esc</b> Maus freigeben</p>
   <p style="font-size:13px;color:#cbb">Satire-Spiel: Alle Stoffe, Abläufe und „Anleitungen“ sind frei erfunden – keine echten Anleitungen. Drogenherstellung ist in der Realität illegal und gefährlich.</p>
   <button id="play">▶ Solo spielen</button>
+  <div id="chr"><b>🧑 Dein Charakter</b>
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;align-items:center;margin-top:6px"><canvas id="charPrev" width="190" height="250"></canvas><div id="charOpts"></div></div>
+    <div style="font-size:12px;color:#9ab;margin-top:4px">Im Spiel: <b>V</b> = 3. Person (Charakter ansehen)</div></div>
   <div id="mp"><b>🌐 Multiplayer (Co-op)</b><br>
     <input id="mpName" maxlength="14" placeholder="Dein Name">
     <button id="mpHost">Raum hosten</button><br>
@@ -405,12 +418,13 @@ addEventListener('keydown',e=>{keys[e.code]=true;
   if(modal){modalKey(e);return}
   if(menuOpen){if(e.code==='Escape'||e.code==='KeyE')closeMenu();return}
   if(e.code==='Enter'&&started&&(NET.role==='host'||NET.role==='client')){e.preventDefault();chatOpen();return}
-  if(e.code==='Digit1')S.tool=0;if(e.code==='Digit2')S.tool=1;if(e.code==='Digit3')S.tool=2;
+  {const dn={Digit1:0,Digit2:1,Digit3:2,Digit4:3}[e.code];if(dn!==undefined){if(hbMode==='lab')labQuick(dn);else if(dn<3)S.tool=dn}}
+  if(e.code==='KeyV'){thirdP=!thirdP;msg(thirdP?'Ansicht: 3. Person (V)':'Ansicht: 1. Person (V)')}
   if(e.code==='KeyE')interact(true);
 });
 addEventListener('keyup',e=>{keys[e.code]=false;if(e.code==='Space'&&mg)mgUp()});
-addEventListener('wheel',e=>{if(!menuOpen&&!modal)S.tool=(S.tool+(e.deltaY>0?1:2))%3});
-$('play').onclick=()=>{started=true;$('overlay').style.display='none';renderer.domElement.requestPointerLock&&renderer.domElement.requestPointerLock()};
+addEventListener('wheel',e=>{if(!menuOpen&&!modal&&hbMode!=='lab')S.tool=(S.tool+(e.deltaY>0?1:2))%3});
+$('play').onclick=()=>{started=true;$('overlay').style.display='none';$('chr').style.display='none';renderer.domElement.requestPointerLock&&renderer.domElement.requestPointerLock()};
 document.addEventListener('pointerlockchange',()=>{locked=document.pointerLockElement===renderer.domElement;if(!locked&&!menuOpen&&!modal&&started){$('overlay').style.display='grid';$('play').textContent='▶ Weiter'}});
 document.addEventListener('pointerlockerror',()=>{fallback=true;$('overlay').style.display='none';$('warn').textContent=''});
 let drag=null;
@@ -431,7 +445,7 @@ function aim(){
   const targets=[rickHit,stations.rack.hit,stations.table.hit,stations.barrel.hit];
   pots.forEach(p=>{if(p.owned)targets.push(p.hit)});
   if(!S.lab)targets.push(labDoorHit);else targets.push(...labTargets);
-  ray.setFromCamera({x:0,y:0},camera);
+  ray.set(new T.Vector3(player.x,1.7,player.z),new T.Vector3(-Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),-Math.cos(yaw)*Math.cos(pitch)));
   const h=ray.intersectObjects(targets,false);
   aimed=h.length?h[0].object.userData.ref:null;
 }
@@ -1127,6 +1141,118 @@ function gTiming(k,D,W){
 
 
 // ======================================================================
+//  CHARAKTERE – Editor (Startbildschirm), 3. Person (V), sichtbar für Mitspieler
+// ======================================================================
+const SKIN=[0xf2c7a5,0xe0ac82,0xc68863,0x9c6b43,0x6f4a2f,0xffdcc2];
+const HAIRC=[0x1a1410,0x4a2f1b,0x8a5a2b,0xd9b35a,0xb33a2a,0xcfcfcf];
+const SHIRT=[0xc8322a,0x2d6cc0,0x2f9e5b,0xe3b91c,0x7a3fb5,0x222831,0xe8e8ea,0xe67e22];
+const PANTS=[0x2b3a55,0x3a3a3a,0x6a5a3a,0x5a2a2a];
+const HSTYLE=['Glatze','Kurz','Lang','Irokese','Dutt'];
+const ACC=['Keins','Sonnenbrille','Cap','Mundschutz'];
+function sanApp(a){a=a||{};const ci=(v,n)=>Math.max(0,Math.min(n-1,(+v)|0));
+  return{sk:ci(a.sk,SKIN.length),hc:ci(a.hc,HAIRC.length),hs:ci(a.hs,HSTYLE.length),sh:ci(a.sh,SHIRT.length),pa:ci(a.pa,PANTS.length),ac:ci(a.ac,ACC.length)}}
+let MYAPP=sanApp({hc:1,hs:1,sh:1});
+try{const sv=localStorage.getItem('dlt_char');if(sv)MYAPP=sanApp(JSON.parse(sv))}catch(e){}
+let thirdP=false;
+
+// Humanoider Charakter (Low-Poly). userData: legs/arms für Lauf-Animation, setPsa() blendet Kittel/Brille/Handschuhe ein
+function makeCharacter(app){
+  app=sanApp(app);
+  const g=new T.Group(),skin=M(SKIN[app.sk]),hair=M(HAIRC[app.hc]),shirt=M(SHIRT[app.sh]),pants=M(PANTS[app.pa]),shoe=M(0x15151a),dark=M(0x16161a),coat=M(0xf4f6f8);
+  const legs=[],arms=[],psa=[];
+  for(const s of[-1,1]){const l=new T.Group();l.position.set(s*.13,.56,0);box(.2,.5,.22,pants,0,-.26,0,l);box(.22,.1,.3,shoe,0,-.55,.04,l);g.add(l);legs.push(l)}
+  box(.5,.1,.3,pants,0,.58,0,g);                                   // Hüfte
+  box(.5,.6,.3,shirt,0,.9,0,g);                                    // Torso
+  for(const s of[-1,1]){const a=new T.Group();a.position.set(s*.34,1.16,0);
+    box(.16,.28,.18,shirt,0,-.12,0,a);box(.13,.32,.15,skin,0,-.42,0,a);                  // Ärmel + Unterarm
+    const cs=box(.19,.52,.21,coat,0,-.25,0,a);const gl=box(.15,.14,.17,M(0x3a7fd5),0,-.62,0,a);cs.visible=gl.visible=false;psa.push(cs,gl);
+    g.add(a);arms.push(a)}
+  box(.12,.08,.12,skin,0,1.24,0,g);                                // Hals
+  box(.3,.32,.3,skin,0,1.43,0,g);                                  // Kopf
+  for(const s of[-1,1]){box(.05,.05,.02,dark,s*.075,1.46,.151,g)}  // Augen
+  box(.1,.02,.02,M(0x7a3a3a),0,1.36,.151,g);                       // Mund
+  // Frisur
+  const hs=app.hs;
+  if(hs>=1){box(.33,.09,.33,hair,0,1.62,0,g);box(.33,.22,.07,hair,0,1.52,-.13,g)}
+  if(hs===2){box(.35,.42,.09,hair,0,1.4,-.15,g);for(const s of[-1,1])box(.05,.3,.2,hair,s*.17,1.46,-.04,g)}
+  if(hs===3){const m=box(.06,.16,.34,hair,0,1.69,0,g)}
+  if(hs===4){lsph(.1,hair,0,1.72,-.1,g,6,5)}
+  // Extras
+  if(app.ac===1)box(.3,.07,.03,M(0x0a0a0c),0,1.47,.16,g);
+  if(app.ac===2){box(.35,.08,.35,M(0x2d6cc0),0,1.64,0,g);box(.3,.03,.16,M(0x2d6cc0),0,1.61,.2,g)}
+  if(app.ac===3)box(.22,.12,.04,M(0xdfe9f2),0,1.37,.16,g);
+  // Schutzausrüstung (Kittel, Schutzbrille) – nur sichtbar, wenn PSA an
+  psa.push(box(.58,.74,.36,coat,0,.78,0,g));
+  psa.push(box(.58,.28,.12,coat,0,.4,.1,g));
+  const gog=box(.32,.08,.04,M(0x9fd8ff,{transparent:true,opacity:.65}),0,1.47,.17,g);psa.push(gog);
+  psa.push(box(.33,.03,.32,M(0x2a2a30),0,1.5,0,g));
+  psa.forEach(o=>o.visible=false);
+  g.userData={legs,arms,setPsa:v=>psa.forEach(o=>o.visible=!!v)};
+  g.scale.setScalar(1.1);return g}
+
+// Eigene Figur (nur in 3. Person sichtbar) + Kamera
+let selfAv=null,selfPrev={x:0,z:0};
+function rebuildSelf(){if(selfAv)scene.remove(selfAv);selfAv=makeCharacter(MYAPP);selfAv.visible=false;scene.add(selfAv)}
+function animChar(m,moving,time,ph){
+  const [l0,l1]=m.userData.legs,[a0,a1]=m.userData.arms;
+  if(moving){const s=Math.sin(time*9+ph)*.6;l0.rotation.x=s;l1.rotation.x=-s;a0.rotation.x=-s*.7;a1.rotation.x=s*.7}
+  else{l0.rotation.x=l1.rotation.x=a0.rotation.x=a1.rotation.x=0}}
+function camPlace(time){
+  const ey=1.7+Math.sin(bob)*.035;
+  if(thirdP){const cp=Math.cos(pitch),fx=-Math.sin(yaw)*cp,fy=Math.sin(pitch);const fz=-Math.cos(yaw)*cp;
+    camera.position.set(player.x-fx*3.2,Math.max(.5,ey-fy*3.2+.35),player.z-fz*3.2)}
+  else camera.position.set(player.x,ey,player.z);
+  camera.rotation.set(pitch,yaw,0);
+  if(!selfAv)rebuildSelf();
+  selfAv.visible=thirdP;
+  if(thirdP){selfAv.position.set(player.x,0,player.z);selfAv.rotation.y=yaw+Math.PI;selfAv.userData.setPsa(S.psa);
+    animChar(selfAv,Math.hypot(player.x-selfPrev.x,player.z-selfPrev.z)>.002,time,0)}
+  selfPrev.x=player.x;selfPrev.z=player.z}
+
+// ---------------- Vorschau + Editor im Startbildschirm ----------------
+let pvR=null,pvScene=null,pvCam=null,pvChar=null;
+try{pvR=new T.WebGLRenderer({canvas:$('charPrev'),alpha:true,antialias:true});pvR.setSize(190,250,false);pvR.outputEncoding=T.sRGBEncoding;
+  pvScene=new T.Scene();pvScene.add(new T.HemisphereLight(0xffffff,0x667788,1.15));const dl=new T.DirectionalLight(0xffffff,1.3);dl.position.set(2,4,3);pvScene.add(dl);
+  pvCam=new T.PerspectiveCamera(32,190/250,.1,50);pvCam.position.set(0,1.0,4.6);pvCam.lookAt(0,.92,0)}catch(e){pvR=null}
+function rebuildPreview(){if(!pvR)return;if(pvChar)pvScene.remove(pvChar);pvChar=makeCharacter(MYAPP);pvScene.add(pvChar)}
+function renderPreview(time){if(!pvR||started)return;if(!pvChar)rebuildPreview();pvChar.rotation.y=Math.sin(time*.8)*.9+.25;animChar(pvChar,false,time,0);pvR.render(pvScene,pvCam)}
+function charChanged(){try{localStorage.setItem('dlt_char',JSON.stringify(MYAPP))}catch(e){}rebuildPreview();rebuildSelf();buildCharUI()}
+function buildCharUI(){
+  const box_=$('charOpts');box_.innerHTML='';
+  const row=(lab,key,arr,color)=>{const r=document.createElement('div');r.className='cr';const l=document.createElement('span');l.textContent=lab;r.appendChild(l);
+    arr.forEach((v,i)=>{const b=document.createElement('button');
+      if(color){b.className='sw'+(MYAPP[key]===i?' on':'');b.style.background='#'+v.toString(16).padStart(6,'0');b.title=lab}
+      else{b.className='tb'+(MYAPP[key]===i?' on':'');b.textContent=v}
+      b.onclick=()=>{MYAPP[key]=i;charChanged()};r.appendChild(b)});box_.appendChild(r)};
+  row('Haut','sk',SKIN,true);row('Frisur','hs',HSTYLE,false);row('Haarfarbe','hc',HAIRC,true);row('Oberteil','sh',SHIRT,true);row('Hose','pa',PANTS,true);row('Extra','ac',ACC,false)}
+buildCharUI();
+
+// ---------------- Hotbar: wechselt automatisch (Gewächshaus <-> Labor) ----------------
+let hbMode='',slotEls=[];
+function buildHotbar(mode){
+  hbMode=mode;hb.innerHTML='';
+  const defs=mode==='lab'?[['🥽','PSA'],['📋','Ansatz'],['🧪','Zutaten'],['💻','Laptop']]:[['🌱','Samen'],['💧','Gießen'],['✂️','Schere']];
+  defs.forEach(([ic,n],i)=>{const d=document.createElement('div');d.className='slot sh'+(mode==='lab'?' lab':'');d.innerHTML=`<b>${i+1}</b>${ic}<small id="sl${i}">${n}</small>`;hb.appendChild(d)});
+  slotEls=[...hb.children]}
+function updHotbar(){
+  const mode=inLabNow()?'lab':'gh';if(mode!==hbMode)buildHotbar(mode);
+  if(mode==='gh'){slotEls.forEach((e,i)=>e.classList.toggle('sel',i===S.tool));
+    $('sl0').textContent='Samen '+money(SEED);$('sl1').textContent='Wasser '+S.water+'/'+S.waterCap;$('sl2').textContent='Schere'}
+  else{const c=S.cook,r=Object.values(S.reag).reduce((a,b)=>a+b,0);
+    $('sl0').textContent='PSA '+(S.psa?'an':'aus');slotEls[0].classList.toggle('sel',!!S.psa);
+    $('sl1').textContent=c?STEP[DRUGS[c.drug].steps[c.i]].n:'kein Ansatz';slotEls[1].classList.toggle('sel',!!c);
+    $('sl2').textContent='Zutaten '+r;slotEls[2].classList.remove('sel');
+    $('sl3').textContent=cn(S.coins)+' SCN';slotEls[3].classList.remove('sel')}}
+function labQuick(i){
+  if(i===0)togglePSA();
+  else if(i===1){const c=S.cook;if(!c){msg('Kein Ansatz aktiv – Rezept-Board in Raum 1.');return}
+    const ST=STEP[DRUGS[c.drug].steps[c.i]];msg(`${ST.ic} ${ST.n} → ${STATION[ST.st]} · ${ST.tip}`)}
+  else if(i===2)msg('📦 '+Object.keys(ING).map(k=>ING[k].n.split(' ')[0]+' '+(S.reag[k]||0)).join(' · '));
+  else if(i===3)openLap()}
+
+// ======================================================================
+
+// ======================================================================
 //  MULTIPLAYER (Co-op, Peer-to-Peer über WebRTC / PeerJS)
 //  Host = Autorität: führt die komplette Simulation aus (Pflanzen, Arbeiter, Tage,
 //  Mining, Labor). Mitspieler senden nur Aktionen und bekommen ~5x/s einen Snapshot.
@@ -1154,7 +1280,7 @@ function doAct(k,n){
   if(k==='plant'&&p)A.plant(p);else if(k==='water'&&p)A.water(p);else if(k==='harvest'&&p)A.harvest(p);
   else if(k==='trim')A.trim();else if(k==='pack')A.pack()}
 function setNetStatus(t){$('mpStatus').textContent=t}
-function startGameUI(){started=true;$('overlay').style.display='none';$('mp').style.display='none';relock()}
+function startGameUI(){started=true;$('overlay').style.display='none';$('mp').style.display='none';$('chr').style.display='none';relock()}
 
 // ---------------- Chat ----------------
 const chatLines=[];
@@ -1173,16 +1299,16 @@ $('chatIn').addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter
 
 // ---------------- Avatare der Mitspieler ----------------
 const AV={};
-function ensureAvatar(id,name,col){
+function ensureAvatar(id,name,app){
   if(AV[id])return AV[id];
-  const m=makeWorker(PCOL[col%PCOL.length]);scene.add(m);
+  const m=makeCharacter(app);scene.add(m);
   const lb=labelSprite(name,2.2,true);lb.position.set(0,2.15,0);m.add(lb);
   m.position.set(0,0,4.6);
   return AV[id]={m,name,tx:0,tz:4.6,tyaw:0,init:false}}
 function dropAvatar(id){const a=AV[id];if(a){scene.remove(a.m);delete AV[id]}}
 function syncAvatars(list,selfId){
   const seen={};
-  list.forEach(p=>{if(p.id===selfId)return;seen[p.id]=1;const a=ensureAvatar(p.id,p.name,p.col);a.tx=p.x;a.tz=p.z;a.tyaw=p.yaw;if(!a.init){a.init=true;a.m.position.set(p.x,0,p.z)}});
+  list.forEach(p=>{if(p.id===selfId)return;seen[p.id]=1;const a=ensureAvatar(p.id,p.name,p.app);a.tx=p.x;a.tz=p.z;a.tyaw=p.yaw;a.m.userData.setPsa(p.psa);if(!a.init){a.init=true;a.m.position.set(p.x,0,p.z)}});
   for(const id in AV)if(!seen[id])dropAvatar(id)}
 function updAvatars(dt,time){
   for(const id in AV){const a=AV[id],m=a.m,dx=a.tx-m.position.x,dz=a.tz-m.position.z,k=Math.min(1,dt*10);
@@ -1248,7 +1374,7 @@ function hostData(conn,d){
     if(conn.pid!==undefined)return;
     if(Object.keys(NET.pl).length>=7){try{conn.send({t:'full'})}catch(e){}setTimeout(()=>conn.close(),300);return}
     const id=NET.nextId++;conn.pid=id;
-    NET.pl[id]={id,name:cleanName(d.name)||'Gast'+id,col:id%PCOL.length,x:0,z:4.6,yaw:0,last:performance.now()};
+    NET.pl[id]={id,name:cleanName(d.name)||'Gast'+id,app:sanApp(d.app),psa:0,x:0,z:4.6,yaw:0,last:performance.now()};
     conn.send({t:'hello',id,code:NET.code});conn.send(snapData());
     const txt=NET.pl[id].name+' ist beigetreten.';addChat('📢',txt);hostBroadcast({t:'chat',from:'📢',text:txt});netHud();
     return}
@@ -1256,7 +1382,7 @@ function hostData(conn,d){
   const pl=NET.pl[conn.pid];if(!pl)return;
   pl.last=performance.now();
   switch(d.t){
-    case 'pos':if(isFinite(d.x)&&isFinite(d.z)&&isFinite(d.yaw)){pl.x=+d.x;pl.z=+d.z;pl.yaw=+d.yaw}break;
+    case 'pos':if(isFinite(d.x)&&isFinite(d.z)&&isFinite(d.yaw)){pl.x=+d.x;pl.z=+d.z;pl.yaw=+d.yaw;pl.psa=d.psa?1:0}break;
     case 'act':if(['plant','water','harvest','trim','pack'].includes(d.k)&&(d.n===undefined||Number.isInteger(d.n)))asRemote(conn,()=>doAct(d.k,d.n));break;
     case 'menu':if(MENUS[d.id]&&Number.isInteger(d.i))asRemote(conn,()=>{const it=MENUS[d.id]().items[d.i];if(it&&it[1])it[2]()});break;
     case 'lap':if(typeof d.a==='string'&&d.a!=='tab')asRemote(conn,()=>{if(d.a==='welcome')lapWelcome();else lapAct(d.a,d.k)});break;
@@ -1275,7 +1401,7 @@ function netJoin(code,name,tries){
   peer.on('open',()=>{
     const conn=peer.connect('dlt-'+code,{reliable:true,serialization:'json'});NET.hostConn=conn;
     const to=setTimeout(()=>{if(!done)setNetStatus('Keine Antwort – Code prüfen / ist der Host online?')},10000);
-    conn.on('open',()=>{clearTimeout(to);conn.send({t:'join',name:NET.name})});
+    conn.on('open',()=>{clearTimeout(to);conn.send({t:'join',name:NET.name,app:MYAPP})});
     conn.on('data',d=>{done=true;clientData(d)});
     conn.on('close',clientLost);conn.on('error',clientLost)});
   peer.on('error',e=>setNetStatus('Fehler: '+(e.type==='peer-unavailable'?'Raum nicht gefunden':e.type)));
@@ -1304,8 +1430,8 @@ function netTick(dt,time){
   NET.tPos+=dt;
   if(NET.tPos>=.1){NET.tPos=0;
     const px=+player.x.toFixed(2),pz=+player.z.toFixed(2),py=+yaw.toFixed(2);
-    if(isClient())netSend({t:'pos',x:px,z:pz,yaw:py});
-    else{const list=[{id:0,name:NET.name,col:0,x:px,z:pz,yaw:py}];for(const id in NET.pl){const p=NET.pl[id];list.push({id:p.id,name:p.name,col:p.col,x:p.x,z:p.z,yaw:p.yaw})}
+    if(isClient())netSend({t:'pos',x:px,z:pz,yaw:py,psa:S.psa?1:0});
+    else{const list=[{id:0,name:NET.name,app:MYAPP,psa:S.psa?1:0,x:px,z:pz,yaw:py}];for(const id in NET.pl){const p=NET.pl[id];list.push({id:p.id,name:p.name,app:p.app,psa:p.psa,x:p.x,z:p.z,yaw:p.yaw})}
       hostBroadcast({t:'players',list});syncAvatars(list,0)}}
   if(isHost()){NET.tSnap+=dt;if(NET.tSnap>=.2){NET.tSnap=0;hostBroadcast(snapData())}
     const now=performance.now();
@@ -1322,8 +1448,7 @@ $('mpCode').addEventListener('input',e=>{e.target.value=e.target.value.toUpperCa
 
 // ---------------- Hauptschleife ----------------
 const hb=$('hotbar');
-['🌱|Samen','💧|Gießen','✂️|Schere'].forEach((t,i)=>{const [ic,n]=t.split('|');const d=document.createElement('div');d.className='slot sh';d.innerHTML=`<b>${i+1}</b>${ic}<small id="sl${i}">${n}</small>`;hb.appendChild(d)});
-const slotEls=[...hb.children];
+buildHotbar('gh');
 const player={x:0,z:4.6};
 const solids=[...pots.map(p=>({o:p,r:.75,t:'pot'})),{x:stations.rack.x,z:stations.rack.z,r:1.0,t:'rack'},{x:stations.table.x,z:stations.table.z,r:1.1,t:'table'},{x:stations.barrel.x,z:stations.barrel.z,r:.65},{x:rick.position.x,z:rick.position.z,r:.5}];
 const clock=new T.Clock();let bob=0;
@@ -1341,7 +1466,7 @@ function frame(){
     walkCollide(ox,oz);
     for(const s of solids){const sx=s.o?s.o.x:s.x,sz=s.o?s.o.z:s.z;if(s.o&&!s.o.owned)continue;const dx=player.x-sx,dz=player.z-sz,d=Math.hypot(dx,dz),R=s.r+.3;if(d<R&&d>0){player.x=sx+dx/d*R;player.z=sz+dz/d*R}}
   }
-  camera.position.set(player.x,1.7+Math.sin(bob)*.035,player.z);camera.rotation.set(pitch,yaw,0);
+  camPlace(time);
   // Rick schaut zum Spieler
   rick.rotation.y+=((Math.atan2(player.x-rick.position.x,player.z-rick.position.z))-rick.rotation.y)*.05;rick.position.y=Math.sin(time*2)*.01;
   // Tag / Gehalt
@@ -1385,8 +1510,8 @@ function frame(){
   $('xpfill').style.width=(S.xp/need(S.level)*100)+'%';$('xpnum').textContent=S.level;
   $('day').textContent='Tag '+S.day+' · Markt: '+money(S.price)+'/Paket · Arbeiter: '+S.workers+' · Lampen Lvl '+S.lights;
   $('inv').innerHTML=`🌿 Roh: <b>${S.raw}</b> &nbsp; ✂️ Getrimmt: <b>${S.trim}</b> &nbsp; 📦 Pakete: <b>${S.pack}</b>`+labInv();
-  slotEls.forEach((e,i)=>e.classList.toggle('sel',i===S.tool));
-  $('sl0').textContent='Samen '+money(SEED);$('sl1').textContent='Wasser '+S.water+'/'+S.waterCap;$('sl2').textContent='Schere';
+  updHotbar();
+  renderPreview(time);
   renderer.render(scene,camera);
 }
 frame();
