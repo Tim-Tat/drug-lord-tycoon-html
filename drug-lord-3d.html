@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Drug Lord Tycoon 3D (Fan-Nachbau)</title>
+<link rel="stylesheet" href="ui/dlt-ui.css">
 <style>
 :root{--yel:#ffe83a;--glass:rgba(12,16,20,.52);--glass2:rgba(8,10,14,.72);--edge:rgba(255,255,255,.15);--acc:#7dffb0;--ui:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif}
 *{box-sizing:border-box;user-select:none;-webkit-user-select:none}
@@ -42,8 +43,8 @@ canvas{display:block;width:100vw;height:100vh}
 kbd{display:inline-block;min-width:26px;padding:1px 8px;margin-right:6px;border-radius:6px;background:linear-gradient(#fff,#d6dae0);color:#14181d;font:700 15px var(--ui);text-shadow:none;box-shadow:0 2px 0 #7b828c,0 3px 6px #0006;text-align:center}
 #msg{position:fixed;left:50%;top:21%;transform:translate(-50%,-8px);font-size:23px;text-align:center;opacity:0;transition:opacity .3s,transform .3s;max-width:70vw;z-index:3;padding:9px 22px;border-radius:14px;background:var(--glass2);border:1px solid var(--edge);pointer-events:none}
 #title{position:fixed;top:8px;left:50%;transform:translateX(-50%);font-size:30px;font-weight:800;letter-spacing:2px;z-index:2;text-transform:uppercase;opacity:.92}
-#overlay{position:fixed;inset:0;background:radial-gradient(ellipse at 50% 40%,#0a141c88,#02050acc 85%);display:grid;place-items:center;text-align:center;z-index:5;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
-#overlay .box{max-width:600px;padding:28px 34px;border-radius:22px;background:var(--glass2);border:1px solid var(--edge);box-shadow:0 20px 70px #000a,inset 0 1px 0 #ffffff22;animation:rise .8s cubic-bezier(.2,.9,.2,1)}
+#overlay{position:fixed;inset:0;background:radial-gradient(ellipse at 50% 40%,#0a141c88,#02050acc 85%);display:grid;place-items:center;text-align:center;z-index:5;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);overflow-y:auto}
+#overlay .box{margin:auto;max-width:600px;padding:28px 34px;border-radius:22px;background:var(--glass2);border:1px solid var(--edge);box-shadow:0 20px 70px #000a,inset 0 1px 0 #ffffff22;animation:rise .8s cubic-bezier(.2,.9,.2,1)}
 @keyframes rise{from{opacity:0;transform:translateY(24px) scale(.97)}}
 #overlay h1{text-shadow:none;font-size:44px;margin:0 0 6px;font-weight:900;letter-spacing:2px;background:linear-gradient(180deg,#fff7a8,var(--yel) 55%,#e0a800);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 3px 10px #000a)}
 #overlay p{margin:9px 0;color:#d7dde3;line-height:1.55}
@@ -131,7 +132,7 @@ button:disabled{opacity:.38;cursor:not-allowed;box-shadow:none}
 <div id="top" class="sh"><div id="xpbar" class="gl"><div id="xpfill"></div><div id="xpnum">1</div></div><div id="money">$500</div><div id="day"></div></div>
 <div id="inv" class="sh gl"></div>
 <div id="hotbar"></div>
-<div id="cross"></div>
+<div id="cross"></div><div id="fps" style="display:none;position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:4;font:700 13px monospace;color:#9dffb8;text-shadow:0 1px 3px #000"></div>
 <div id="prompt" class="sh"></div><div id="prompt2" class="sh gl"></div>
 <div id="msg" class="sh"></div>
 <div id="info" class="sh gl"></div>
@@ -154,7 +155,7 @@ button:disabled{opacity:.38;cursor:not-allowed;box-shadow:none}
   <p>Fan-Nachbau als Gewächshaus mit Hinterraum-Labor. Pflanze, gieße, ernte, trimme, verpacke und verkaufe an Onkel Rick – und stelle Arbeiter ein.</p>
   <p><b>WASD</b> laufen · <b>Shift</b> rennen · <b>Maus</b> umschauen<br><b>1 / 2 / 3</b> Werkzeug (Samen / Gießkanne / Schere) · <b>Linksklick</b> benutzen<br><b>E</b> interagieren (Topf, Rick, Trockengestell, Tisch, Wasserfass) · <b>F</b> Eigenkonsum (Spiel – Überdosis & unreine Ware können tödlich sein) · <b>Esc</b> Maus freigeben</p>
   <p style="font-size:13px;color:#cbb">Satire-Spiel: Alle Stoffe, Abläufe und „Anleitungen“ sind frei erfunden – keine echten Anleitungen. Drogenherstellung ist in der Realität illegal und gefährlich.</p>
-  <button id="play">▶ Solo spielen</button>
+  <button id="play">▶ Solo spielen</button> <button id="openSet" style="font-size:16px;padding:10px 18px">⚙ Einstellungen</button>
   <div id="chr"><b>🧑 Dein Charakter</b>
     <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;align-items:center;margin-top:6px"><canvas id="charPrev" width="190" height="250"></canvas><div id="charOpts"></div></div>
     <div style="font-size:12px;color:#9ab;margin-top:4px">Im Spiel: <b>V</b> = 3. Person (Charakter ansehen)</div></div>
@@ -170,6 +171,7 @@ button:disabled{opacity:.38;cursor:not-allowed;box-shadow:none}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="ui/dlt-ui.js"></script>
 <script>
 if(typeof THREE==='undefined'){document.getElementById('warn').textContent='three.js konnte nicht geladen werden – bitte Internetverbindung prüfen.'}
 const T=THREE;
@@ -264,7 +266,7 @@ const Post=(()=>{
 })();
 function applyQuality(){
   const hi=Q.hi;Post.on=Post.ok&&hi;
-  Post.pr=Math.min(devicePixelRatio||1,hi?1.5:1);
+  Post.pr=Math.min(devicePixelRatio||1,hi?1.5:1)*(Q.res||1);
   renderer.setPixelRatio(Post.pr);renderer.setSize(innerWidth,innerHeight);
   const wasTM=renderer.toneMapping;
   renderer.toneMapping=Post.on?T.NoToneMapping:T.ACESFilmicToneMapping;
@@ -1167,7 +1169,7 @@ const SEED=10,DAYLEN=90,SALARY=50;
 let S={cash:500,xp:0,level:1,day:1,dayT:0,raw:0,trim:0,pack:0,tool:0,water:8,waterCap:8,lights:0,potsOwned:3,workers:0,canUp:0,flags:{},price:55,priceT:0,potsState:[],
   lab:0,psa:false,reag:{},drugs:{},recipes:{},up:{yield:0,ease:0},cook:null,dm:{},batches:0,dirty:0,waste:0,coins:0,cp:40,cpT:4,evT:60,
   news:'📰 SchwarzCoin (SCN): ein Kurs, so stabil wie Onkel Ricks Laune.',rig:{gpu:0,fan:0},scams:0,heat:0,orders:[],ordId:0,ordT:20,hp:100,vent:0,high:null,crash:0,dw:{rating:4.5,sales:0,list:{},parcels:[],log:[],pid:1}};
-function save(){if(NET.role==="client"||NET.role==="lost")return;try{S.potsState=pots.map(p=>({o:p.owned,s:p.stage,t:p.t,w:p.wet}));localStorage.setItem('dlt3d',JSON.stringify(S))}catch(e){}}
+function save(){if(window.DLT&&DLT.noSave)return;if(NET.role==="client"||NET.role==="lost")return;try{S.potsState=pots.map(p=>({o:p.owned,s:p.stage,t:p.t,w:p.wet}));localStorage.setItem('dlt3d',JSON.stringify(S))}catch(e){}}
 function load(){try{const s=JSON.parse(localStorage.getItem('dlt3d'));if(s&&s.cash!==undefined)S=Object.assign(S,s)}catch(e){}}
 load();
 pots.forEach((p,i)=>{const st=S.potsState&&S.potsState[i];p.owned=st?st.o:i<S.potsOwned;if(st){p.stage=st.s;p.t=st.t;p.wet=st.w}});
@@ -1258,17 +1260,17 @@ addEventListener('keydown',e=>{keys[e.code]=true;
   if(e.code==='KeyF'&&started&&!dead)openMenuX(consumeMenu);
 });
 addEventListener('keyup',e=>{keys[e.code]=false;if(e.code==='Space'&&mg)mgUp()});
-addEventListener('wheel',e=>{if(!menuOpen&&!modal&&hbMode==='gh')S.tool=(S.tool+(e.deltaY>0?1:2))%3});
+addEventListener('wheel',e=>{if(!menuOpen&&!modal&&!DLT.isOpen()&&hbMode==='gh')S.tool=(S.tool+(e.deltaY>0?1:2))%3});
 $('play').onclick=()=>{started=true;$('overlay').style.display='none';$('chr').style.display='none';renderer.domElement.requestPointerLock&&renderer.domElement.requestPointerLock()};
-document.addEventListener('pointerlockchange',()=>{locked=document.pointerLockElement===renderer.domElement;if(locked&&dead){document.exitPointerLock();return}if(!locked&&!menuOpen&&!modal&&started){$('overlay').style.display='grid';$('play').textContent='▶ Weiter'}});
+document.addEventListener('pointerlockchange',()=>{locked=document.pointerLockElement===renderer.domElement;if(locked&&dead){document.exitPointerLock();return}if(!locked&&!menuOpen&&!modal&&started&&!dead&&!DLT.isOpen())DLT.open('main',{mode:'pause'})});
 document.addEventListener('pointerlockerror',()=>{fallback=true;$('overlay').style.display='none';$('warn').textContent=''});
 let drag=null;
 renderer.domElement.addEventListener('mousedown',e=>{if(menuOpen||modal)return;if(locked){interact(false);return}
   if(started){drag={x:e.clientX,y:e.clientY,moved:0}}});
 addEventListener('mouseup',e=>{if(drag&&drag.moved<4&&!locked)interact(false);drag=null});
 addEventListener('mousemove',e=>{
-  if(menuOpen||modal)return;
-  if(locked){yaw-=e.movementX*.0023;pitch-=e.movementY*.0023}
+  if(menuOpen||modal||DLT.isOpen())return;
+  if(locked){yaw-=e.movementX*.0023*SET.sens;pitch-=e.movementY*.0023*SET.sens*(SET.invertY?-1:1)}
   else if(drag){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.moved+=Math.abs(dx)+Math.abs(dy);yaw-=dx*.004;pitch-=dy*.004;drag.x=e.clientX;drag.y=e.clientY}
   pitch=Math.max(-1.4,Math.min(1.4,pitch));
 });
@@ -2094,10 +2096,10 @@ function consumeMenu(){
   items.push(['Schließen',true,closeMenu]);
   return{line:`EIGENKONSUM (Spiel)\nGesundheit ${Math.round(S.hp)}/100. Mischkonsum und unreine Ware können tödlich enden.`,items}}
 function highTick(dt,time){
-  let spd=1,fov=70,shake=0,roll=0,filt='';
+  let spd=1,fov=0,shake=0,roll=0,filt='';
   if(S.high){const H=HIGH[S.high.k],k=S.high.k,i=clamp(Math.min(S.high.t/15,(S.high.dur-S.high.t)/6),0,1);
     S.high.t-=dt;
-    spd=1+(H.spd-1)*i;fov=70+(H.fov||0)*i;shake=(H.shake||0)*i;
+    spd=1+(H.spd-1)*i;fov=(H.fov||0)*i;shake=(H.shake||0)*i;
     if(k==='pack')filt=`saturate(1.3) hue-rotate(-10deg) blur(${(.5*i).toFixed(2)}px)`;
     else if(k==='speed')filt=`contrast(1.15) saturate(1.2)`;
     else if(k==='mdma'){filt=`saturate(${(1+.9*i).toFixed(2)}) hue-rotate(${(Math.sin(time*1.5)*25*i).toFixed(1)}deg) brightness(${(1+.1*Math.sin(time*4)*i).toFixed(2)})`}
@@ -2107,7 +2109,7 @@ function highTick(dt,time){
     if(S.high.t<=0){const c=H.crash||0;S.high=null;S.crash=c;msg(c?'😮‍💨 Der Rausch lässt nach – Crash …':'Der Rausch lässt nach.')}}
   else if(S.crash>0){S.crash-=dt;spd=.8;filt='grayscale(.5) brightness(.85)'}
   spdMul=spd;highShake=shake;highRoll=roll;
-  if(Math.abs(camera.fov-fov)>.05){camera.fov=fov;camera.updateProjectionMatrix()}
+  highFov=fov;
   if(renderer.domElement.style.filter!==filt)renderer.domElement.style.filter=filt;
   const hp=Math.round(S.hp);$('hpfill').style.width=hp+'%';$('hpfill').style.background=hp>60?'#3ddc84':hp>30?'#f0a030':'#e23b3b';$('hpnum').textContent='❤ '+hp+' / 100';
   $('hightxt').textContent=S.high?hIcon(S.high.k)+' high · '+Math.floor(S.high.t/60)+':'+String(Math.floor(S.high.t%60)).padStart(2,'0'):S.crash>0?'😮‍💨 Crash …':''}
@@ -2496,7 +2498,7 @@ function animChar(m,moving,time,ph){
 function camPlace(time){
   if(!selfAv)rebuildSelf();
   if(car.driving){camera.position.set(car.x+Math.sin(car.yaw)*8.5,3.8,car.z+Math.cos(car.yaw)*8.5);camera.rotation.set(-.2,car.yaw,0);selfAv.visible=false;selfPrev.x=player.x;selfPrev.z=player.z;return}
-  const ey=1.7+Math.sin(bob)*.035;
+  const ey=1.7+(SET.bob?Math.sin(bob)*.035:0);
   if(thirdP){const cp=Math.cos(pitch),fx=-Math.sin(yaw)*cp,fy=Math.sin(pitch);const fz=-Math.cos(yaw)*cp;
     camera.position.set(player.x-fx*3.2,Math.max(.5,ey-fy*3.2+.35),player.z-fz*3.2)}
   else camera.position.set(player.x+(Math.random()-.5)*highShake,ey+(Math.random()-.5)*highShake,player.z+(Math.random()-.5)*highShake);
@@ -3289,7 +3291,7 @@ function vfxTick(dt,time){
   vmUpdate(dt,time);hudFx(dt);
   stepParticles(PN,dt);stepParticles(PA,dt);
   skyMesh.position.copy(camera.position);glitU.uTime.value=time;
-  const run=keys.ShiftLeft&&player3Speed>.5?1:0;vmState.run=lerp(vmState.run||0,run,Math.min(1,dt*5));const fov=68+4*vmState.run;if(Math.abs(camera.fov-fov)>.05){camera.fov=fov;camera.updateProjectionMatrix();PS.uScale.value=innerHeight*Post.pr/(2*Math.tan(camera.fov*Math.PI/360))}
+  const run=keys.ShiftLeft&&player3Speed>.5?1:0;vmState.run=lerp(vmState.run||0,run,Math.min(1,dt*5));const fov=SET.fov+4*vmState.run+highFov;if(Math.abs(camera.fov-fov)>.05){camera.fov=fov;camera.updateProjectionMatrix();PS.uScale.value=innerHeight*Post.pr/(2*Math.tan(camera.fov*Math.PI/360))}
   if(typeof labFx==='function')labFx(dt,time);
 }
 applyQuality();
@@ -3298,13 +3300,59 @@ const hb=$('hotbar');
 buildHotbar('gh');
 const player={x:0,z:4.6};
 const solids=[...pots.map(p=>({o:p,r:.75,t:'pot'})),{x:stations.rack.x,z:stations.rack.z,r:1.0,t:'rack'},{x:stations.table.x,z:stations.table.z,r:1.1,t:'table'},{x:stations.barrel.x,z:stations.barrel.z,r:.65},{x:rick.position.x,z:rick.position.z,r:.5}];
-const clock=new T.Clock();let bob=0;
+// ---------------- Einstellungen (ui/dlt-ui.js) ----------------
+const SET={sens:1,invertY:false,fov:68,quality:'high',shadows:true,bob:true,fps:false};
+let fpsN=0,fpsT=0;
+function applySetting(id,v){
+  if(id in SET)SET[id]=v;
+  if(id==='fov'){camera.fov=v;camera.updateProjectionMatrix();PS.uScale.value=innerHeight*Post.pr/(2*Math.tan(camera.fov*Math.PI/360))}
+  else if(id==='quality'){Q.res=v==='low'?.6:v==='mid'?.85:1;applyQuality()}
+  else if(id==='shadows'){if(!!v===renderer.shadowMap.enabled)return;renderer.shadowMap.enabled=!!v;sun.castShadow=!!v;scene.traverse(o=>{if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>m.needsUpdate=true)})}
+  else if(id==='fps'){$('fps').style.display=v?'block':'none'}
+  else if(id==='crosshair'){$('cross').style.visibility=v?'visible':'hidden'}
+  else if(id==='objective'){$('obj').style.display=v?'':'none'}
+  else if(id==='hudScale'){for(const e of ['obj','top','inv','hotbar','cook'])$(e).style.zoom=v}
+}
+DLT.init({
+  gameId:'3d',storageKey:'dlt3d',version:'3D · Dragon Smoke',
+  logo:['DRUG LORD','TYCOON'],sub:'<b>3D</b> · Dragon Smoke',
+  tagline:'Pflanze, gieße, ernte, verpacke und verkaufe an Onkel Rick – stelle Arbeiter ein und baue dir ein Labor mit Darknet-Laptop.',
+  startHint:'First-Person-Gewächshaus',
+  hasSave:()=>{try{const s=JSON.parse(localStorage.getItem('dlt3d'));return !!(s&&s.cash!==undefined&&(s.xp>0||s.level>1||s.flags&&s.flags.talked))}catch(e){return false}},
+  saveInfo:()=>{try{return `Level ${S.level} · Tag ${S.day} · ${money(S.cash)}`}catch(e){return 'Spielstand fortsetzen'}},
+  onPlay:m=>{if(m==='pause')relock();else $('play').click()},
+  onSave:()=>{save()},
+  onMp:m=>{if(m==='pause'){DLT.toast('Multiplayer: im Startmenü Raum hosten oder beitreten','warn');return}DLT.close();$('mp').scrollIntoView({block:'center'});$('mpName').focus()},
+  validateSave:o=>o&&typeof o==='object'&&o.cash!==undefined&&o.level!==undefined,
+  settings:[
+    {id:'sens',tab:'Steuerung',label:'Mausempfindlichkeit',type:'range',min:.3,max:3,step:.05,def:1,fmt:v=>v.toFixed(2)+'×'},
+    {id:'invertY',tab:'Steuerung',label:'Y-Achse invertieren',desc:'Maus nach oben = nach unten schauen.',type:'toggle',def:false},
+    {id:'fov',tab:'Grafik',label:'Sichtfeld (FOV)',type:'range',min:55,max:100,step:1,def:68,fmt:v=>v+'°'},
+    {id:'quality',tab:'Grafik',label:'Renderauflösung',desc:'Niedriger = mehr FPS auf schwachen Geräten. (F2: Bloom/Gras an/aus)',type:'select',options:[['low','Niedrig'],['mid','Mittel'],['high','Hoch']],def:'high'},
+    {id:'shadows',tab:'Grafik',label:'Schatten',desc:'Schatten aus = deutlich bessere Leistung.',type:'toggle',def:true},
+    {id:'bob',tab:'Grafik',label:'Kopfwippen beim Laufen',type:'toggle',def:true},
+    {id:'fps',tab:'Grafik',label:'FPS-Anzeige',type:'toggle',def:false},
+    {id:'hudScale',tab:'Anzeige',label:'HUD-Größe',desc:'Ziel, Geld, Inventar und Werkzeugleiste.',type:'range',min:.7,max:1.4,step:.05,def:1,fmt:v=>Math.round(v*100)+' %'},
+    {id:'crosshair',tab:'Anzeige',label:'Fadenkreuz',type:'toggle',def:true},
+    {id:'objective',tab:'Anzeige',label:'Ziel-Anzeige',desc:'Zeigt das aktuelle Tutorial-Ziel oben links.',type:'toggle',def:true},
+  ],
+  controls:[
+    {title:'Bewegung',rows:[[['W','A','S','D'],'Laufen'],[['Shift'],'Rennen'],[['Maus'],'Umschauen'],[['V'],'1. / 3. Person']]},
+    {title:'Aktionen',rows:[[['E'],'Interagieren (Topf, Rick, Gestell, Tisch, Fass, Labor, Kunde, Auto)'],[['Linksklick'],'Werkzeug benutzen'],[['1','2','3'],'Samen / Gießkanne / Schere'],[['F'],'Eigenkonsum (Spiel)'],[['Enter'],'Chat (Multiplayer)']]},
+    {title:'Menüs & Minispiele',rows:[[['Esc'],'Dialog schließen / Pause'],[['Leertaste'],'Halten, dosieren, stoppen'],[['F2'],'Grafik hoch/niedrig']]},
+  ],
+  about:'Fan-Nachbau als Low-Poly-Gewächshaus mit angebautem Labor, Mining-Laptop, Darknet-Markt, Straße und Co-op-Multiplayer. Läuft mit three.js im Browser; der Spielstand bleibt lokal.',
+});
+DLT.onChange((id,v)=>applySetting(id,v),true);
+$('openSet').onclick=()=>DLT.open('settings',{mode:'start'});
+
+const clock=new T.Clock();let bob=0,highFov=0;
 function frame(){
   requestAnimationFrame(frame);
-  const dt=Math.min(clock.getDelta(),.05),time=clock.elapsedTime;
+  const dt=(NET.role==='solo'&&DLT.isOpen()&&started)?(clock.getDelta(),0):Math.min(clock.getDelta(),.05),time=clock.elapsedTime;
   // Bewegung
   if(car.driving&&!menuOpen&&!modal&&started)driveTick(dt);
-  if(!menuOpen&&!modal&&started&&!car.driving){
+  if(!menuOpen&&!modal&&started&&!car.driving&&!DLT.isOpen()){
     const ox=player.x,oz=player.z;
     const f=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0),r=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0);
     if(f||r){const sp=(keys.ShiftLeft?5.6:3.6)*spdMul*dt,l=Math.hypot(f,r);
@@ -3314,6 +3362,7 @@ function frame(){
     walkCollide(ox,oz);
     for(const s of solids){const sx=s.o?s.o.x:s.x,sz=s.o?s.o.z:s.z;if(s.o&&!s.o.owned)continue;const dx=player.x-sx,dz=player.z-sz,d=Math.hypot(dx,dz),R=s.r+.3;if(d<R&&d>0){player.x=sx+dx/d*R;player.z=sz+dz/d*R}}
   }
+  if(SET.fps){fpsN++;fpsT+=dt||.016;if(fpsT>=.5){$('fps').textContent=Math.round(fpsN/fpsT)+' FPS';fpsN=0;fpsT=0}}
   camPlace(time);
   // Rick schaut zum Spieler
   rick.rotation.y+=((Math.atan2(player.x-rick.position.x,player.z-rick.position.z))-rick.rotation.y)*.05;rick.position.y=Math.sin(time*2)*.01;

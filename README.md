@@ -8,7 +8,16 @@ Zwei spielbare Browser-Versionen, inspiriert von *Drug Lord Tycoon* (inoffiziell
 - `drug-lord-3d.html` – First-Person-3D-Gewächshaus (three.js, Low-Poly): pflanzen, gießen, ernten, trimmen, verpacken, verkaufen, Arbeiter einstellen – plus **angebautes Labor (2 Räume)**.
 - `index.html` – 2D-Idle-Tycoon-Variante.
 
-Einfach die HTML-Datei im Browser öffnen (die 3D-Version lädt three.js per CDN, Internet nötig).
+Einfach die HTML-Datei im Browser öffnen (die 3D-Version lädt three.js per CDN, Internet nötig). Der Ordner `ui/` (gemeinsames Menü-Design) muss neben den HTML-Dateien liegen.
+
+## UI (Startmenü, Einstellungen, Lobby)
+
+Beide Spiele nutzen dasselbe UI-Modul (`ui/dlt-ui.css`, `ui/dlt-ui.js`):
+
+- **Startmenü / Pause** mit Weiter, Neues Spiel, Speichern, Tastatur-Navigation (↑/↓, Esc = zurück). Das 2D-Spiel pausiert, solange ein Menü offen ist.
+- **Einstellungen** (sofort wirksam, automatisch gespeichert): Menü-/HUD-Größe, reduzierte Animationen; 3D: Mausempfindlichkeit, Y-Achse, FOV, Renderauflösung, Schatten, Kopfwippen, FPS-Anzeige, Fadenkreuz, Ziel-Anzeige; 2D: Zahlenformat, Log, Benachrichtigungen, Autosave-Intervall. Tab „Daten“: Spielstand kopieren/importieren/löschen.
+- **Steuerung** und **Über & Hinweis** (Satire-Hinweis).
+- **Multiplayer:** In der 2D-Version ist die Lobby nur eine UI-Vorschau (kein Netzcode). In der 3D-Version führt „Multiplayer“ zum echten Co-op (Raum hosten / per Code beitreten, siehe unten).
 
 Steuerung 3D: WASD, Maus, Shift, 1/2/3 Werkzeug, Klick benutzen, E interagieren, **F2** Grafik hoch/niedrig.
 
@@ -75,6 +84,21 @@ Am Laptop gibt es den Tab **📤 Darknet-Verkauf**: Ware (Pakete oder Labor-Prod
 - **Gesundheitsbalken** (rechts unten). Regeneriert langsam, Erste-Hilfe-Schrank in Raum 1 heilt gegen Geld. **Bei 0 HP stirbst du**: Krankenhaus kostet 30 % Bargeld, die Labor-Ware ist zur Hälfte weg.
 - **Beim Kochen kann alles schiefgehen** (rein fiktive Spielmechanik): Siedeverzug → Explosion; falsche Einwaage → giftige Dämpfe; zu wildes Rühren → ätzende Spritzer; Unterdruck/Gefrierbruch → Glasbruch; zweimal komplett verfehlte Schläge → Brand/Quetschung. **Abzug-Lüftung** (Schalter neben dem Abzug) muss beim Erhitzen laufen, sonst gibt es Gas. Schutzausrüstung reduziert den Schaden stark, ersetzt aber keine Präzision. Die Zielzonen sind enger geworden.
 - **Eigenkonsum (F)**: jede Ware hat einen eigenen mehrminütigen Rausch-Effekt (Tempo, Bildfilter, Wackeln) und danach einen Crash. Unreine Ware (< 50 % Qualität) macht krank, **Mischkonsum kann zur Überdosis führen**.
+
+## Eigener Multiplayer-Vermittlungsserver (optional)
+
+Der Co-op-Multiplayer läuft Peer-to-Peer (WebRTC); ein Vermittlungsserver wird nur für den Verbindungsaufbau gebraucht. Standardmäßig wird die öffentliche PeerJS-Cloud benutzt. Wer unabhängig davon sein will, startet einen eigenen Server:
+
+```
+npm install
+npm start               # PORT=9000, HOST=0.0.0.0
+```
+
+(oder per `Dockerfile`) und öffnet das Spiel mit `drug-lord-3d.html?ps=<host>:<port>`. Spieldaten laufen weiterhin direkt zwischen den Geräten.
+
+## Einstellungen & Pause (3D)
+
+Über **Esc** (Pause) oder den Button „⚙ Einstellungen“ im Startbildschirm: Mausempfindlichkeit, Y-Achse, FOV, Renderauflösung, Schatten, Kopfwippen, FPS-Anzeige, HUD-Größe, Fadenkreuz, Ziel-Anzeige, Steuerungsübersicht sowie Spielstand kopieren/importieren/löschen. Im Solo-Spiel pausiert das Menü die Zeit. Der Ordner `ui/` muss neben den HTML-Dateien liegen.
 
 ## Wichtig / Rechtliches
 
