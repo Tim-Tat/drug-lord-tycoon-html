@@ -830,7 +830,19 @@ function openLap(){
   $('lap').style.display='grid';renderLap()}
 function closeLap(){modal=false;lapOpen=false;$('lap').style.display='none';relock()}
 const cn=c=>c.toFixed(3);
-function lapStats(){if(!lapOpen||lapLoad)return;const e=id=>$(id);if(e('lapC')){e('lapC').textContent=cn(S.coins);e('lapV').textContent=money(S.coins*S.cp);e('lapP').textContent=money(S.cp);e('lapM').textContent=money(S.cash)}}
+// Welche Buttons (de)aktiviert sind, hängt von Coins, Bargeld und Level ab – Änderung => neu rendern
+function lapSig(){
+  const g=[S.coins>=.01,S.cash>=gpuCost(),S.cash>=fanCost(),S.rig.gpu,S.rig.fan,S.cash>=1200*Math.pow(2,S.up.yield),S.cash>=900*Math.pow(2,S.up.ease),S.up.yield,S.up.ease];
+  for(const id in DRUGS)g.push(S.coins>=DRUGS[id].coin,S.level>=DRUGS[id].lvl,!!S.recipes[id]);
+  for(const k in ING)g.push(S.coins>=+(ING[k].p*5*.6/40).toFixed(2));
+  return g.join()}
+let lapSigLast='';
+function lapStats(){
+  if(!lapOpen||lapLoad)return;
+  const e=id=>$(id);
+  if(e('lapC')){e('lapC').textContent=cn(S.coins);e('lapV').textContent=money(S.coins*S.cp);e('lapP').textContent=money(S.cp);e('lapM').textContent=money(S.cash)}
+  if(e('lapCashV'))e('lapCashV').textContent=money(S.coins*S.cp);
+  if(lapSig()!==lapSigLast)renderLap()}
 function renderLap(){
   const tabs=[['mine','⛏ Miner'],['market','🕸 Darknet-Markt'],['gear','🧪 Ausrüstung'],['guides','📜 Anleitungen']];
   $('lapTabs').innerHTML=tabs.map(([k,t])=>`<button data-a="tab" data-k="${k}" class="${lapTab===k?'on':''}">${t}</button>`).join('');
@@ -842,7 +854,7 @@ function renderLap(){
     h+=`<p class="news">${S.news}</p>
     <div class="grid">
      <div class="card"><b>⛏ Mining-Rig</b><br>Hashrate: <b>${(hashrate()*1000).toFixed(0)} mSCN/s</b><br>Grafikkarten: <b>${S.rig.gpu}</b> · Lüfter-Stufe: <b>${S.rig.fan}</b><br>Strom: <b>${money(8+S.rig.gpu*12)}</b>/Tag</div>
-     <div class="card"><button class="big" data-a="click">⛏ Manuell minen (+${cn(.004*(1+S.rig.gpu*.1))} SCN)</button><button data-a="cash" ${S.coins<.01?'disabled':''}>💰 Alle Coins auszahlen (≈ ${money(S.coins*S.cp)})</button></div>
+     <div class="card"><button class="big" data-a="click">⛏ Manuell minen (+${cn(.004*(1+S.rig.gpu*.1))} SCN)</button><button data-a="cash" ${S.coins<.01?'disabled':''}>💰 Alle Coins auszahlen (≈ <span id="lapCashV">${money(S.coins*S.cp)}</span>)</button></div>
     </div>
     <div class="grid">
      <div class="card">🖥 Grafikkarte kaufen (+20 mSCN/s)<br><button data-a="gpu" ${S.rig.gpu>=10||S.cash<gpuCost()?'disabled':''}>${S.rig.gpu>=10?'max':money(gpuCost())}</button></div>
@@ -868,7 +880,7 @@ function renderLap(){
     if(!own.length)h+=`<p class="news">Noch keine Anleitung gekauft. Minen → Darknet-Markt → kaufen.</p>`;
     own.forEach(id=>{const D=DRUGS[id];
       h+=`<div class="card guide"><b>${D.ic} ${D.n} ${D.s}</b> <span class="tg">${stars(D)}</span><br><small>Zutaten: ${costTxt(id)}</small><ol>${D.steps.map(k=>`<li>${STEP[k].ic} <b>${STEP[k].n}</b> <small>@ ${STATION[STEP[k].st]}</small><br><small class="tip">💡 ${STEP[k].tip}</small></li>`).join('')}</ol><small class="tip">⭐ ${D.tip}</small></div>`})}
-  $('lapBody').innerHTML=h}
+  $('lapBody').innerHTML=h;lapSigLast=lapSig()}
 let lapStage=-1;
 function lapTick(dt){
   if(!lapOpen)return;
