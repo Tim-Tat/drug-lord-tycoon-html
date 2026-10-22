@@ -69,12 +69,23 @@ button:disabled{opacity:.4;cursor:not-allowed}
 #menu .p{max-height:92vh;overflow:auto}
 #menu .p button small{display:block;font-size:12px;font-weight:400;opacity:.8;margin-top:2px}
 #menuLine{white-space:pre-line}
+input{font:inherit;user-select:text}
+#mp{position:fixed;top:118px;right:14px;width:300px;text-align:right;font-size:14px;line-height:1.5;pointer-events:none}
+#mp .st{font-size:12px;opacity:.8}
+#mp i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;border:1px solid #000}
+#chat{position:fixed;left:14px;bottom:96px;width:380px;font-size:15px;line-height:1.4;pointer-events:none}
+#chat div{opacity:1;transition:opacity 1s}#chat b{margin-right:4px}
+#chatIn{position:fixed;left:14px;bottom:62px;width:380px;display:none;background:#000c;color:#fff;border:1px solid #9a8a3a;padding:6px 8px;font-size:15px;z-index:8}
+#pname{background:#000a;color:#fff;border:1px solid #9a8a3a;padding:6px 8px;font-size:17px;width:180px;text-align:center;margin-left:6px}
 </style>
 </head>
 <body>
 <div id="obj" class="sh"><i>?</i><span id="objtxt">Rede mit Onkel Rick</span></div>
 <div id="title" class="sh">Dragon Smoke</div>
 <div id="top" class="sh"><div id="xpbar"><div id="xpfill"></div><div id="xpnum">1</div></div><div id="money">$500</div><div id="day"></div></div>
+<div id="mp" class="sh"></div>
+<div id="chat" class="sh"></div>
+<input id="chatIn" maxlength="160" placeholder="Chat – Enter senden, Esc abbrechen" autocomplete="off">
 <div id="inv" class="sh"></div>
 <div id="hotbar"></div>
 <div id="cross"></div>
@@ -93,7 +104,10 @@ button:disabled{opacity:.4;cursor:not-allowed}
   <p>Fan-Nachbau als Low-Poly-Gewächshaus. Pflanze, gieße, ernte, trimme, verpacke und verkaufe an Onkel Rick – und stelle Arbeiter ein.</p>
   <p><b>WASD</b> laufen · <b>Shift</b> rennen · <b>Maus</b> umschauen<br><b>1 / 2 / 3</b> Werkzeug (Samen / Gießkanne / Schere) · <b>Linksklick</b> benutzen<br><b>E</b> interagieren (Topf, Rick, Trockengestell, Tisch, Wasserfass) · <b>Esc</b> Maus freigeben</p>
   <p style="font-size:13px;color:#cbb">Satire-Spiel: Alle Stoffe, Abläufe und „Anleitungen“ sind frei erfunden – keine echten Anleitungen. Drogenherstellung ist in der Realität illegal und gefährlich.</p>
+  <p>Dein Name:<input id="pname" maxlength="16" autocomplete="off"></p>
   <button id="play">▶ Spielen</button>
+  <p id="mpStatus" style="font-size:13px;color:#9fd"></p>
+  <p style="font-size:12px;color:#aaa">Co-op: <b>Enter</b> = Chat · Mit <code>?room=name</code> eigenen Raum öffnen, mit <code>?solo</code> allein spielen.</p>
   <p id="warn" style="font-size:13px;color:#fb8"></p>
 </div></div>
 
@@ -286,8 +300,8 @@ function makeRick(){
   box(.06,.04,.04,M(0x222),-.07,1.43,.14,g);box(.06,.04,.04,M(0x222),.07,1.43,.14,g);
   mesh(new T.CylinderGeometry(.2,.22,.14,7),M(0x8a7040),0,1.6,0,g);mesh(new T.CylinderGeometry(.34,.34,.04,8),M(0x8a7040),0,1.53,0,g);
   g.scale.setScalar(1.1);return g}
-function makeWorker(){
-  const g=new T.Group();const white=M(0xeeeef4);
+function makeWorker(color=0xeeeef4){
+  const g=new T.Group();const white=M(color);
   const legs=[],arms=[];
   for(const s of[-1,1]){const l=new T.Group();l.position.set(s*.13,.55,0);box(.2,.55,.22,white,0,-.27,0,l);g.add(l);legs.push(l)}
   box(.5,.66,.3,white,0,.95,0,g);
@@ -305,7 +319,8 @@ const SEED=10,DAYLEN=90,SALARY=50;
 let S={cash:500,xp:0,level:1,day:1,dayT:0,raw:0,trim:0,pack:0,tool:0,water:8,waterCap:8,lights:0,potsOwned:3,workers:0,canUp:0,flags:{},price:55,priceT:0,potsState:[],
   lab:0,psa:false,reag:{},drugs:{},recipes:{},up:{yield:0,ease:0},cook:null,dm:{},batches:0,coins:0,cp:40,cpT:4,evT:60,
   news:'📰 SchwarzCoin (SCN): ein Kurs, so stabil wie Onkel Ricks Laune.',rig:{gpu:0,fan:0},scams:0};
-function save(){try{S.potsState=pots.map(p=>({o:p.owned,s:p.stage,t:p.t,w:p.wet}));localStorage.setItem('dlt3d',JSON.stringify(S))}catch(e){}}
+let mpActive=false;
+function save(){if(mpActive)return;try{S.potsState=pots.map(p=>({o:p.owned,s:p.stage,t:p.t,w:p.wet}));localStorage.setItem('dlt3d',JSON.stringify(S))}catch(e){}}
 function load(){try{const s=JSON.parse(localStorage.getItem('dlt3d'));if(s&&s.cash!==undefined)S=Object.assign(S,s)}catch(e){}}
 load();
 pots.forEach((p,i)=>{const st=S.potsState&&S.potsState[i];p.owned=st?st.o:i<S.potsOwned;if(st){p.stage=st.s;p.t=st.t;p.wet=st.w}});
@@ -314,6 +329,7 @@ S.flags=S.flags||{};
 setInterval(save,8000);addEventListener('beforeunload',save);
 
 const workers=[];
+function removeWorker(){const w=workers.pop();if(!w)return;if(w.job&&w.job.p)w.job.p.claim=null;if(stations.rack.claim===w)stations.rack.claim=null;if(stations.table.claim===w)stations.table.claim=null;scene.remove(w.m)}
 function spawnWorker(){const w=makeWorker();w.position.set(rnd(2.5,4.5),0,4.8);scene.add(w);workers.push({m:w,job:null,tw:0,ph:Math.random()*6})}
 for(let i=0;i<S.workers;i++)spawnWorker();
 
@@ -374,9 +390,10 @@ function renderMenu(){
 // ---------------- Eingabe ----------------
 let yaw=0,pitch=0,locked=false,fallback=false,started=false;
 const keys={};
-addEventListener('keydown',e=>{keys[e.code]=true;
+addEventListener('keydown',e=>{if(e.target&&e.target.tagName==='INPUT')return;keys[e.code]=true;
   if(modal){modalKey(e);return}
   if(menuOpen){if(e.code==='Escape'||e.code==='KeyE')closeMenu();return}
+  if(e.code==='Enter'&&mpActive&&started){e.preventDefault();openChat();return}
   if(e.code==='Digit1')S.tool=0;if(e.code==='Digit2')S.tool=1;if(e.code==='Digit3')S.tool=2;
   if(e.code==='KeyE')interact(true);
 });
@@ -459,6 +476,7 @@ function updateWorker(w,dt,time){
       }
     }
   }
+  w.st=moving?1:w.job?2:0;
   const [l0,l1]=m.userData.legs,[a0,a1]=m.userData.arms;
   if(moving){const s=Math.sin(time*9+w.ph)*.6;l0.rotation.x=s;l1.rotation.x=-s;a0.rotation.x=-s*.7;a1.rotation.x=s*.7}
   else if(!w.job){l0.rotation.x=l1.rotation.x=0;a0.rotation.x=a1.rotation.x=0}
@@ -816,7 +834,7 @@ function rickMenu(){
   b.push([`Wachstumslampen Lvl ${S.lights}/5 (${money(lightCost())})`,S.lights<5&&S.cash>=lightCost(),()=>{S.cash-=lightCost();S.lights++}]);
   b.push([`Größere Gießkanne ${S.waterCap}→${S.waterCap+4} (${money(canCost())})`,S.canUp<3&&S.cash>=canCost(),()=>{S.cash-=canCost();S.canUp++;S.waterCap+=4;S.water=S.waterCap}]);
   if(!S.lab&&S.flags.sold&&S.workers>0)b.push([`🔬 Hinterraum-Labor freischalten – ${money(LAB_COST)}`,S.level>=3&&S.cash>=LAB_COST,()=>{S.cash-=LAB_COST;S.lab=1;msg('🔬 Labor freigeschaltet – Stahltür an der rechten Wand!')},'ab Level 3 · 2 Räume + Laptop mit Darknet']);
-  if(S.workers>0)b.push(['Arbeiter entlassen',true,()=>{const w=workers.pop();if(w.job&&w.job.p)w.job.p.claim=null;scene.remove(w.m);S.workers--}]);
+  if(S.workers>0)b.push(['Arbeiter entlassen',true,()=>{removeWorker();S.workers--}]);
   b.push(['Schließen',true,closeMenu]);
   return{line:S.lab?'Das Labor läuft? Dann bring mir die Ware, Kleiner.':lines[Math.floor((S.day+S.level)%lines.length)],items:b}}
 
@@ -1098,6 +1116,155 @@ const hb=$('hotbar');
 const slotEls=[...hb.children];
 const player={x:0,z:4.6};
 const solids=[...pots.map(p=>({o:p,r:.75,t:'pot'})),{x:stations.rack.x,z:stations.rack.z,r:1.0,t:'rack'},{x:stations.table.x,z:stations.table.z,r:1.1,t:'table'},{x:stations.barrel.x,z:stations.barrel.z,r:.65},{x:rick.position.x,z:rick.position.z,r:.5}];
+// ======================================================================
+//  CO-OP MULTIPLAYER (WebSocket, server.js)
+//  Geteilt: Kasse, Pflanzen, Lager, Labor, Arbeiter, Level.  Pro Spieler: Werkzeug, Gießkanne, Schutzausrüstung, laufender Ansatz.
+//  Änderungen werden als Operationen (Zahl: Differenz, sonst: setzen) synchronisiert. Der Host (ältester Spieler)
+//  simuliert Tageswechsel, Pflanzenwachstum, Mining und Arbeiter-KI; alle anderen bekommen das Ergebnis.
+// ======================================================================
+const MP_PARAMS=new URLSearchParams(location.search);
+const MPLOCAL=new Set(['tool','water','waterCap','canUp','cook','psa','dayT','potsState']);
+const MPFLAGLOCAL=['notice','inlab'];
+const mp={ws:null,on:false,id:0,host:false,players:new Map(),last:null,room:(MP_PARAMS.get('room')||'main').replace(/[^\w-]/g,'').slice(0,24)||'main',
+  tries:0,ever:false,posT:0,tickT:0,sentPos:'',wdata:null,solo:MP_PARAMS.has('solo'),started:false,status:''};
+const isSim=()=>!mp.on||mp.host;
+const jclone=o=>JSON.parse(JSON.stringify(o));
+function mpSnap(){
+  const o={};for(const k in S)if(!MPLOCAL.has(k))o[k]=S[k];
+  const c=jclone(o);c.flags=c.flags||{};MPFLAGLOCAL.forEach(k=>delete c.flags[k]);
+  c.pots=pots.map(p=>({o:p.owned?1:0,s:p.stage,w:p.wet?1:0}));return c}
+function mpDiff(a,b,path,ops){
+  for(const k in b){
+    const bv=b[k],av=a?a[k]:undefined,p=path.concat(k);
+    if(typeof bv==='number'){
+      if(typeof av==='number'&&path[0]!=='pots'){const d=bv-av;if(Math.abs(d)>1e-9)ops.push(['a',p,d])}
+      else if(av!==bv)ops.push(['s',p,bv])}
+    else if(bv&&typeof bv==='object'){if(av&&typeof av==='object')mpDiff(av,bv,p,ops);else ops.push(['s',p,bv])}
+    else if(av!==bv)ops.push(['s',p,bv])}}
+function mpSend(o){if(mp.ws&&mp.ws.readyState===1)mp.ws.send(JSON.stringify(o))}
+function mpFlush(){
+  if(!mp.on)return;
+  const cur=mpSnap(),ops=[];mpDiff(mp.last,cur,[],ops);mp.last=cur;
+  if(ops.length)mpSend({t:'ops',ops})}
+function mpApply(ops){
+  for(const [kind,path,v] of ops){
+    if(path[0]==='pots'){
+      const p=pots[+path[1]];if(!p)continue;const f=path[2];
+      if(f==='o')p.owned=!!v;else if(f==='w')p.wet=!!v;else if(f==='s'&&p.stage!==v){p.stage=v;p.t=0;p.claim=null}
+      mp.last.pots[+path[1]][f]=v;continue}
+    let o=S,l=mp.last;
+    for(let i=0;i<path.length-1;i++){const k=path[i];if(!o[k]||typeof o[k]!=='object')o[k]={};if(!l[k]||typeof l[k]!=='object')l[k]={};o=o[k];l=l[k]}
+    const k=path[path.length-1];
+    if(kind==='a'){o[k]=(o[k]||0)+v;l[k]=(l[k]||0)+v}else{o[k]=jclone(v);l[k]=jclone(v)}}}
+function mpAdopt(st){
+  const keep={};MPFLAGLOCAL.forEach(k=>keep[k]=S.flags&&S.flags[k]);
+  for(const k in st){if(k!=='pots')S[k]=jclone(st[k])}
+  S.flags=Object.assign({},st.flags||{});MPFLAGLOCAL.forEach(k=>{if(keep[k])S.flags[k]=keep[k]});
+  (st.pots||[]).forEach((q,i)=>{const p=pots[i];if(!p)return;p.owned=!!q.o;p.stage=q.s;p.wet=!!q.w;p.t=0;p.claim=null});
+  mp.last=mpSnap()}
+
+// ---- Verbindung ----
+function mpSetStatus(t){mp.status=t;$('mpStatus').textContent=t;mpHud()}
+function mpUrl(){
+  const base=MP_PARAMS.get('server')||(location.protocol==='file:'?null:(location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws');
+  if(!base)return null;const u=new URL(base,location.href);u.searchParams.set('room',mp.room);return u.href}
+function mpConnect(){
+  if(mp.ws||mp.solo)return;
+  const url=mpUrl();if(!url){mpSetStatus('Solo-Modus (Datei lokal geöffnet – kein Server).');return}
+  mpSetStatus('Verbinde mit Server …');
+  let ws;try{ws=new WebSocket(url)}catch(e){mpSetStatus('Solo-Modus (Server nicht erreichbar).');return}
+  mp.ws=ws;let opened=false;
+  ws.onopen=()=>{opened=true;mp.tries=0;mpSend({t:'join',name:mpName()})};
+  ws.onmessage=ev=>{let m;try{m=JSON.parse(ev.data)}catch(e){return}mpHandle(m)};
+  ws.onclose=()=>{
+    const was=mp.on;mp.ws=null;mp.on=false;mp.host=false;mpActive=false;mp.wdata=null;mpClearAvatars();
+    if(opened||mp.ever){mp.tries++;mpSetStatus(was?'Verbindung verloren – verbinde neu …':'Verbinde neu …');setTimeout(mpConnect,Math.min(15000,1000*mp.tries*mp.tries))}
+    else mpSetStatus('Solo-Modus (kein Co-op-Server erreichbar).')};
+  ws.onerror=()=>{}}
+function mpName(){return($('pname').value||'').trim().slice(0,16)||'Spieler'}
+function mpHandle(m){
+  if(m.t==='full'){mp.solo=true;mpSetStatus('Raum voll – Solo-Modus.');return}
+  if(m.t==='init'){
+    mp.id=m.id;mp.ever=true;mp.room=m.room;
+    if(m.state)mpAdopt(m.state);else{mp.last=mpSnap();mpSend({t:'seed',state:mp.last})}
+    mp.on=true;mpActive=true;mpRoster(m);mpSetStatus('Verbunden – Raum „'+mp.room+'“');return}
+  if(!mp.on)return;
+  if(m.t==='roster')mpRoster(m);
+  else if(m.t==='ops'){mpFlush();mpApply(m.ops)}
+  else if(m.t==='pos'){const a=avatars.get(m.id);if(a){a.tx=m.x;a.tz=m.z;a.ty=m.yaw}}
+  else if(m.t==='tick'&&!mp.host){S.dayT=m.dayT;m.pt.forEach((t,i)=>{if(pots[i]&&pots[i].stage>=0)pots[i].t=t});mp.wdata=m.w}
+  else if(m.t==='chat')chatAdd(m.name,m.color,m.text)}
+function mpRoster(m){
+  const wasHost=mp.host;mp.hostId=m.host;mp.host=m.host===mp.id;
+  const ids=new Set();
+  m.players.forEach(p=>{ids.add(p.id);mp.players.set(p.id,p);if(p.id===mp.id)return;
+    let a=avatars.get(p.id);
+    if(!a||a.name!==p.name){if(a)scene.remove(a.g);a=newAvatar(p,a);avatars.set(p.id,a)}
+    if(typeof p.x==='number'&&!a.seen){a.seen=1;a.tx=p.x;a.tz=p.z;a.ty=p.yaw||0;a.g.position.set(p.x,0,p.z)}});
+  for(const id of [...avatars.keys()])if(!ids.has(id)){scene.remove(avatars.get(id).g);avatars.delete(id)}
+  for(const id of [...mp.players.keys()])if(!ids.has(id))mp.players.delete(id);
+  if(mp.host&&!wasHost)workers.forEach(w=>{w.job=null;w.tw=0});   // neuer Host übernimmt die Arbeiter-KI
+  mpHud()}
+function mpHud(){
+  const el=$('mp');el.textContent='';
+  if(mp.on){[...mp.players.values()].forEach(p=>{const d=document.createElement('div'),i=document.createElement('i');i.style.background=p.color;d.append(i,p.name+(p.id===mp.id?' (du)':'')+(p.id===mp.hostId?' 👑':''));el.appendChild(d)})}
+  const s=document.createElement('div');s.className='st';s.textContent=mp.on?'Co-op · Raum „'+mp.room+'“':mp.status;el.appendChild(s)}
+
+// ---- Mitspieler-Figuren ----
+const avatars=new Map();
+function newAvatar(p,old){
+  const g=makeWorker(new T.Color(p.color).getHex());g.scale.setScalar(1.05);
+  const lb=labelSprite(p.name,2,true);lb.position.set(0,2.2,0);g.add(lb);scene.add(g);
+  return {g,name:p.name,tx:old?old.tx:0,tz:old?old.tz:4.6,ty:old?old.ty:0,seen:old?old.seen:0,ph:Math.random()*6}}
+function mpClearAvatars(){avatars.forEach(a=>scene.remove(a.g));avatars.clear();mp.players.clear();mpHud()}
+function animLimbs(g,st,time,ph){
+  const [l0,l1]=g.userData.legs,[a0,a1]=g.userData.arms;
+  if(st===1){const s=Math.sin(time*9+ph)*.6;l0.rotation.x=s;l1.rotation.x=-s;a0.rotation.x=-s*.7;a1.rotation.x=s*.7}
+  else if(st===2){l0.rotation.x=l1.rotation.x=0;a0.rotation.x=-1.2+Math.sin(time*14)*.4;a1.rotation.x=-1.2+Math.cos(time*14)*.4}
+  else{l0.rotation.x=l1.rotation.x=0;a0.rotation.x=a1.rotation.x=0}}
+function angLerp(a,b,k){let d=b-a;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;return a+d*k}
+
+// ---- pro Frame ----
+function mpFrame(dt,time){
+  while(workers.length<S.workers)spawnWorker();
+  while(workers.length>S.workers)removeWorker();
+  if(isSim())workers.forEach(w=>updateWorker(w,dt,time));
+  else workers.forEach((w,i)=>{const d=mp.wdata&&mp.wdata[i],m=w.m;
+    if(d){const k=Math.min(1,dt*10);m.position.x+=(d[0]-m.position.x)*k;m.position.z+=(d[1]-m.position.z)*k;m.rotation.y=angLerp(m.rotation.y,d[2],k);w.st=d[3]}
+    animLimbs(m,w.st||0,time,w.ph)});
+  if(!mp.on)return;
+  const k=Math.min(1,dt*10);
+  avatars.forEach(a=>{const g=a.g,ox=g.position.x,oz=g.position.z;
+    g.position.x+=(a.tx-ox)*k;g.position.z+=(a.tz-oz)*k;g.rotation.y=angLerp(g.rotation.y,a.ty+Math.PI,k);
+    animLimbs(g,Math.hypot(g.position.x-ox,g.position.z-oz)/Math.max(dt,.001)>.4?1:0,time,a.ph)});
+  mp.posT+=dt;mp.tickT+=dt;
+  if(mp.posT>=.1){mp.posT=0;const x=Math.round(player.x*100)/100,z=Math.round(player.z*100)/100,y=Math.round(yaw*100)/100,key=x+','+z+','+y;
+    if(key!==mp.sentPos){mp.sentPos=key;mpSend({t:'pos',x,z,yaw:y})}}
+  if(mp.host&&mp.tickT>=.125){mp.tickT=0;
+    mpSend({t:'tick',dayT:Math.round(S.dayT*10)/10,pt:pots.map(p=>Math.round(p.t*10)/10),
+      w:workers.map(w=>[Math.round(w.m.position.x*100)/100,Math.round(w.m.position.z*100)/100,Math.round(w.m.rotation.y*100)/100,w.st||0])})}}
+setInterval(mpFlush,150);
+
+// ---- Chat ----
+let chatOpen=false;
+function chatAdd(name,color,text){
+  const box=$('chat'),d=document.createElement('div'),b=document.createElement('b');
+  b.textContent=name+':';b.style.color=color;d.append(b,document.createTextNode(text));box.appendChild(d);
+  while(box.children.length>7)box.removeChild(box.firstChild);
+  setTimeout(()=>{d.style.opacity=0;setTimeout(()=>d.remove(),1000)},12000)}
+function openChat(){if(menuOpen||modal)return;chatOpen=true;const i=$('chatIn');i.style.display='block';i.value='';i.focus()}
+function closeChat(){chatOpen=false;const i=$('chatIn');i.style.display='none';i.blur();if(!locked&&started&&!fallback)relock()}
+$('chatIn').addEventListener('keydown',e=>{
+  if(e.code==='Enter'){const t=$('chatIn').value.trim();if(t){mpSend({t:'chat',text:t})}closeChat()}
+  else if(e.code==='Escape')closeChat()});
+document.addEventListener('pointerlockchange',()=>{if(chatOpen&&!locked)closeChat()});
+
+// ---- Name & Start ----
+try{$('pname').value=localStorage.getItem('dlt3d_name')||'Spieler'+Math.floor(rnd(100,999))}catch(e){$('pname').value='Spieler'+Math.floor(rnd(100,999))}
+$('pname').addEventListener('change',()=>{try{localStorage.setItem('dlt3d_name',mpName())}catch(e){}mpSend({t:'name',name:mpName()})});
+$('play').addEventListener('click',()=>{try{localStorage.setItem('dlt3d_name',mpName())}catch(e){}if(!mp.started){mp.started=true;mpConnect()}});
+if(mp.solo)$('mpStatus').textContent='Solo-Modus (?solo).';
+
 const clock=new T.Clock();let bob=0;
 function frame(){
   requestAnimationFrame(frame);
@@ -1117,11 +1284,11 @@ function frame(){
   // Rick schaut zum Spieler
   rick.rotation.y+=((Math.atan2(player.x-rick.position.x,player.z-rick.position.z))-rick.rotation.y)*.05;rick.position.y=Math.sin(time*2)*.01;
   // Tag / Gehalt
-  S.dayT+=dt;if(S.dayT>=DAYLEN){S.dayT=0;S.day++;const pay=Math.min(S.cash,S.workers*SALARY);S.cash-=pay;if(pay>0)msg('Tag '+S.day+': Gehälter −'+money(pay));S.price=Math.round(40+Math.random()*45+S.level*2);labDay()}
+  if(isSim()){S.dayT+=dt;if(S.dayT>=DAYLEN){S.dayT=0;S.day++;const pay=Math.min(S.cash,S.workers*SALARY);S.cash-=pay;if(pay>0)msg('Tag '+S.day+': Gehälter −'+money(pay));S.price=Math.round(40+Math.random()*45+S.level*2);labDay()}}
   // Pflanzen
   for(const p of pots){
     p.g.visible=p.owned;if(!p.owned)continue;
-    if(p.stage>=0&&p.stage<4&&p.wet){p.t+=dt*lightMult();if(p.t>=8){p.stage++;p.t=0;p.wet=false}}
+    if(isSim()&&p.stage>=0&&p.stage<4&&p.wet){p.t+=dt*lightMult();if(p.t>=8){p.stage++;p.t=0;p.wet=false}}
     const target=p.stage<0?.01:[.18,.4,.7,.95,1.1][p.stage];
     p.sc+=(target-p.sc)*Math.min(1,dt*3);p.plant.scale.setScalar(Math.max(.01,p.sc));p.plant.visible=p.stage>=0;
     p.plant.userData.buds.visible=p.stage>=3;
@@ -1133,9 +1300,9 @@ function frame(){
   // Stationen (Visuals)
   stations.rack.heap.scale.set(1.5,.15+Math.min(S.raw,8)*.07,1);stations.rack.heap.visible=S.raw>0;
   stations.table.boxes.forEach((b,i)=>b.visible=i<S.pack);
-  workers.forEach(w=>updateWorker(w,dt,time));
+  mpFrame(dt,time);
   labDoor.position.x+=((S.lab?2.2:0)-labDoor.position.x)*Math.min(1,dt*3);
-  mineTick(dt);labEnterCheck();labHud(time);lapTick(dt);
+  if(isSim())mineTick(dt);labEnterCheck();labHud(time);lapTick(dt);
   if(mg){mg.upd(dt);mg&&mg.draw(mctx)}
   {const tt=!inLabNow()?'Dragon Smoke':player.z<LZ0+8.2?'Labor · Raum 1 – Vorbereitung':'Labor · Raum 2 – Kochraum';if($('title').textContent!==tt)$('title').textContent=tt}
   // Zielerfassung + HUD

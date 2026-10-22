@@ -1,0 +1,8 @@
+{
+  "name": "drug-lord-tycoon-html",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Drug Lord Tycoon (Fan-Nachbau) mit Co-op-Server",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" }
+}

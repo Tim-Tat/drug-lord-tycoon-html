@@ -21,6 +21,20 @@ Freischalten: Tutorial-Ziele abschließen (Paket verkaufen, Arbeiter einstellen)
 - **Ausrüstung:** Glasware (mehr Ausbeute) und Präzisions-Ausrüstung (größere Zielzonen) am Laptop.
 - Verkauf der Produkte bei Onkel Rick.
 
+## Multiplayer (Co-op, 3D-Version)
+
+Mehrere Spieler laufen gemeinsam im selben Gewächshaus (inkl. Labor): sie sehen sich als Figuren mit Namen, teilen sich **Kasse, Pflanzen, Lager, Labor, Arbeiter und Level** und können mit **Enter** chatten. Pro Spieler bleiben Werkzeug, Gießkanne, Schutzausrüstung und der laufende Ansatz getrennt. Der älteste Spieler im Raum (👑) ist Host und simuliert Tageswechsel, Pflanzenwachstum, Mining und die Arbeiter-KI; geht er, übernimmt der nächste. Der gemeinsame Hof wird serverseitig gespeichert (`data/room-<name>.json`); der erste Spieler eines neuen Raums bringt seinen lokalen Spielstand mit.
+
+Server starten (nur Node ≥ 18, keine Abhängigkeiten):
+
+```
+node server.js          # PORT=8080, DATA_DIR=./data, MAX_PLAYERS=8
+```
+
+`server.js` liefert die HTML-Dateien selbst aus und bedient den WebSocket-Endpunkt `/ws`. Läuft davor nginx (z. B. für `https://drug-school.playground.tatula.ch`), muss `/ws` als WebSocket durchgereicht werden – siehe `deploy/nginx.conf.example` (Docker: `Dockerfile`). Die Seite verbindet sich automatisch mit `wss://<host>/ws`.
+
+URL-Parameter: `?room=name` (eigener Raum, Standard `main`), `?solo` (ohne Server), `?server=wss://…/ws` (anderer Server). Erreicht die Seite keinen Server (z. B. nur statisches Hosting oder lokal geöffnete Datei), läuft das Spiel wie bisher als Einzelspieler.
+
 ## Wichtig / Rechtliches
 
 Alles im Labor ist **frei erfunden**: Zutaten (z. B. „Grundstoff A“), Abläufe, Mengen, Zielzonen und Werte sind reine Spielmechanik und haben **keinen Bezug zu echter Herstellung**. Es gibt keine echten Anleitungen. Herstellung, Besitz und Handel mit Drogen sind in der Realität strafbar und gefährlich – das Spiel dient nur der Unterhaltung (ab 18). Im Spiel erscheint beim ersten Laborbesuch ein entsprechender Hinweis.

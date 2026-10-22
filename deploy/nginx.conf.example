@@ -1,0 +1,18 @@
+# Beispiel: nginx liefert die Seite aus und reicht /ws an den Node-Server (server.js, Port 8080) durch.
+server {
+    server_name drug-school.playground.tatula.ch;
+    # listen 443 ssl; ssl_certificate ...; ssl_certificate_key ...;
+
+    location /ws {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_read_timeout 3600s;   # der Server pingt alle 25 s
+    }
+
+    # Entweder alles über Node ausliefern ...
+    location / { proxy_pass http://127.0.0.1:8080; proxy_set_header Host $host; }
+    # ... oder die HTML-Dateien statisch (root /pfad/zum/repo; try_files $uri =404;)
+}
