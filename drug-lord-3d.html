@@ -400,7 +400,7 @@ addEventListener('keydown',e=>{keys[e.code]=true;
 addEventListener('keyup',e=>{keys[e.code]=false;if(e.code==='Space'&&mg)mgUp()});
 addEventListener('wheel',e=>{if(!menuOpen&&!modal)S.tool=(S.tool+(e.deltaY>0?1:2))%3});
 $('play').onclick=()=>{started=true;$('overlay').style.display='none';renderer.domElement.requestPointerLock&&renderer.domElement.requestPointerLock()};
-document.addEventListener('pointerlockchange',()=>{locked=document.pointerLockElement===renderer.domElement;if(!locked&&!menuOpen&&!modal&&started){$('overlay').style.display='grid';$('play').textContent='▶ Weiter'}});
+document.addEventListener('pointerlockchange',()=>{locked=document.pointerLockElement===renderer.domElement;if(locked&&dead){document.exitPointerLock();return}if(!locked&&!menuOpen&&!modal&&started){$('overlay').style.display='grid';$('play').textContent='▶ Weiter'}});
 document.addEventListener('pointerlockerror',()=>{fallback=true;$('overlay').style.display='none';$('warn').textContent=''});
 let drag=null;
 renderer.domElement.addEventListener('mousedown',e=>{if(menuOpen||modal)return;if(locked){interact(false);return}
@@ -1042,7 +1042,11 @@ function spawnCust(kind,o){
   const ic=emojiSprite(kind==='order'?'📦':(c.want.k==='pack'?'🌿':DRUGS[c.want.k].ic),.5);ic.material.depthTest=true;ic.position.set(0,2.55,0);m.add(ic);c.icon=ic;
   custs.push(c);return c}
 function custLeave(c){if(c.leaving)return;c.leaving=true;c.icon.visible=false;c.tx=HX+rnd(1.2,3);c.tz=c.m.position.z>=0?15.5:-15.5}
-function custGone(c){scene.remove(c.m);custs.splice(custs.indexOf(c),1);custHits.splice(custHits.indexOf(c.hit),1)}
+function disposeObj(o){o.traverse(n=>{
+  if(n.isMesh&&n.geometry)n.geometry.dispose();
+  const ms=n.material?(Array.isArray(n.material)?n.material:[n.material]):[];
+  for(const mt of ms){if(mt===hitMat)continue;if(mt.map)mt.map.dispose();mt.dispose()}})}
+function custGone(c){scene.remove(c.m);disposeObj(c.m);custs.splice(custs.indexOf(c),1);custHits.splice(custHits.indexOf(c.hit),1)}
 function updateCust(c,dt,time){
   const m=c.m,[l0,l1]=m.userData.legs,[a0,a1]=m.userData.arms;let moving=false;
   if(c===menuCust)faceTo(m,player.x,player.z,.15);
@@ -1299,7 +1303,7 @@ function labHud(time){
 
 // ======================= Minispiele =======================
 const mini=$('mini'),mc=$('mc'),mctx=mc.getContext('2d');
-function relock(){try{const p=renderer.domElement.requestPointerLock();p&&p.catch&&p.catch(()=>{})}catch(e){}}
+function relock(){if(dead)return;try{const p=renderer.domElement.requestPointerLock();p&&p.catch&&p.catch(()=>{})}catch(e){}}
 function openMini(title,info){modal=true;if(document.pointerLockElement)document.exitPointerLock();mini.style.display='grid';$('mt').textContent=title;$('mi').textContent=info;$('mr').textContent='';$('mb').innerHTML=''}
 function closeMini(){modal=false;mini.style.display='none';mg=null;relock()}
 function setBtns(list){const b=$('mb');b.innerHTML='';list.forEach(([t,fn])=>{const el=document.createElement('button');el.textContent=t;el.onclick=fn;b.appendChild(el)})}
