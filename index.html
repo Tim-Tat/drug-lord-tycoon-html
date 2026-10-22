@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Drug Lord Tycoon (Fan-Klon)</title>
+<style>
+:root{--bg:#0e0f13;--panel:#181a21;--panel2:#20232d;--txt:#e8e8ee;--mut:#8b8fa0;--acc:#3ddc84;--red:#ff4d5e;--gold:#ffc83d;--blue:#4da3ff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.4 system-ui,Segoe UI,sans-serif}
+header{position:sticky;top:0;z-index:5;background:#0b0c10;border-bottom:1px solid #262a36;padding:10px 16px;display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+h1{font-size:18px;margin:0;color:var(--acc);letter-spacing:1px}
+.stat{display:flex;flex-direction:column}
+.stat small{color:var(--mut);font-size:11px;text-transform:uppercase}
+.stat b{font-size:17px}
+.bar{width:140px;height:10px;background:#2a2d3a;border-radius:6px;overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%;background:var(--acc);transition:width .2s}
+main{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;padding:14px;max-width:1300px;margin:auto}
+section{background:var(--panel);border:1px solid #262a36;border-radius:10px;padding:12px}
+section h2{margin:0 0 10px;font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--mut)}
+.row{display:flex;align-items:center;gap:8px;background:var(--panel2);border-radius:8px;padding:8px;margin-bottom:6px}
+.row .info{flex:1;min-width:0}
+.row .info small{color:var(--mut);display:block}
+button{background:#2c3142;color:var(--txt);border:1px solid #3a4054;border-radius:7px;padding:6px 10px;cursor:pointer;font:inherit}
+button:hover:not(:disabled){background:#38405a}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.go{background:#1c6b42;border-color:#2a8f59}
+button.go:hover:not(:disabled){background:#238553}
+button.big{width:100%;padding:14px;font-size:16px;font-weight:700;background:#1c6b42;border-color:#2a8f59}
+.up{color:var(--acc)}.down{color:var(--red)}
+#log{height:180px;overflow:auto;font-size:12px;color:var(--mut)}
+#log div{padding:2px 0;border-bottom:1px solid #20232d}
+#log .bad{color:var(--red)}#log .good{color:var(--acc)}#log .evt{color:var(--gold)}
+.tag{font-size:11px;background:#2a2d3a;border-radius:4px;padding:1px 6px;color:var(--mut)}
+.owned{color:var(--gold);font-weight:700}
+.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#000c;border:1px solid var(--red);color:#fff;padding:10px 18px;border-radius:8px;display:none;z-index:9}
+footer{text-align:center;color:var(--mut);padding:14px;font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <h1>☠ DRUG LORD TYCOON</h1>
+  <div class="stat"><small>Bargeld</small><b id="cash">$0</b></div>
+  <div class="stat"><small>Einnahmen / s</small><b id="income">$0</b></div>
+  <div class="stat"><small>Reputation (Lvl <span id="lvl">1</span>)</small><div class="bar"><i id="repbar"></i></div></div>
+  <div class="stat"><small>Fahndungsdruck</small><div class="bar"><i id="heatbar" style="background:var(--red)"></i></div></div>
+  <div class="stat"><small>Tag</small><b id="day">1</b></div>
+  <div style="margin-left:auto;display:flex;gap:6px">
+    <button id="saveBtn">💾 Speichern</button>
+    <button id="resetBtn">⟲ Neustart</button>
+  </div>
+</header>
+<main>
+  <section>
+    <h2>Straße</h2>
+    <button class="big" id="hustle">Auf der Straße dealen (+<span id="hv">$5</span>)</button>
+    <p style="color:var(--mut);margin:8px 0 0">Klicke, um schnell Startkapital zu verdienen. Später lassen Dealer das automatisch für dich laufen.</p>
+    <h2 style="margin-top:14px">Log</h2>
+    <div id="log"></div>
+  </section>
+  <section><h2>Produktion &amp; Lager</h2><div id="prod"></div></section>
+  <section><h2>Dealer &amp; Personal</h2><div id="staff"></div></section>
+  <section><h2>Viertel (Gebiete)</h2><div id="turf"></div></section>
+  <section><h2>Tarngeschäfte &amp; Schutz</h2><div id="biz"></div></section>
+  <section><h2>Upgrades</h2><div id="upg"></div></section>
+</main>
+<footer>Fan-Nachbau für lokales Spielen – nicht offiziell. Fiktive Spielmechanik, keine realen Anleitungen. Autosave aktiv.</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+// ---------- Daten ----------
+const PRODUCTS=[
+ {id:'weed', name:'Gras',     emoji:'🌿', base:12,   unlock:0,       cost:60,    rate:0.6},
+ {id:'shroom',name:'Pilze',   emoji:'🍄', base:45,   unlock:1500,    cost:400,   rate:0.5},
+ {id:'pills', name:'Pillen',  emoji:'💊', base:140,  unlock:12000,   cost:2800,  rate:0.45},
+ {id:'coke',  name:'Koks',    emoji:'❄️', base:480,  unlock:90000,   cost:21000, rate:0.4},
+ {id:'meth',  name:'Crystal', emoji:'💎', base:1600, unlock:700000,  cost:160000,rate:0.35},
+];
+const STAFF=[
+ {id:'dealer',  name:'Straßendealer', desc:'Verkauft 0,5 Einheiten/s', cost:150,   sell:0.5, heat:0.15},
+ {id:'courier', name:'Kurier',        desc:'Verkauft 2 Einheiten/s',   cost:2200,  sell:2,   heat:0.25},
+ {id:'boss',    name:'Distrikt-Boss', desc:'Verkauft 10 Einheiten/s',  cost:30000, sell:10,  heat:0.4},
+ {id:'cartel',  name:'Kartell-Vertrieb',desc:'Verkauft 50 Einheiten/s',cost:400000,sell:50,  heat:0.8},
+];
+const TURF=[
+ {id:'t1',name:'Hinterhof',      cost:0,       mult:1.0},
+ {id:'t2',name:'Industriegebiet',cost:5000,    mult:1.25},
+ {id:'t3',name:'Altstadt',       cost:40000,   mult:1.6},
+ {id:'t4',name:'Hafenviertel',   cost:300000,  mult:2.1},
+ {id:'t5',name:'Casino-Meile',   cost:2500000, mult:3.0},
+ {id:'t6',name:'Ganze Stadt',    cost:25000000,mult:4.5},
+];
+const BIZ=[
+ {id:'wash', name:'Waschsalon',   desc:'+$4/s sauberer Umsatz, -3% Heat-Aufbau', cost:1800,  inc:4,   cool:0.03},
+ {id:'club', name:'Nachtclub',    desc:'+$30/s, -4% Heat-Aufbau',               cost:20000, inc:30,  cool:0.04},
+ {id:'cas',  name:'Casino',       desc:'+$220/s, -5% Heat-Aufbau',              cost:250000,inc:220, cool:0.05},
+ {id:'lawyer',name:'Anwalt',      desc:'Heat sinkt schneller (+0,15/s)',        cost:8000,  inc:0,   cool:0, decay:0.15},
+ {id:'guard',name:'Leibwächter',  desc:'Razzien kosten 25% weniger',            cost:15000, inc:0,   cool:0, guard:0.25},
+];
+const UPG=[
+ {id:'u_click1',name:'Bessere Ware (Straße)',desc:'Klick-Verdienst x2',cost:300,  eff:s=>s.clickMult*=2},
+ {id:'u_click2',name:'Stammkundschaft',      desc:'Klick-Verdienst x3',cost:6000, eff:s=>s.clickMult*=3},
+ {id:'u_prod1', name:'Hydro-Anlagen',        desc:'Produktion x1,5',   cost:2000, eff:s=>s.prodMult*=1.5},
+ {id:'u_prod2', name:'Automatisierung',      desc:'Produktion x2',     cost:40000,eff:s=>s.prodMult*=2},
+ {id:'u_prod3', name:'Industrie-Labore',     desc:'Produktion x3',     cost:600000,eff:s=>s.prodMult*=3},
+ {id:'u_sell1', name:'Verkaufstraining',     desc:'Dealer-Tempo x1,5', cost:5000, eff:s=>s.sellMult*=1.5},
+ {id:'u_sell2', name:'Funkgeräte',           desc:'Dealer-Tempo x2',   cost:75000,eff:s=>s.sellMult*=2},
+ {id:'u_price', name:'Marken-Branding',      desc:'Verkaufspreise +25%',cost:25000,eff:s=>s.priceMult*=1.25},
+ {id:'u_cap',   name:'Größere Lager',        desc:'Lagerkapazität x3', cost:3000, eff:s=>s.capMult*=3},
+];
+
+// ---------- State ----------
+const fresh=()=>({
+  cash:50, day:1, rep:0, heat:0, time:0,
+  stock:{}, labs:{}, prices:{}, unlocked:{weed:true},
+  staff:{}, turf:'t1', turfOwned:{t1:true}, biz:{}, upg:{},
+  clickMult:1, prodMult:1, sellMult:1, priceMult:1, capMult:1, totalEarned:0, raids:0
+});
+let S=load()||fresh();
+PRODUCTS.forEach(p=>{S.stock[p.id]??=0;S.labs[p.id]??=0;S.prices[p.id]??=p.base});
+recomputeUpgrades();
+
+function recomputeUpgrades(){
+  S.clickMult=1;S.prodMult=1;S.sellMult=1;S.priceMult=1;S.capMult=1;
+  UPG.forEach(u=>{if(S.upg[u.id])u.eff(S)});
+}
+
+// ---------- Helpers ----------
+const $=id=>document.getElementById(id);
+const fmt=n=>{
+  if(n<1000)return '$'+(n<10?n.toFixed(2):Math.floor(n));
+  const u=['K','M','B','T'];let i=-1;
+  while(n>=1000&&i<u.length-1){n/=1000;i++}
+  return '$'+n.toFixed(n<10?2:1)+u[i];
+};
+const num=n=>n>=1000?(n/1000).toFixed(1)+'K':Math.floor(n);
+const turfMult=()=>TURF.find(t=>t.id===S.turf).mult;
+const labCost=p=>Math.floor(p.cost*Math.pow(1.15,S.labs[p.id]));
+const staffCost=d=>Math.floor(d.cost*Math.pow(1.17,S.staff[d.id]||0));
+const cap=p=>Math.floor(200*S.capMult*(1+S.labs[p.id]*0.3));
+const heatGain=()=>Math.max(0.2,1-BIZ.reduce((a,b)=>a+(S.biz[b.id]?b.cool*S.biz[b.id]:0),0));
+const heatDecay=()=>0.35+BIZ.reduce((a,b)=>a+(b.decay?b.decay*(S.biz[b.id]||0):0),0);
+const guardMult=()=>1-Math.min(0.75,BIZ.reduce((a,b)=>a+(b.guard?b.guard*(S.biz[b.id]||0):0),0));
+const repNeed=l=>Math.floor(500*Math.pow(2.4,l-1));
+const level=()=>{let l=1;while(S.rep>=repNeed(l))l++;return l};
+let logQ=[];
+function log(t,c=''){const d=document.createElement('div');d.className=c;d.textContent='Tag '+S.day+': '+t;const L=$('log');L.prepend(d);while(L.children.length>60)L.lastChild.remove()}
+function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',2500)}
+
+// ---------- Aktionen ----------
+function hustleValue(){return 5*S.clickMult*turfMult()*S.priceMult}
+$('hustle').onclick=()=>{const v=hustleValue();S.cash+=v;S.totalEarned+=v;S.rep+=0.5;S.heat=Math.min(100,S.heat+0.3*heatGain())};
+
+function buyLab(p){const c=labCost(p);if(S.cash<c)return;S.cash-=c;S.labs[p.id]++;}
+function unlockProd(p){if(S.cash<p.unlock)return;S.cash-=p.unlock;S.unlocked[p.id]=true;log(p.name+' freigeschaltet!','good')}
+function sellAll(p){
+  const q=Math.floor(S.stock[p.id]);if(q<=0)return;
+  const v=q*S.prices[p.id]*S.priceMult*turfMult();
+  S.cash+=v;S.totalEarned+=v;S.stock[p.id]-=q;S.rep+=q*0.02;
+  S.heat=Math.min(100,S.heat+q*0.01*heatGain());
+}
+function buyStaff(d){const c=staffCost(d);if(S.cash<c)return;S.cash-=c;S.staff[d.id]=(S.staff[d.id]||0)+1}
+function buyTurf(t){if(S.turfOwned[t.id]){S.turf=t.id;return}
+  if(S.cash<t.cost)return;S.cash-=t.cost;S.turfOwned[t.id]=true;S.turf=t.id;log('Neues Gebiet: '+t.name,'good')}
+function bizCost(b){return Math.floor(b.cost*Math.pow(1.35,S.biz[b.id]||0))}
+function buyBiz(b){const c=bizCost(b);if(S.cash<c)return;S.cash-=c;S.biz[b.id]=(S.biz[b.id]||0)+1}
+function buyUpg(u){if(S.upg[u.id]||S.cash<u.cost)return;S.cash-=u.cost;S.upg[u.id]=true;recomputeUpgrades()}
+function bribe(){const c=Math.floor(500+S.totalEarned*0.01);if(S.cash<c||S.heat<5)return;S.cash-=c;S.heat=Math.max(0,S.heat-35);log('Polizei bestochen (-35 Heat)','evt')}
+
+// ---------- Simulation ----------
+function incomePerSec(){
+  let sell=STAFF.reduce((a,d)=>a+(S.staff[d.id]||0)*d.sell,0)*S.sellMult;
+  let biz=BIZ.reduce((a,b)=>a+(S.biz[b.id]||0)*b.inc,0);
+  // Schätzung: Verkauf der teuersten verfügbaren Ware
+  let est=0,left=sell;
+  [...PRODUCTS].reverse().forEach(p=>{if(!S.unlocked[p.id]||left<=0)return;
+    const avail=Math.min(left,S.labs[p.id]*p.rate*S.prodMult+S.stock[p.id]/10);
+    est+=avail*S.prices[p.id]*S.priceMult*turfMult();left-=avail});
+  return est+biz;
+}
+
+function tick(dt){
+  S.time+=dt;
+  // Tageszähler: 1 Tag = 20s
+  if(Math.floor(S.time/20)+1>S.day){S.day=Math.floor(S.time/20)+1;dayEvent()}
+  // Preise driften
+  PRODUCTS.forEach(p=>{
+    const t=p.base*(0.75+0.5*Math.sin(S.time/37+p.base));
+    S.prices[p.id]+= (t-S.prices[p.id])*0.02*dt*5 + (Math.random()-0.5)*p.base*0.01;
+    S.prices[p.id]=Math.max(p.base*0.4,S.prices[p.id]);
+  });
+  // Produktion
+  PRODUCTS.forEach(p=>{
+    if(!S.unlocked[p.id])return;
+    S.stock[p.id]=Math.min(cap(p),S.stock[p.id]+S.labs[p.id]*p.rate*S.prodMult*dt);
+  });
+  // Dealer verkaufen (teuerste Ware zuerst)
+  let capSell=STAFF.reduce((a,d)=>a+(S.staff[d.id]||0)*d.sell,0)*S.sellMult*dt;
+  let heatAdd=STAFF.reduce((a,d)=>a+(S.staff[d.id]||0)*d.heat,0)*dt*0.1*heatGain();
+  if(capSell>0){
+    [...PRODUCTS].reverse().forEach(p=>{
+      if(capSell<=0||S.stock[p.id]<=0)return;
+      const q=Math.min(capSell,S.stock[p.id]);
+      const v=q*S.prices[p.id]*S.priceMult*turfMult();
+      S.stock[p.id]-=q;capSell-=q;S.cash+=v;S.totalEarned+=v;S.rep+=q*0.02;
+    });
+    S.heat+=heatAdd;
+  }
+  // Tarngeschäfte
+  const bi=BIZ.reduce((a,b)=>a+(S.biz[b.id]||0)*b.inc,0)*dt;
+  S.cash+=bi;S.totalEarned+=bi;
+  // Heat
+  S.heat=Math.max(0,Math.min(100,S.heat-heatDecay()*dt*0.5));
+  if(S.heat>=100)raid();
+}
+
+function raid(){
+  const loss=Math.min(0.6,0.35*guardMult()+0.0)*1;
+  const lost=S.cash*loss;
+  S.cash-=lost;
+  PRODUCTS.forEach(p=>S.stock[p.id]*=0.5);
+  S.heat=40;S.raids++;
+  log('RAZZIA! '+fmt(lost)+' beschlagnahmt, Lager halbiert.','bad');
+  toast('🚨 Razzia! '+fmt(lost)+' verloren');
+}
+
+function dayEvent(){
+  if(Math.random()>0.18)return;
+  const r=Math.random();
+  if(r<0.3){const b=S.cash*0.05+50;S.cash+=b;log('Dankbarer Kunde gibt Trinkgeld: '+fmt(b),'evt')}
+  else if(r<0.55){S.heat=Math.min(99,S.heat+12);log('Gerücht auf der Straße: Heat +12','evt')}
+  else if(r<0.8){const p=PRODUCTS[Math.floor(Math.random()*PRODUCTS.length)];S.prices[p.id]*=1.6;log('Nachfrage-Boom für '+p.name+'!','evt')}
+  else{const l=S.cash*0.04;S.cash-=l;log('Rivalen überfallen einen Dealer: -'+fmt(l),'bad')}
+}
+
+// ---------- UI ----------
+const ui={prod:{},staff:{},turf:{},biz:{},upg:{}};
+function row(parent,key,store,html){
+  let e=store[key];
+  if(!e){e=document.createElement('div');e.className='row';parent.appendChild(e);store[key]=e;}
+  return e;
+}
+function render(){
+  $('cash').textContent=fmt(S.cash);
+  $('income').textContent=fmt(incomePerSec());
+  const L=level();$('lvl').textContent=L;
+  const lo=L>1?repNeed(L-1):0,hi=repNeed(L);
+  $('repbar').style.width=Math.min(100,(S.rep-lo)/(hi-lo)*100)+'%';
+  $('heatbar').style.width=S.heat+'%';
+  $('day').textContent=S.day;
+  $('hv').textContent=fmt(hustleValue());
+
+  // Produktion
+  PRODUCTS.forEach(p=>{
+    const el=row($('prod'),p.id,ui.prod);
+    if(!S.unlocked[p.id]){
+      el.innerHTML=`<div class="info"><b>${p.emoji} ${p.name}</b><small>Gesperrt</small></div><button data-a="unl">Freischalten ${fmt(p.unlock)}</button>`;
+      el.querySelector('button').disabled=S.cash<p.unlock;
+      el.querySelector('button').onclick=()=>unlockProd(p);
+      el.dataset.state='locked';
+      return;
+    }
+    if(el.dataset.state!=='open'){
+      el.dataset.state='open';
+      el.innerHTML=`<div class="info"><b>${p.emoji} ${p.name} <span class="owned" data-k="n"></span></b><small data-k="d"></small></div><button data-k="sell">Verkaufen</button><button class="go" data-k="buy"></button>`;
+      el.querySelector('[data-k=sell]').onclick=()=>sellAll(p);
+      el.querySelector('[data-k=buy]').onclick=()=>buyLab(p);
+    }
+    el.querySelector('[data-k=n]').textContent='×'+S.labs[p.id];
+    el.querySelector('[data-k=d]').textContent=`Lager ${num(S.stock[p.id])}/${num(cap(p))} · Preis ${fmt(S.prices[p.id]*S.priceMult*turfMult())} · ${ (S.labs[p.id]*p.rate*S.prodMult).toFixed(1)}/s`;
+    const b=el.querySelector('[data-k=buy]');b.textContent='+Labor '+fmt(labCost(p));b.disabled=S.cash<labCost(p);
+    el.querySelector('[data-k=sell]').disabled=S.stock[p.id]<1;
+  });
+
+  // Personal
+  STAFF.forEach(d=>{
+    const el=row($('staff'),d.id,ui.staff);
+    if(!el.firstChild){
+      el.innerHTML=`<div class="info"><b>${d.name} <span class="owned" data-k="n"></span></b><small>${d.desc}</small></div><button class="go" data-k="b"></button>`;
+      el.querySelector('button').onclick=()=>buyStaff(d);
+    }
+    el.querySelector('[data-k=n]').textContent='×'+(S.staff[d.id]||0);
+    const b=el.querySelector('button');b.textContent='Anheuern '+fmt(staffCost(d));b.disabled=S.cash<staffCost(d);
+  });
+  let br=ui.staff.bribe;
+  if(!br){br=row($('staff'),'bribe',ui.staff);br.innerHTML=`<div class="info"><b>🕴 Polizei bestechen</b><small>Senkt Fahndungsdruck um 35</small></div><button data-k="b"></button>`;br.querySelector('button').onclick=bribe}
+  const bc=Math.floor(500+S.totalEarned*0.01);
+  br.querySelector('button').textContent='Zahlen '+fmt(bc);br.querySelector('button').disabled=S.cash<bc||S.heat<5;
+
+  // Gebiete
+  TURF.forEach(t=>{
+    const el=row($('turf'),t.id,ui.turf);
+    const own=S.turfOwned[t.id],act=S.turf===t.id;
+    el.innerHTML=`<div class="info"><b>${t.name} ${act?'<span class="tag">aktiv</span>':''}</b><small>Preise ×${t.mult}</small></div><button class="${own?'':'go'}">${own?(act?'Aktiv':'Wechseln'):'Übernehmen '+fmt(t.cost)}</button>`;
+    const b=el.querySelector('button');b.disabled=act||(!own&&S.cash<t.cost);b.onclick=()=>buyTurf(t);
+  });
+
+  // Tarn
+  BIZ.forEach(b=>{
+    const el=row($('biz'),b.id,ui.biz);
+    if(!el.firstChild){
+      el.innerHTML=`<div class="info"><b>${b.name} <span class="owned" data-k="n"></span></b><small>${b.desc}</small></div><button class="go"></button>`;
+      el.querySelector('button').onclick=()=>buyBiz(b);
+    }
+    el.querySelector('[data-k=n]').textContent='×'+(S.biz[b.id]||0);
+    const bt=el.querySelector('button');bt.textContent='Kaufen '+fmt(bizCost(b));bt.disabled=S.cash<bizCost(b);
+  });
+
+  // Upgrades
+  UPG.forEach(u=>{
+    const el=row($('upg'),u.id,ui.upg);
+    if(!el.firstChild){
+      el.innerHTML=`<div class="info"><b>${u.name}</b><small>${u.desc}</small></div><button class="go"></button>`;
+      el.querySelector('button').onclick=()=>buyUpg(u);
+    }
+    const bt=el.querySelector('button');
+    bt.textContent=S.upg[u.id]?'Gekauft':fmt(u.cost);bt.disabled=S.upg[u.id]||S.cash<u.cost;
+    el.style.opacity=S.upg[u.id]?.5:1;
+  });
+}
+
+// ---------- Save ----------
+function save(){try{localStorage.setItem('dlt_save',JSON.stringify(S));}catch(e){}}
+function load(){try{const s=JSON.parse(localStorage.getItem('dlt_save'));return s&&s.cash!==undefined?Object.assign(fresh(),s):null}catch(e){return null}}
+$('saveBtn').onclick=()=>{save();toast('Gespeichert ✔')};
+$('resetBtn').onclick=()=>{if(confirm('Wirklich alles zurücksetzen?')){localStorage.removeItem('dlt_save');S=fresh();PRODUCTS.forEach(p=>{S.stock[p.id]=0;S.labs[p.id]=0;S.prices[p.id]=p.base});location.reload()}};
+setInterval(save,15000);
+
+// ---------- Loop ----------
+let last=performance.now();
+function loop(now){
+  let dt=Math.min(0.5,(now-last)/1000);last=now;
+  tick(dt);render();
+  requestAnimationFrame(loop);
+}
+log('Willkommen in der Stadt. Starte mit Straßendeals und baue dein Imperium auf.','good');
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
