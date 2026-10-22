@@ -40,6 +40,35 @@ button:disabled{opacity:.4;cursor:not-allowed}
 #menu .p .line{font-size:24px;margin-bottom:14px}
 #menu .p button{display:block;width:100%;margin-bottom:8px;background:#151515ee}
 #info{position:fixed;right:18px;bottom:20px;width:260px;background:#000a;padding:10px 14px;font-size:14px;display:none;line-height:1.6}
+#flash{position:fixed;inset:0;background:radial-gradient(circle,#ff2a0066,#ff2a00cc);opacity:0;pointer-events:none;transition:opacity .6s;z-index:7}
+#psa{position:fixed;inset:0;pointer-events:none;display:none;z-index:2;background:radial-gradient(ellipse at center,#0000 52%,#05122899 100%);box-shadow:inset 0 0 0 10px #0a1a3a66}
+#cook{position:fixed;top:64px;left:12px;width:310px;background:#000a;border:1px solid #4aa3a3;padding:8px 12px;font-size:14px;line-height:1.55;display:none}
+#cook b.t{color:#7ff;font-size:16px}#cook .done{color:#7f7}#cook .cur{color:#ff6;font-weight:700}#cook .todo{opacity:.55}
+#mini{position:fixed;inset:0;background:#000c;display:none;place-items:center;z-index:9}
+#mini .mp{width:min(680px,94vw);background:#10151cf2;border:2px solid #4aa3a3;padding:16px 18px;text-align:center}
+#mini h2{margin:0 0 4px;color:#7ff;font-size:26px}#mini p{margin:4px 0 10px;color:#ccd;font-size:15px;line-height:1.4}
+#mini canvas{width:100%;height:auto;background:#05080c;border:1px solid #234;display:block;margin:0 auto;cursor:crosshair}
+#mr{min-height:30px;font-size:20px;margin:10px 0 4px}#mb button{margin:4px;padding:10px 18px;font-size:18px}
+#lap{position:fixed;inset:0;background:#000d;display:none;place-items:center;z-index:9}
+#lap .win{width:min(780px,96vw);max-height:92vh;overflow:auto;background:#12081c;border:2px solid #8a4bd8;box-shadow:0 0 30px #8a4bd855;font-size:15px}
+#lap .bar{display:flex;justify-content:space-between;align-items:center;background:#2a1342;padding:6px 10px;color:#d9b8ff;font-size:14px}
+#lap .bar button{padding:2px 10px;font-size:16px;background:#5a1f3a}
+#lapTabs{display:flex;flex-wrap:wrap;gap:4px;padding:8px 8px 0}
+#lapTabs button{font-size:15px;padding:8px 12px;background:#1d1030;border:1px solid #4a2a70}
+#lapTabs button.on{background:#4a2a70}
+#lapBody{padding:10px 14px 14px;line-height:1.5}
+#lap .lh{display:flex;flex-wrap:wrap;gap:16px;background:#0b0412;padding:8px 10px;margin-bottom:8px;color:#4dff88;font-family:monospace;font-size:16px}
+#lap .card{background:#1a0e2b;border:1px solid #3a2060;padding:8px 10px;margin:6px 0}
+#lap .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:6px}
+#lap button{font-size:15px;padding:8px 12px;margin-top:4px}#lap button.big{display:block;width:100%;font-size:17px;padding:14px;background:#2a5a2a}
+#lap h3{margin:12px 0 2px;color:#d9b8ff}#lap .news{color:#ffd23a;background:#1d1507;padding:6px 8px}
+#lap .ok{color:#7f7}#lap .tg{color:#fc6}#lap small{color:#bba;font-size:13px}#lap .tip{color:#9fd}
+#lap ol{margin:6px 0;padding-left:22px}#lap .ld{text-align:center;padding:40px 0;color:#d9b8ff}#lap .spin{font-size:46px;animation:sp 1s linear infinite;display:inline-block}
+@keyframes sp{to{transform:rotate(360deg)}}
+#lap .foot{padding:6px 12px;color:#a88;font-size:12px;border-top:1px solid #3a2060}
+#menu .p{max-height:92vh;overflow:auto}
+#menu .p button small{display:block;font-size:12px;font-weight:400;opacity:.8;margin-top:2px}
+#menuLine{white-space:pre-line}
 </style>
 </head>
 <body>
@@ -53,10 +82,17 @@ button:disabled{opacity:.4;cursor:not-allowed}
 <div id="msg" class="sh"></div>
 <div id="info" class="sh"></div>
 <div id="menu"><div class="p"><div class="line sh" id="menuLine"></div><div id="menuBtns"></div></div></div>
+<div id="flash"></div>
+<div id="psa"></div>
+<div id="cook" class="sh"></div>
+<div id="mini"><div class="mp"><h2 id="mt"></h2><p id="mi"></p><canvas id="mc" width="640" height="260"></canvas><div id="mr"></div><div id="mb"></div></div></div>
+<div id="lap"><div class="win"><div class="bar"><span id="lapUrl">🧅 Onion-Browser</span><button id="lapX">✕ (Esc)</button></div><div id="lapTabs"></div><div id="lapBody"></div>
+<div class="foot">⚠ Satire/Spiel: Alle „Anleitungen“, Stoffe und Werte hier sind frei erfunden – keine echte Chemie, keine Anleitung zu irgendetwas. SchwarzCoin (SCN) gibt es nicht.</div></div></div>
 <div id="overlay"><div class="box sh">
   <h1>DRUG LORD TYCOON 3D</h1>
   <p>Fan-Nachbau als Low-Poly-Gewächshaus. Pflanze, gieße, ernte, trimme, verpacke und verkaufe an Onkel Rick – und stelle Arbeiter ein.</p>
   <p><b>WASD</b> laufen · <b>Shift</b> rennen · <b>Maus</b> umschauen<br><b>1 / 2 / 3</b> Werkzeug (Samen / Gießkanne / Schere) · <b>Linksklick</b> benutzen<br><b>E</b> interagieren (Topf, Rick, Trockengestell, Tisch, Wasserfass) · <b>Esc</b> Maus freigeben</p>
+  <p style="font-size:13px;color:#cbb">Satire-Spiel: Alle Stoffe, Abläufe und „Anleitungen“ sind frei erfunden – keine echten Anleitungen. Drogenherstellung ist in der Realität illegal und gefährlich.</p>
   <button id="play">▶ Spielen</button>
   <p id="warn" style="font-size:13px;color:#fb8"></p>
 </div></div>
@@ -97,8 +133,8 @@ scene.add(new T.Mesh(new T.SphereGeometry(300,24,12),new T.MeshBasicMaterial({ma
 // Licht
 scene.add(new T.HemisphereLight(0xcfe4ff,0x6b5a4a,.6));
 const sun=new T.DirectionalLight(0xfff2d6,1.7);
-sun.position.set(11,19,7);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);
-Object.assign(sun.shadow.camera,{left:-14,right:14,top:14,bottom:-14,near:1,far:60});
+sun.position.set(11,19,7);sun.castShadow=true;sun.shadow.mapSize.set(renderer.capabilities.maxTextureSize>=4096?4096:2048,renderer.capabilities.maxTextureSize>=4096?4096:2048);
+Object.assign(sun.shadow.camera,{left:-26,right:26,top:26,bottom:-26,near:1,far:70});
 sun.shadow.bias=-.0004;sun.shadow.normalBias=.03;
 scene.add(sun);scene.add(sun.target);
 
@@ -110,7 +146,9 @@ const brickTex=canvasTex(256,128,(g,w,h)=>{g.fillStyle='#d8c9b0';g.fillRect(0,0,
 const brickMat=new T.MeshStandardMaterial({map:brickTex,roughness:.9,flatShading:true});
 const wood=M(0x5a3d26),woodDark=M(0x3b2718),woodLight=M(0x8a6842);
 box(.4,HH,HZ*2+.4,brickMat,HX+.2,HH/2,0);                       // rechte Ziegelwand
-box(HX*2+.8,HH,.4,brickMat,0,HH/2,HZ+.2);                       // vordere Ziegelwand
+for(const sx of[-1,1])box(7.3,HH,.4,brickMat,sx*4.75,HH/2,HZ+.2);   // vordere Ziegelwand (Türöffnung in der Mitte -> Labor)
+box(2.2,HH-2.6,.4,brickMat,0,2.6+(HH-2.6)/2,HZ+.2);                 // Sturz über der Labor-Tür
+box(2.2,.04,.5,M(0x8a9098),0,.02,HZ+.2,scene,false,true);           // Türschwelle
 // Glas-Holz-Wände (links, hinten)
 const glassMat=new T.MeshStandardMaterial({color:0xaad4ff,transparent:true,opacity:.16,roughness:.1,side:T.DoubleSide,depthWrite:false});
 function glassWall(len,alongX,fixed){
@@ -141,7 +179,7 @@ box(.02,1,.02,M(0x222),0,.8,0,hang);
 mesh(new T.PlaneGeometry(700,700),M(0x62824f,{flatShading:false}),0,-.06,0,scene,false,true).rotation.x=-Math.PI/2;
 const treeMats=[M(0x3f7a3c),M(0x2f6a35),M(0x4d8a40)];
 for(let i=0;i<70;i++){
-  let x,z;do{x=rnd(-60,60);z=rnd(-60,60)}while(Math.abs(x)<HX+3&&Math.abs(z)<HZ+3);
+  let x,z;do{x=rnd(-60,60);z=rnd(-60,60)}while((Math.abs(x)<HX+3&&Math.abs(z)<HZ+3)||(Math.abs(x)<HX+3&&z>0&&z<34));
   const t=new T.Group();t.position.set(x,0,z);
   mesh(new T.CylinderGeometry(.18,.28,2.2,5),M(0x5b4128),0,1.1,0,t);
   const s=rnd(1.4,2.6);for(let k=0;k<3;k++){const b=mesh(new T.IcosahedronGeometry(s*(1-k*.2),0),treeMats[(Math.random()*3)|0],rnd(-.4,.4),2.8+k*s*.6,rnd(-.4,.4),t);b.rotation.set(rnd(0,3),rnd(0,3),0)}
@@ -153,7 +191,7 @@ for(let i=0;i<26;i++){const a=i/26*Math.PI*2,r=rnd(90,130),h=rnd(18,60),w=rnd(10
 
 // ---------------- Helfer: Sprites ----------------
 function emojiSprite(txt,size=.55,bg='#0000'){const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d');g.fillStyle=bg;g.beginPath();g.arc(64,64,56,0,7);g.fill();g.font='72px serif';g.textAlign='center';g.textBaseline='middle';g.fillText(txt,64,70);const t=new T.CanvasTexture(c);t.encoding=T.sRGBEncoding;const s=new T.Sprite(new T.SpriteMaterial({map:t,depthTest:false,transparent:true}));s.scale.set(size,size,1);s.renderOrder=10;return s}
-function labelSprite(txt,w=2.2){const c=document.createElement('canvas');c.width=256;c.height=64;const g=c.getContext('2d');g.font='bold 34px Trebuchet MS';g.textAlign='center';g.textBaseline='middle';g.lineWidth=6;g.strokeStyle='#000';g.strokeText(txt,128,34);g.fillStyle='#fff';g.fillText(txt,128,34);const t=new T.CanvasTexture(c);t.encoding=T.sRGBEncoding;const s=new T.Sprite(new T.SpriteMaterial({map:t,depthTest:false,transparent:true}));s.scale.set(w,w/4,1);s.renderOrder=10;return s}
+function labelSprite(txt,w=2.2,depth=false){const c=document.createElement('canvas');c.width=256;c.height=64;const g=c.getContext('2d');g.font='bold 34px Trebuchet MS';g.textAlign='center';g.textBaseline='middle';g.lineWidth=6;g.strokeStyle='#000';g.strokeText(txt,128,34);g.fillStyle='#fff';g.fillText(txt,128,34);const t=new T.CanvasTexture(c);t.encoding=T.sRGBEncoding;const s=new T.Sprite(new T.SpriteMaterial({map:t,depthTest:depth,transparent:true}));s.scale.set(w,w/4,1);s.renderOrder=10;return s}
 
 // ---------------- Töpfe & Pflanzen ----------------
 const potMat=M(0xd9dadf),potRim=M(0xe8e8ee),soilMat=M(0x6a4528),lampMat=new T.MeshBasicMaterial({color:0xff4dff});
@@ -264,7 +302,9 @@ const rickHit=mesh(new T.CylinderGeometry(.7,.7,2,8),hitMat,rick.position.x,1,ri
 
 // ---------------- Spielzustand ----------------
 const SEED=10,DAYLEN=90,SALARY=50;
-let S={cash:500,xp:0,level:1,day:1,dayT:0,raw:0,trim:0,pack:0,tool:0,water:8,waterCap:8,lights:0,potsOwned:3,workers:0,canUp:0,flags:{},price:55,priceT:0,potsState:[]};
+let S={cash:500,xp:0,level:1,day:1,dayT:0,raw:0,trim:0,pack:0,tool:0,water:8,waterCap:8,lights:0,potsOwned:3,workers:0,canUp:0,flags:{},price:55,priceT:0,potsState:[],
+  lab:0,psa:false,reag:{},drugs:{},recipes:{},up:{yield:0,ease:0},cook:null,dm:{},batches:0,coins:0,cp:40,cpT:4,evT:60,
+  news:'📰 SchwarzCoin (SCN): ein Kurs, so stabil wie Onkel Ricks Laune.',rig:{gpu:0,fan:0},scams:0};
 function save(){try{S.potsState=pots.map(p=>({o:p.owned,s:p.stage,t:p.t,w:p.wet}));localStorage.setItem('dlt3d',JSON.stringify(S))}catch(e){}}
 function load(){try{const s=JSON.parse(localStorage.getItem('dlt3d'));if(s&&s.cash!==undefined)S=Object.assign(S,s)}catch(e){}}
 load();
@@ -274,7 +314,7 @@ S.flags=S.flags||{};
 setInterval(save,8000);addEventListener('beforeunload',save);
 
 const workers=[];
-function spawnWorker(){const w=makeWorker();w.position.set(rnd(-1,1),0,4.8);scene.add(w);workers.push({m:w,job:null,tw:0,ph:Math.random()*6})}
+function spawnWorker(){const w=makeWorker();w.position.set(rnd(2.5,4.5),0,4.8);scene.add(w);workers.push({m:w,job:null,tw:0,ph:Math.random()*6})}
 for(let i=0;i<S.workers;i++)spawnWorker();
 
 function msg(t){const e=$('msg');e.textContent=t;e.style.opacity=1;clearTimeout(msg.t);msg.t=setTimeout(()=>e.style.opacity=0,2600)}
@@ -306,49 +346,51 @@ const OBJ=[
  ['Verpacke 3 getrimmte Blüten am Tisch (E)',()=>S.flags.packed],
  ['Verkaufe das Paket an Onkel Rick',()=>S.flags.sold],
  ['Stelle einen Arbeiter bei Rick ein',()=>S.workers>0],
- ['Expandiere: mehr Töpfe, Lampen, Arbeiter!',()=>false],
+ ['Rick: Hinterraum-Labor freischalten (ab Level 3)',()=>S.lab],
+ ['Betritt das Labor – Stahltür in der Frontwand',()=>S.flags.inlab],
+ ['Zieh Schutzausrüstung an – Spinde links (E)',()=>S.flags.psa],
+ ['Laptop: minen & im Darknet eine Anleitung kaufen (E)',()=>S.flags.guide],
+ ['Kaufe Zutaten am gelben Chemikalien-Schrank (E)',()=>S.flags.bought],
+ ['Starte einen Ansatz am Rezept-Board (E)',()=>S.flags.cookstart],
+ ['Raum 2: arbeite die Schritte ab – der Pfeil zeigt die Station',()=>S.flags.cooked],
+ ['Verkaufe dein Produkt an Onkel Rick',()=>S.flags.soldDrug],
+ ['Expandiere: mehr Töpfe, Lampen, Arbeiter, Rezepte!',()=>false],
 ];
 let objI=0;
 function objUpdate(){while(objI<OBJ.length-1&&OBJ[objI][1]()){objI++;msg('Ziel erreicht!')}$('objtxt').textContent=OBJ[objI][0]}
 
-// ---------------- Rick-Menü ----------------
-const menu=$('menu');let menuOpen=false;
+// ---------------- Menüs (Rick u. a.) ----------------
+const menu=$('menu');let menuOpen=false,menuFn=null;
 const lines=['Na, Kleiner? Das Geschäft läuft nur, wenn du dich bewegst.','Gutes Zeug. Ich zahl fair.','Mehr Arbeiter, mehr Lampen – so geht Wachstum.','Die Polizei interessiert sich nur für Dinge, die man nicht versteckt... Scherz.'];
-function openMenu(){menuOpen=true;S.flags.talked=1;if(document.pointerLockElement)document.exitPointerLock();menu.style.display='flex';renderMenu()}
-function closeMenu(){menuOpen=false;menu.style.display='none'}
+function openMenuX(fn){menuOpen=true;menuFn=fn;if(document.pointerLockElement)document.exitPointerLock();menu.style.display='flex';renderMenu()}
+function openMenu(){S.flags.talked=1;openMenuX(rickMenu)}
+function closeMenu(){menuOpen=false;menu.style.display='none';relock()}
 function renderMenu(){
-  $('menuLine').textContent=lines[Math.floor((S.day+S.level)%lines.length)];
-  const b=[];
-  b.push([`Pakete verkaufen (${S.pack}) – ${money(S.pack*S.price)}  [Preis ${money(S.price)}]`,S.pack>0,()=>{const v=S.pack*S.price;S.cash+=v;addXp(v/10);S.pack=0;S.flags.sold=1;msg('+'+money(v))}]);
-  b.push([`Neuen Topf kaufen (${money(potCost())})`,S.potsOwned<12&&S.cash>=potCost(),()=>{S.cash-=potCost();const p=pots.find(q=>!q.owned);p.owned=true;S.potsOwned++}]);
-  b.push([`Arbeiter einstellen (${money(hireCost())}) – ${money(SALARY)}/Tag`,S.workers<6&&S.cash>=hireCost(),()=>{S.cash-=hireCost();S.workers++;spawnWorker()}]);
-  b.push([`Wachstumslampen Lvl ${S.lights}/5 (${money(lightCost())})`,S.lights<5&&S.cash>=lightCost(),()=>{S.cash-=lightCost();S.lights++}]);
-  b.push([`Größere Gießkanne ${S.waterCap}→${S.waterCap+4} (${money(canCost())})`,S.canUp<3&&S.cash>=canCost(),()=>{S.cash-=canCost();S.canUp++;S.waterCap+=4;S.water=S.waterCap}]);
-  if(S.workers>0)b.push(['Arbeiter entlassen',true,()=>{const w=workers.pop();if(w.job&&w.job.p)w.job.p.claim=null;scene.remove(w.m);S.workers--}]);
-  b.push(['Schließen',true,closeMenu]);
-  const box=$('menuBtns');box.innerHTML='';
-  b.forEach(([t,en,fn])=>{const el=document.createElement('button');el.textContent=t;el.disabled=!en;el.onclick=()=>{fn();renderMenu()};box.appendChild(el)});
+  const {line,items}=menuFn();const ml=$('menuLine');ml.textContent=line;ml.style.fontSize=line.length>90?'16px':'24px';
+  const bx=$('menuBtns');bx.innerHTML='';
+  items.forEach(([t,en,fn,sub])=>{const el=document.createElement('button');el.innerHTML=t+(sub?'<small>'+sub+'</small>':'');el.disabled=!en;el.onclick=()=>{fn();if(menuOpen)renderMenu()};bx.appendChild(el)});
 }
 
 // ---------------- Eingabe ----------------
 let yaw=0,pitch=0,locked=false,fallback=false,started=false;
 const keys={};
 addEventListener('keydown',e=>{keys[e.code]=true;
+  if(modal){modalKey(e);return}
   if(menuOpen){if(e.code==='Escape'||e.code==='KeyE')closeMenu();return}
   if(e.code==='Digit1')S.tool=0;if(e.code==='Digit2')S.tool=1;if(e.code==='Digit3')S.tool=2;
   if(e.code==='KeyE')interact(true);
 });
-addEventListener('keyup',e=>keys[e.code]=false);
-addEventListener('wheel',e=>{if(!menuOpen)S.tool=(S.tool+(e.deltaY>0?1:2))%3});
+addEventListener('keyup',e=>{keys[e.code]=false;if(e.code==='Space'&&mg)mgUp()});
+addEventListener('wheel',e=>{if(!menuOpen&&!modal)S.tool=(S.tool+(e.deltaY>0?1:2))%3});
 $('play').onclick=()=>{started=true;$('overlay').style.display='none';renderer.domElement.requestPointerLock&&renderer.domElement.requestPointerLock()};
-document.addEventListener('pointerlockchange',()=>{locked=document.pointerLockElement===renderer.domElement;if(!locked&&!menuOpen&&started){$('overlay').style.display='grid';$('play').textContent='▶ Weiter'}});
+document.addEventListener('pointerlockchange',()=>{locked=document.pointerLockElement===renderer.domElement;if(!locked&&!menuOpen&&!modal&&started){$('overlay').style.display='grid';$('play').textContent='▶ Weiter'}});
 document.addEventListener('pointerlockerror',()=>{fallback=true;$('overlay').style.display='none';$('warn').textContent=''});
 let drag=null;
-renderer.domElement.addEventListener('mousedown',e=>{if(menuOpen)return;if(locked){interact(false);return}
+renderer.domElement.addEventListener('mousedown',e=>{if(menuOpen||modal)return;if(locked){interact(false);return}
   if(started){drag={x:e.clientX,y:e.clientY,moved:0}}});
 addEventListener('mouseup',e=>{if(drag&&drag.moved<4&&!locked)interact(false);drag=null});
 addEventListener('mousemove',e=>{
-  if(menuOpen)return;
+  if(menuOpen||modal)return;
   if(locked){yaw-=e.movementX*.0023;pitch-=e.movementY*.0023}
   else if(drag){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.moved+=Math.abs(dx)+Math.abs(dy);yaw-=dx*.004;pitch-=dy*.004;drag.x=e.clientX;drag.y=e.clientY}
   pitch=Math.max(-1.4,Math.min(1.4,pitch));
@@ -360,6 +402,7 @@ let aimed=null;
 function aim(){
   const targets=[rickHit,stations.rack.hit,stations.table.hit,stations.barrel.hit];
   pots.forEach(p=>{if(p.owned)targets.push(p.hit)});
+  if(!S.lab)targets.push(labDoorHit);else targets.push(...labTargets);
   ray.setFromCamera({x:0,y:0},camera);
   const h=ray.intersectObjects(targets,false);
   aimed=h.length?h[0].object.userData.ref:null;
@@ -368,6 +411,8 @@ function interact(viaE){
   if(!aimed)return;
   const r=aimed;
   if(r.type==='rick'){if(viaE||true)openMenu();return}
+  if(r.type==='labdoor'){msg('Die Stahltür ist abgeschlossen – Onkel Rick hat den Schlüssel.');return}
+  if(r.type==='st'){labInteract(r.id);return}
   if(r.type==='barrel'){S.water=S.waterCap;msg('Gießkanne aufgefüllt 💧');return}
   if(r.type==='rack'){if(!A.trim())msg('Keine rohen Blüten – erst ernten!');return}
   if(r.type==='table'){if(!A.pack())msg('Du brauchst 3 getrimmte Blüten.');return}
@@ -419,6 +464,634 @@ function updateWorker(w,dt,time){
   else if(!w.job){l0.rotation.x=l1.rotation.x=0;a0.rotation.x=a1.rotation.x=0}
 }
 
+// ======================================================================
+//  LABOR – 2 Räume in eigener Szene.  Reine Spielmechanik: Stoffe, Abläufe
+//  und Werte sind frei erfunden und KEINE Anleitung zu irgendetwas.
+// ======================================================================
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+// Das Labor hängt direkt an der Frontwand des Gewächshauses (gleiche Szene, gleiche Welt).
+// Lokale Labor-Koordinaten: Eingang bei z=0, Räume liegen bei z<0 -> Gruppe um 180° gedreht.
+const LZ0=HZ+.4;
+const LS=new T.Group();LS.position.set(0,0,LZ0);LS.rotation.y=Math.PI;scene.add(LS);
+for(const [x,z] of [[-2.6,-4],[2.6,-4],[-2.6,-13],[2.6,-13]]){const pl=new T.PointLight(0xf1f7ff,1.5,9.5,2);pl.position.set(x,2.9,z);LS.add(pl)}
+const labTargets=[],labBoxes=[],LST={};
+const WH=3.4;
+const LM={
+  wall:M(0xc8d1d8),ceil:M(0xe4e8ec),white:M(0xe6eaee),steel:M(0xaeb6bf,{roughness:.45}),dark:M(0x252a31),black:M(0x14161a),
+  top:M(0x2d3944),yellow:M(0xe3b91c),red:M(0xc13a2b),green:M(0x2f9e5b),blue:M(0x35557f),
+  glass:new T.MeshStandardMaterial({color:0xd6ecff,transparent:true,opacity:.26,roughness:.05,side:T.DoubleSide,depthWrite:false}),
+  lamp:new T.MeshBasicMaterial({color:0xf6fbff})
+};
+const liq=c=>new T.MeshStandardMaterial({color:c,transparent:true,opacity:.82,roughness:.25,flatShading:true});
+const lbox=(w,h,d,m,x,y,z,p=LS)=>box(w,h,d,m,x,y,z,p,false,false);
+const lcyl=(rt,rb,h,m,x,y,z,p=LS,s=10)=>mesh(new T.CylinderGeometry(rt,rb,h,s),m,x,y,z,p,false,false);
+const lsph=(r,m,x,y,z,p=LS,a=10,b=8)=>mesh(new T.SphereGeometry(r,a,b),m,x,y,z,p,false,false);
+function tileTex(rx,ry,a='#e9eef1',b='#d3dae0'){return canvasTex(128,128,(g,w,h)=>{g.fillStyle='#8f9aa4';g.fillRect(0,0,w,h);for(let i=0;i<2;i++)for(let j=0;j<2;j++){g.fillStyle=(i+j)%2?a:b;g.fillRect(i*64+2,j*64+2,60,60)}},rx,ry)}
+function hazardMat(rx,ry){return new T.MeshStandardMaterial({roughness:.7,map:canvasTex(64,64,(g,w,h)=>{g.fillStyle='#e3b91c';g.fillRect(0,0,w,h);g.fillStyle='#16181c';for(let i=0;i<9;i++){g.beginPath();g.moveTo(i*16,0);g.lineTo(i*16+8,0);g.lineTo(i*16+8-64,h);g.lineTo(i*16-64,h);g.fill()}},rx,ry)})}
+function labSign(txt,w,h,bg,fg,x,y,z,ry=0,p=LS){
+  const lines=txt.split('\n'),W=256,H=Math.round(256*h/w);
+  const t=canvasTex(W,H,g=>{g.fillStyle=bg;g.fillRect(0,0,W,H);g.strokeStyle=fg;g.lineWidth=5;g.strokeRect(6,6,W-12,H-12);g.fillStyle=fg;g.textAlign='center';g.textBaseline='middle';
+    let fs=Math.min(44,(H-24)/lines.length*.85);const longest=lines.reduce((a,l)=>l.length>a.length?l:a,'');
+    g.font='bold '+fs+'px Trebuchet MS';while(g.measureText(longest).width>W-26&&fs>8){fs-=1;g.font='bold '+fs+'px Trebuchet MS'}
+    lines.forEach((l,i)=>g.fillText(l,W/2,H/2+(i-(lines.length-1)/2)*fs*1.18))});
+  const m=new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshStandardMaterial({map:t,roughness:.7}));m.position.set(x,y,z);m.rotation.y=ry;p.add(m);return m}
+
+// ---- Glaswaren & Kleinteile ----
+function rbFlask(p,x,y,z,col,s=1){const g=new T.Group();g.position.set(x,y,z);g.scale.setScalar(s);p.add(g);
+  lsph(.17,LM.glass,0,.17,0,g,12,10);lcyl(.045,.045,.22,LM.glass,0,.45,0,g,8);
+  const l=lsph(.15,liq(col),0,.13,0,g,10,8);l.scale.y=.62;return g}
+function beaker(p,x,y,z,col,h=.2,r=.075){const g=new T.Group();g.position.set(x,y,z);p.add(g);
+  mesh(new T.CylinderGeometry(r,r*.95,h,12,1,true),LM.glass,0,h/2,0,g,false,false);
+  lcyl(r*.93,r*.9,h*.55,liq(col),0,h*.28,0,g,12);return g}
+function erlen(p,x,y,z,col){const g=new T.Group();g.position.set(x,y,z);p.add(g);
+  mesh(new T.CylinderGeometry(.04,.13,.3,10,1,true),LM.glass,0,.15,0,g,false,false);
+  lcyl(.11,.12,.08,liq(col),0,.05,0,g,10);return g}
+function bottle(p,x,y,z,cap,col=0x6b3f1d){const g=new T.Group();g.position.set(x,y,z);p.add(g);
+  lcyl(.05,.05,.2,M(col,{roughness:.4}),0,.1,0,g,8);lcyl(.026,.026,.07,M(cap),0,.235,0,g,6);lbox(.075,.09,.005,LM.white,0,.1,.05,g);return g}
+
+// ---- Raumhüllen ----
+function labShell(z0,z1){
+  const d=z1-z0,cz=(z0+z1)/2;
+  const fl=mesh(new T.PlaneGeometry(12,d),new T.MeshStandardMaterial({map:tileTex(12,d,'#cfd8de','#bcc6ce'),roughness:.5}),0,0,cz,LS,false,true);fl.rotation.x=-Math.PI/2;
+  const ce=mesh(new T.PlaneGeometry(12,d),LM.ceil,0,WH,cz,LS,false,false);ce.rotation.x=Math.PI/2;
+  box(12.8,.3,d+.4,M(0x3c4046),0,WH+.15,cz,LS,true,true);                       // Dach (wirft Schatten -> kein Sonnenlicht im Labor)
+  for(const s of[-1,1]){
+    lbox(.4,WH,d+.4,LM.wall,s*6.2,WH/2,cz);
+    lbox(.05,1.25,d,new T.MeshStandardMaterial({map:tileTex(d/.6,2.08),roughness:.4,flatShading:true}),s*5.97,.625,cz);
+  }
+  for(let z=z0+1.5;z<z1-1;z+=3.6)for(const x of[-2.6,2.6]){lbox(1.6,.06,.5,LM.lamp,x,WH-.03,z);lbox(1.7,.03,.6,LM.steel,x,WH-.015,z)}
+}
+labShell(-8.0,0);labShell(-18,-8.4);
+const tileBand=(len,x,z)=>lbox(len,1.25,.05,new T.MeshStandardMaterial({map:tileTex(len/.6,2.08),roughness:.4,flatShading:true}),x,.625,z);
+// Eingangswand = Frontwand des Gewächshauses (Ziegel) -> innen verkleiden, Tür-Ausschnitt in der Mitte freilassen
+for(const s of[-1,1]){lbox(4.9,WH,.05,LM.wall,s*3.55,WH/2,-.025);tileBand(4.9,s*3.55,-.075)}
+lbox(2.2,WH-2.6,.05,LM.wall,0,2.6+(WH-2.6)/2,-.025);
+lbox(12.8,WH,.4,LM.wall,0,WH/2,-18.2);tileBand(12,0,-17.975);             // Nordwand (Raum 2)
+for(const s of[-1,1]){lbox(5.4,WH,.4,LM.wall,s*3.7,WH/2,-8.2);tileBand(5,s*3.5,-7.975);tileBand(5,s*3.5,-8.425)}   // Trennwand
+lbox(2,WH-2.5,.4,LM.wall,0,2.5+(WH-2.5)/2,-8.2);                          // Sturz über dem Durchgang
+// Durchgang: Stahlrahmen, Warnstreifen am Boden, Streifenvorhang
+for(const s of[-1,1])lbox(.14,2.5,.5,LM.steel,s*1.07,1.25,-8.2);
+lbox(2.28,.14,.5,LM.steel,0,2.5,-8.2);
+{const th=new T.Mesh(new T.PlaneGeometry(2,.8),hazardMat(4,1));th.rotation.x=-Math.PI/2;th.position.set(0,.012,-8.2);LS.add(th)}
+{const strip=new T.MeshStandardMaterial({color:0xbfe3f2,transparent:true,opacity:.32,roughness:.2,depthWrite:false});
+ for(let i=0;i<7;i++)lbox(.26,2.42,.012,strip,-.9+i*.3,1.26,-8.2)}
+labSign('RAUM 2 · KOCHLABOR\nSchutzausrüstung Pflicht',1.9,.42,'#1c3f7a','#fff',0,2.95,-7.97,0);
+labSign('RAUM 1 · VORBEREITUNG\nund Lager',1.9,.42,'#1c3f7a','#fff',0,2.95,-8.43,Math.PI);
+
+// ---- Stationen: Hilfsfunktionen ----
+function station(id,x,z,ry,hw,hd,hh,label,ly){
+  const g=new T.Group();g.position.set(x,0,z);g.rotation.y=ry;LS.add(g);
+  const hit=mesh(new T.BoxGeometry(hw,hh,hd),hitMat,0,hh/2,0,g,false,false);hit.userData.ref={type:'st',id};labTargets.push(hit);
+  const lb=labelSprite(label,1.9,true);lb.position.set(0,ly,hd/2+.1);g.add(lb);
+  LST[id]={g,x,z,ly};return g}
+function bench(x,z,len,ry,d=1.0){const g=new T.Group();g.position.set(x,0,z);g.rotation.y=ry;LS.add(g);
+  lbox(len,.84,d,LM.white,0,.42,0,g);lbox(len+.04,.06,d+.06,LM.top,0,.87,0,g);
+  for(let i=0;i<Math.floor(len);i++){lbox(.012,.7,.01,LM.dark,-len/2+.5+i,.42,d/2+.006,g);lbox(.12,.025,.03,LM.steel,-len/2+.25+i,.62,d/2+.02,g)}
+  return g}
+const solid=(x0,x1,z0,z1)=>labBoxes.push([-x1,-x0,LZ0-z1,LZ0-z0]);   // lokal -> Welt (Kollisionsboxen)
+
+// ======================= RAUM 1 – Vorbereitung & Lager =======================
+// Schilder an der Eingangswand (Innenseite, links/rechts der Tür)
+labSign('SCHUTZBRILLE\nPFLICHT',.7,.7,'#1c4fa8','#fff',-1.7,1.7,-.08,Math.PI);
+labSign('KITTEL\nPFLICHT',.7,.7,'#1c4fa8','#fff',-2.6,1.7,-.08,Math.PI);
+labSign('KEIN ESSEN\nKEIN TRINKEN',.7,.7,'#a82020','#fff',1.7,1.7,-.08,Math.PI);
+labSign('SPIEL! Alles hier\nist erfunden.\nEchte Herstellung ist\nillegal & gefährlich.',1.5,.8,'#e3b91c','#16181c',3.4,1.7,-.08,Math.PI);
+
+// Spinde (Schutzausrüstung)
+{const g=station('locker',-5.55,-3.8,Math.PI/2,3.4,1.0,2.3,'Spind · Schutzausrüstung',2.65);
+ const lk=M(0x4b6a8c);
+ for(let i=0;i<5;i++){const x=(i-2)*.64;
+   lbox(.6,2.0,.55,lk,x,1.0,0,g);
+   if(i!==2){lbox(.5,.04,.01,LM.dark,x,1.75,.28,g);lbox(.5,.04,.01,LM.dark,x,1.68,.28,g);lbox(.04,.16,.03,LM.steel,x+.2,1.05,.3,g)}
+   else{lbox(.5,1.8,.01,M(0x1b2530),x,1.0,.28,g);
+     const door=new T.Group();door.position.set(x-.3,0,.28);door.rotation.y=-1.9;g.add(door);lbox(.58,1.95,.03,lk,.29,1.0,0,door);
+     lbox(.3,.8,.08,M(0xf4f4f6),x,1.3,.18,g);                       // Kittel
+     mesh(new T.TorusGeometry(.07,.012,5,10),M(0x2a2a30),x-.08,1.78,.2,g,false,false);mesh(new T.TorusGeometry(.07,.012,5,10),M(0x2a2a30),x+.08,1.78,.2,g,false,false)} // Brille
+ }
+ solid(-6,-5.2,-5.6,-2.0)}
+
+// Chemikalien-Schrank (Zutaten kaufen)
+{const g=station('shop',5.5,-3.8,-Math.PI/2,1.7,1.0,2.3,'Chemikalien-Schrank',2.55);
+ lbox(1.4,1.95,.75,LM.yellow,0,.975,0,g);lbox(1.46,.05,.8,LM.dark,0,1.97,0,g);
+ for(const s of[-1,1]){lbox(.66,1.6,.02,M(0xcaa216),s*.34,1.0,.385,g);lbox(.04,.3,.03,LM.black,s*.08,1.0,.41,g)}
+ lbox(1.38,.05,.02,LM.dark,0,.2,.39,g);
+ labSign('GIFTIG',.36,.36,'#c13a2b','#fff',-.34,1.55,.4,0,g);labSign('ÄTZEND',.36,.36,'#16181c','#e3b91c',.34,1.55,.4,0,g);
+ solid(5.15,5.95,-4.6,-3.0)}
+
+// Rezept-Board (Trennwand, Raumseite 1)
+{const bt=canvasTex(512,256,(g,w,h)=>{
+   g.fillStyle='#f5f7f6';g.fillRect(0,0,w,h);g.fillStyle='#1b3a8a';g.font='bold 30px Trebuchet MS';g.textAlign='left';g.fillText('REZEPT-BOARD',18,38);
+   g.strokeStyle='#c33';g.lineWidth=3;g.beginPath();g.moveTo(18,48);g.lineTo(250,48);g.stroke();
+   g.font='20px Trebuchet MS';
+   [['⚡ Amphetamin','„Speed“'],['💊 MDMA','„Ecstasy“'],['💎 Methamphetamin','„Crystal“'],['🌈 LSD','„Acid“']].forEach(([a,b],i)=>{g.fillStyle='#222';g.fillText(a,18,86+i*30);g.fillStyle='#777';g.fillText(b,250,86+i*30)});
+   ['Waage','Rühren','Heizen','Kühlen','Filter','Trocknen'].forEach((s,i)=>{const x=18+i*82;g.strokeStyle='#1b3a8a';g.lineWidth=2;g.strokeRect(x,172,72,34);g.font='15px Trebuchet MS';g.fillStyle='#1b3a8a';g.textAlign='center';g.fillText(s,x+36,194);if(i<5){g.beginPath();g.moveTo(x+72,189);g.lineTo(x+82,189);g.stroke()}});
+   g.textAlign='left';g.fillStyle='#b22';g.font='italic 16px Trebuchet MS';g.fillText('Alles Spiel – Werte & Stoffe sind erfunden!',18,236)});
+ const g=station('recipes',-3.4,-7.4,0,3.0,1.2,2.5,'Rezept-Board',2.6);
+ lbox(2.8,1.5,.04,LM.steel,0,1.7,-.58,g);
+ const pl=new T.Mesh(new T.PlaneGeometry(2.64,1.34),new T.MeshStandardMaterial({map:bt,roughness:.6}));pl.position.set(0,1.7,-.555);g.add(pl);
+ lbox(2.6,.04,.1,LM.steel,0,.97,-.54,g);
+ for(let i=0;i<3;i++)lcyl(.012,.012,.12,M([0x2244aa,0xaa2222,0x228822][i]),-.5+i*.1,1.01,-.5,g,6).rotation.z=Math.PI/2}
+
+// Laptop (Mining + Darknet) auf dem Schreibtisch an der Trennwand
+{const tt=canvasTex(256,160,g=>{g.fillStyle='#14061f';g.fillRect(0,0,256,160);g.fillStyle='#b46bff';g.font='bold 20px monospace';g.fillText('🧅 ONION-BROWSER',14,34);g.fillStyle='#4dff88';g.font='15px monospace';['> verbinde über 3 Relays…','> Tante Ernas WLAN: OK','> ⛏ Miner läuft…','> http://totally-legit.onion','_'].forEach((t,i)=>g.fillText(t,14,66+i*22))});
+ const g=station('terminal',3.4,-7.4,0,2.0,1.1,1.8,'Laptop · Darknet',2.05);
+ lbox(1.8,.06,.8,LM.top,0,.75,-.1,g);for(const sx of[-.85,.85])lbox(.06,.75,.7,LM.steel,sx,.37,-.1,g);
+ lbox(.5,.025,.34,LM.dark,0,.795,.02,g);lbox(.44,.004,.22,M(0x23262c),0,.81,.07,g);                      // Laptop-Unterteil + Tastatur
+ const lid=new T.Group();lid.position.set(0,.8,-.14);lid.rotation.x=-.28;g.add(lid);lbox(.5,.32,.02,LM.dark,0,.16,0,lid);
+ const sc=new T.Mesh(new T.PlaneGeometry(.46,.28),new T.MeshBasicMaterial({map:tt}));sc.position.set(0,.16,.012);lid.add(sc);
+ lbox(.06,.06,.005,M(0xff6a00),0,.28,-.012,lid);                                                     // Aufkleber
+ lcyl(.05,.05,.1,LM.white,-.7,.83,-.1,g,10);lbox(.1,.1,.1,M(0x7a4a1f),.7,.83,-.05,g);                  // Kaffeetasse + Paketkarton
+ lbox(.45,.06,.45,LM.dark,0,.5,.65,g);lbox(.45,.5,.05,LM.dark,0,.8,.88,g);lcyl(.03,.03,.45,LM.steel,0,.25,.65,g,6);   // Stuhl
+ // Mining-Rig neben dem Tisch (blinkende GPUs)
+ const rg=new T.Group();rg.position.set(-1.35,0,-.15);g.add(rg);lbox(.5,.1,.5,LM.dark,0,.05,0,rg);
+ for(let i=0;i<4;i++){lbox(.42,.07,.2,LM.black,0,.16+i*.1,0,rg);lbox(.08,.015,.015,new T.MeshBasicMaterial({color:[0x34ff6a,0xff3a3a,0x34a8ff,0xffd23a][i]}),.12,.16+i*.1,.11,rg)}
+ solid(2.5,4.3,-8.0,-6.9)}
+
+// Deko Raum 1: Kisten, Pflanze, Erste-Hilfe, Uhr
+for(const [x,z,s] of[[4.6,-1.1,1],[5.2,-1.2,.8],[4.8,-1.0,.7]])lbox(.8*s,.6*s,.7*s,M(0x9a7a4a),x,.3*s+(s<1?.6:0),z);
+solid(4.0,5.7,-1.9,-.5);
+lbox(.5,.45,.12,LM.white,-2.0,1.5,-7.95);lbox(.3,.08,.14,LM.green,-2.0,1.5,-7.95);lbox(.08,.3,.14,LM.green,-2.0,1.5,-7.95);
+{const clk=lcyl(.28,.28,.05,LM.white,-5.95,2.6,-1.3,LS,16);clk.rotation.z=Math.PI/2;lbox(.02,.02,.2,LM.black,-5.92,2.6,-1.3);lbox(.02,.14,.02,LM.black,-5.92,2.65,-1.3)}
+{const pg=new T.Group();pg.position.set(-4.6,0,-1.2);LS.add(pg);lcyl(.2,.16,.4,M(0xb98a5a),0,.2,0,pg,8);for(let i=0;i<6;i++){const l=lsph(.2,M(0x3f8a3a),Math.cos(i)*.15,.65+i*.04,Math.sin(i)*.15,pg,5,3);l.scale.set(1,.5,.5);l.rotation.y=-i}}
+
+// ======================= RAUM 2 – Kochlabor =======================
+bench(-5.4,-13.4,8,Math.PI/2);solid(-5.95,-4.85,-17.5,-9.3);
+bench(5.4,-11.7,5.4,-Math.PI/2);solid(4.85,5.95,-14.4,-9.0);
+
+// Analysenwaage
+{const g=station('balance',-5.4,-10.6,Math.PI/2,1.2,1.0,1.7,'Analysenwaage',2.05);
+ const dt=canvasTex(128,48,(c,w,h)=>{c.fillStyle='#0b1a0f';c.fillRect(0,0,w,h);c.fillStyle='#4dff88';c.font='bold 30px monospace';c.textAlign='center';c.textBaseline='middle';c.fillText('0.000 g',w/2,h/2)});
+ lbox(.52,.06,.42,LM.black,0,.93,0,g);lbox(.36,.015,.3,LM.steel,0,.97,.02,g);
+ mesh(new T.BoxGeometry(.5,.34,.38),LM.glass,0,1.14,.02,g,false,false);
+ const d=new T.Mesh(new T.PlaneGeometry(.26,.1),new T.MeshBasicMaterial({map:dt}));d.position.set(0,.97,.235);d.rotation.x=-.45;g.add(d);
+ lcyl(.07,.05,.025,LM.steel,0,.99,.02,g);lcyl(.05,.05,.04,M(0xf3f3f6),0,1.01,.02,g,8);
+ lcyl(.06,.06,.14,LM.glass,.62,.98,.15,g,10);lcyl(.062,.062,.04,LM.black,.62,1.07,.15,g,10)}
+
+// Magnetrührer
+{const g=station('stirrer',-5.4,-12.9,Math.PI/2,1.2,1.0,1.7,'Magnetrührer',2.05);
+ lbox(.44,.09,.4,LM.steel,0,.945,0,g);lcyl(.025,.025,.03,LM.black,.15,.99,.17,g,8);lbox(.18,.02,.05,M(0x2a8a4a),-.12,.99,.19,g);
+ beaker(g,0,.99,0,0x7fd0ff,.24,.09);lbox(.08,.015,.015,LM.white,0,1.03,0,g);
+ lcyl(.012,.012,.7,LM.steel,-.22,1.3,-.14,g,5);lbox(.2,.02,.02,LM.steel,-.12,1.5,-.14,g)}
+
+// Kühlbad (Eisbad)
+{const g=station('bath',-5.4,-15.2,Math.PI/2,1.2,1.0,1.7,'Kühlbad',2.05);
+ lcyl(.3,.26,.3,LM.steel,0,1.05,0,g,14);lcyl(.27,.27,.02,liq(0x9fd8ff),0,1.19,0,g,14);
+ for(let i=0;i<14;i++)lbox(.09,.07,.08,M(0xe4f4ff,{transparent:true,opacity:.8}),rnd(-.2,.2),1.2+rnd(0,.05),rnd(-.2,.2),g).rotation.y=rnd(0,3);
+ rbFlask(g,.0,1.12,0,0xf4f4ff,.9);lcyl(.01,.01,.35,LM.white,.14,1.35,.1,g,5);lcyl(.014,.014,.12,LM.red,.14,1.25,.1,g,5)}
+// Deko: Zentrifuge
+{const g=new T.Group();g.position.set(-5.4,0,-16.7);LS.add(g);lbox(.7,.28,.6,LM.white,0,1.05,0,g);lcyl(.27,.27,.12,LM.steel,0,1.25,0,g,14);lcyl(.25,.25,.03,LM.glass,0,1.32,0,g,14);lbox(.2,.06,.02,LM.dark,0,1.02,.31,g)}
+
+// Vakuumfiltration
+{const g=station('funnel',5.4,-10.2,-Math.PI/2,1.2,1.0,1.7,'Vakuumfiltration',2.05);
+ erlen(g,0,.9,0,0xdfe9f2);lcyl(.15,.05,.1,LM.white,0,1.23,0,g,12);lcyl(.15,.15,.015,LM.steel,0,1.285,0,g,12);lcyl(.13,.13,.01,M(0xf5f5f0),0,1.293,0,g,12);lcyl(.03,.03,.08,LM.white,0,1.17,0,g,6);
+ lcyl(.018,.018,.55,M(0x2a2a30),.17,1.0,.05,g,5).rotation.z=Math.PI/2.4;
+ lbox(.34,.24,.28,LM.blue,.52,1.02,0,g);const dial=lcyl(.05,.05,.02,LM.white,.52,1.1,.15,g,12);dial.rotation.x=Math.PI/2}
+
+// Tablettenpresse
+{const g=station('press',5.4,-12.8,-Math.PI/2,1.2,1.0,1.7,'Tablettenpresse',2.05);
+ lbox(.46,.12,.42,LM.dark,0,.96,0,g);lcyl(.04,.04,.5,LM.steel,0,1.25,-.08,g,8);lbox(.22,.2,.22,LM.steel,0,1.42,0,g);lbox(.06,.14,.06,LM.black,0,1.25,.08,g);
+ const wh=mesh(new T.TorusGeometry(.11,.016,5,12),LM.red,.22,1.34,0,g,false,false);wh.rotation.y=Math.PI/2;lbox(.02,.02,.22,LM.red,.22,1.34,0,g);lbox(.02,.22,.02,LM.red,.22,1.34,0,g);
+ lbox(.22,.02,.14,LM.steel,-.4,.93,.12,g);for(let i=0;i<7;i++)lcyl(.025,.025,.012,LM.white,-.46+i*.03,.95,.12,g,8)}
+
+// Trockenschrank
+{const g=station('oven',5.4,-16.2,-Math.PI/2,1.5,1.1,2.1,'Trockenschrank',2.4);
+ lbox(1.3,1.7,.9,LM.steel,0,.85,0,g);lbox(.85,.85,.02,M(0x6a3a14),0,1.0,.46,g);mesh(new T.BoxGeometry(.9,.9,.03),LM.glass,0,1.0,.48,g,false,false);
+ for(const y of[.75,1.0,1.25])lbox(.82,.015,.02,LM.black,0,y,.45,g);
+ lbox(.04,.6,.06,LM.black,.52,1.0,.52,g);
+ const ot=canvasTex(128,48,(c,w,h)=>{c.fillStyle='#180606';c.fillRect(0,0,w,h);c.fillStyle='#ff4b3a';c.font='bold 28px monospace';c.textAlign='center';c.textBaseline='middle';c.fillText('OFF',w/2,h/2)});
+ const od=new T.Mesh(new T.PlaneGeometry(.4,.15),new T.MeshBasicMaterial({map:ot}));od.position.set(-.1,1.6,.455);g.add(od);
+ lcyl(.07,.07,.12,LM.dark,.4,1.76,0,g,8);solid(4.75,6,-16.9,-15.5)}
+
+// Abzug (Heizrührer + Kolben)
+{const g=station('hood',0,-17.35,0,3.4,1.5,3.0,'Abzug · Heizrührer',3.2);
+ lbox(3.2,.85,1.2,LM.white,0,.425,0,g);lbox(3.2,.07,1.24,LM.top,0,.88,0,g);
+ for(const s of[-1,1])lbox(.12,2.2,1.1,LM.steel,s*1.54,2.0,-.05,g);
+ lbox(3.2,2.2,.1,M(0xdfe5ea),0,2.0,-.52,g);lbox(3.2,.5,1.2,LM.steel,0,3.15,0,g);
+ mesh(new T.BoxGeometry(3.0,1.55,.03),LM.glass,0,1.85,.55,g,false,false);lbox(3.04,.06,.06,LM.steel,0,1.07,.56,g);
+ lbox(3.2,.07,.06,hazardMat(8,1),0,.93,.6,g);
+ lbox(.56,.1,.52,LM.black,-.4,.97,-.1,g);lcyl(.21,.21,.03,new T.MeshBasicMaterial({color:0xff5a1f}),-.4,1.03,-.1,g,14);
+ rbFlask(g,-.4,1.05,-.1,0xffb347,1.05);
+ lcyl(.014,.014,1.5,LM.steel,-.05,1.8,-.4,g,6);lbox(.4,.02,.02,LM.steel,-.22,1.8,-.4,g);lbox(.06,.06,.06,LM.black,-.4,1.8,-.4,g);
+ const co=mesh(new T.CylinderGeometry(.035,.035,1.0,8),LM.glass,.35,1.55,-.15,g,false,false);co.rotation.z=.7;
+ beaker(g,.9,.91,.0,0xffd36b,.16,.07);beaker(g,1.15,.91,.12,0x9bd6ff,.2,.06);
+ lbox(.34,.05,.3,LM.dark,.95,2.65,.2,g);solid(-1.7,1.7,-18,-16.7)}
+
+// Regale mit Reagenzflaschen, Sicherheitsausrüstung, Sonderabfall
+for(const s of[-1,1]){const sx=s*5.85;
+  for(const y of[1.75,2.35]){lbox(.3,.04,6.8,LM.steel,sx,y,-13.4);
+    for(let z=-16.5;z<=-10.2;z+=.42){const c=[0xc13a2b,0x2f9e5b,0xe3b91c,0x35557f,0xdddddd][Math.floor(Math.random()*5)];bottle(LS,sx+(s>0?-.02:.02),y+.02,z+rnd(-.05,.05),c,Math.random()<.5?0x6b3f1d:0x2f5f3a)}}}
+{const ex=new T.Group();ex.position.set(-4.5,0,-8.58);LS.add(ex);lcyl(.09,.09,.5,LM.red,0,.55,0,ex,10);lcyl(.04,.04,.08,LM.black,0,.84,0,ex,6);lbox(.03,.03,.2,LM.black,0,.88,.08,ex);
+ labSign('FEUERLÖSCHER',.5,.28,'#c13a2b','#fff',0,1.4,-.02,Math.PI,ex)}
+{const ew=new T.Group();ew.position.set(4.5,0,-8.6);LS.add(ew);lbox(.5,.5,.1,LM.green,0,1.25,0,ew);lbox(.4,.12,.3,LM.steel,0,.9,-.14,ew);labSign('AUGENDUSCHE',.5,.26,'#1c8a4a','#fff',0,1.65,-.06,Math.PI,ew)}
+{const dr=lcyl(.38,.38,.9,LM.yellow,4.3,.45,-17.4,LS,14);labSign('SONDER-\nMÜLL',.4,.4,'#e3b91c','#16181c',4.3,.5,-17.0,0)}
+labSign('HAUBE GESCHLOSSEN\nHALTEN',1.4,.4,'#c13a2b','#fff',2.0,2.5,-17.97,0);
+labSign('PSA TRAGEN',.9,.3,'#1c4fa8','#fff',-2.1,2.5,-17.97,0);
+labSign('SPIEL – alle Werte erfunden',1.6,.2,'#e3b91c','#16181c',0,3.0,-17.97,0);
+
+// ---- Schiebetür in der Frontwand des Gewächshauses (öffnet, sobald Rick das Labor freigibt) ----
+const labDoor=new T.Group();labDoor.position.set(0,0,HZ+.2);scene.add(labDoor);
+box(2.12,2.55,.14,M(0x5d6670,{roughness:.5}),0,1.275,0,labDoor,true,true);
+box(2.12,.22,.16,hazardMat(5,1),0,.36,0,labDoor,false,false);
+box(.9,.4,.16,M(0x1a2a36),0,1.85,0,labDoor,false,false);
+box(.06,.5,.2,M(0x14161a),.8,1.2,0,labDoor,false,false);
+for(const s of[-1,1])box(.14,2.65,.5,LM.steel,s*1.17,1.325,HZ+.2,scene,true,true);
+const labDoorHit=mesh(new T.BoxGeometry(2.4,2.6,1.4),hitMat,0,1.3,HZ+.2,scene,false,false);labDoorHit.userData.ref={type:'labdoor'};
+{const lb=labelSprite('🔬 Labor',2.2);lb.position.set(0,2.95,HZ-.4);scene.add(lb)}
+solid(1.75,2.35,-7.9,-7.2);   // Mining-Rig
+
+// Marker (zeigt die nächste Station)
+const labMarker=emojiSprite('⬇️',.7);labMarker.visible=false;LS.add(labMarker);
+LS.updateMatrixWorld(true);
+
+// ---- Begehbare Bereiche (Weltkoordinaten): Gewächshaus + Tür + Laborräume (erst nach Freischaltung) ----
+const GHR=[-HX+.5,HX-.5,-HZ+.5,HZ-.5];
+const DOORR=[-.85,.85,HZ-.6,LZ0+.7];
+const LABRW=[[-5.65,5.65,-7.6,-.55],[-5.65,5.65,-17.6,-8.8],[-.85,.85,-8.8,-7.6]].map(([a,b,c,d])=>[-b,-a,LZ0-d,LZ0-c]);
+const inRect=(r,x,z)=>x>=r[0]&&x<=r[1]&&z>=r[2]&&z<=r[3];
+const walkable=(x,z)=>inRect(GHR,x,z)||(S.lab&&(inRect(DOORR,x,z)||LABRW.some(r=>inRect(r,x,z))));
+const inLabNow=()=>S.lab&&player.z>LZ0+.2;
+function walkCollide(ox,oz){
+  let nx=player.x,nz=player.z;
+  if(!walkable(nx,nz)){if(walkable(nx,oz))nz=oz;else if(walkable(ox,nz))nx=ox;else{nx=ox;nz=oz}}
+  const R=.3;
+  for(const b of labBoxes){if(nx>b[0]-R&&nx<b[1]+R&&nz>b[2]-R&&nz<b[3]+R){
+    const dl=nx-(b[0]-R),dr=(b[1]+R)-nx,dt_=nz-(b[2]-R),db=(b[3]+R)-nz,m=Math.min(dl,dr,dt_,db);
+    if(m===dl)nx=b[0]-R;else if(m===dr)nx=b[1]+R;else if(m===dt_)nz=b[2]-R;else nz=b[3]+R}}
+  if(!walkable(nx,nz)){nx=ox;nz=oz}
+  player.x=nx;player.z=nz}
+
+
+// ======================================================================
+//  LABOR-LOGIK  (alles Spielmechanik – erfundene Stoffe, erfundene Schritte)
+// ======================================================================
+const LAB_COST=2500;
+let modal=false,lapOpen=false,mg=null;
+const STATION={balance:'Analysenwaage',stirrer:'Magnetrührer',hood:'Abzug mit Heizrührer',bath:'Kühlbad',funnel:'Vakuumfiltration',oven:'Trockenschrank',press:'Tablettenpresse'};
+const STEP={
+  weigh:{ic:'⚖️',n:'Einwiegen',st:'balance',h:'Maustaste / Leertaste HALTEN = dosieren. Beim Zielgewicht loslassen, dann „Bestätigen“ (Enter). Zu viel? Tara (R).',tip:'Klick-Stakkato statt Dauerfeuer – die Waage ist nicht dein Feind.'},
+  mix:{ic:'🌀',n:'Lösen & Rühren',st:'stirrer',h:'Kreise mit der Maus um den Kolben. Halte die Rührgeschwindigkeit im grünen Bereich, bis der Balken oben voll ist.',tip:'Gleichmäßige Kreise – rühren wie ein Barista, nicht wie bei Omas Kuchenteig.'},
+  heat:{ic:'🔥',n:'Erhitzen',st:'hood',h:'Maustaste / Leertaste HALTEN = heizen. Bleibe im grünen Bereich – die rote Zone ist Siedeverzug!',tip:'In Stößen heizen. Übergekochter Ansatz = Tränen und Hausverbot beim Hausmeister.'},
+  cool:{ic:'🧊',n:'Abkühlen / Kristallisation',st:'bath',h:'HALTEN = kühlen, loslassen = es wird wieder warm. Bleibe im grünen Zielbereich.',tip:'Geduld. Kühlen ist wie auf eine Antwort bei Tinder warten.'},
+  filter:{ic:'🧪',n:'Vakuumfiltration',st:'funnel',h:'Klicke / Leertaste im Takt, um den Unterdruck im grünen Bereich zu halten – er fällt ständig ab.',tip:'Rhythmisch pumpen. Denk an Tetris-Musik.'},
+  dry:{ic:'♨️',n:'Trocknen',st:'oven',h:'Stoppe den Schieber im grünen Bereich (Klick / Leertaste). 3 Versuche, sie werden schneller.',tip:'Timing, Timing, Timing. Wie beim Toast.'},
+  press:{ic:'⚙️',n:'Tablettieren',st:'press',h:'Schlage die Presse im Takt, wenn der Stempel im grünen Bereich ist (Klick / Leertaste). 5 Schläge.',tip:'Im Takt zuschlagen – wie am Schlagzeug, nur hygienischer.'}
+};
+const ING={base:{n:'Grundstoff A',p:20},solv:{n:'Lösungsmittel L',p:12},cat:{n:'Katalysator K',p:45},pur:{n:'Reinigungs-Additiv R',p:70},sens:{n:'Spezial-Reagenz S',p:140}};
+const DRUGS={
+  speed:{n:'Amphetamin',s:'„Speed“',ic:'⚡',star:1,d:1.0,price:70,lvl:1,coin:2,cost:{base:2,solv:1},steps:['weigh','mix','heat','cool','filter'],band:{heat:55,cool:32,filter:62},xp:30,
+         v:'Onkel_Hans_1337',r:'★4.9 (12.847)',rev:'„Anleitung 10/10 – sogar meine Katze hat’s verstanden.“',tip:'Anfängerfreundlich. Selbst Onkel Rick würde das hinbekommen.'},
+  mdma:{n:'MDMA',s:'„Ecstasy“',ic:'💊',star:2,d:1.3,price:150,lvl:4,coin:8,cost:{base:3,solv:1,cat:1},steps:['weigh','mix','heat','cool','filter','press'],band:{heat:60,cool:28,filter:62},xp:55,
+        v:'PartyPeter_Official',r:'★4.7 (3.412)',rev:'„Pünktlich geliefert, verpackt wie ein Geschenk. Wirkt seriös.“',tip:'Die Presse zickt gern – Rhythmus halten!'},
+  meth:{n:'Methamphetamin',s:'„Crystal“',ic:'💎',star:3,d:1.7,price:320,lvl:6,coin:25,cost:{base:3,solv:2,cat:1,pur:1},steps:['weigh','mix','heat','cool','filter','dry'],band:{heat:68,cool:24,filter:60},xp:100,
+        v:'Prof.Dr.Chemie_a.D.',r:'★4.8 (9.001)',rev:'„Ehemaliger Lehrer. Hat Hausaufgaben mitgeschickt.“',tip:'Enge Zonen, Siedeverzug-Gefahr. Schutzausrüstung ist kein Kostüm.'},
+  lsd:{n:'LSD',s:'„Acid“',ic:'🌈',star:4,d:2.1,price:560,lvl:8,coin:60,cost:{base:2,solv:2,pur:1,sens:1},steps:['weigh','mix','cool','heat','filter','dry'],band:{heat:48,cool:20,filter:58},xp:170,
+       v:'Omas_Strickclub_Premium',r:'★5.0 (666)',rev:'„Seltsam, aber gut. Würde wieder kaufen.“',tip:'Mikro-Präzision. Atmen. Bis drei zählen.'}
+};
+const stars=D=>'★'.repeat(D.star)+'☆'.repeat(4-D.star);
+const QN=q=>q>=90?'Premium':q>=75?'Gut':q>=50?'Mittel':'Schlecht';
+const batchUnits=()=>6+S.up.yield;
+const unitPrice=id=>{const d=S.drugs[id];return DRUGS[id].price*(S.dm[id]||1)*(.35+.65*(d?d.q:0)/100)};
+function rollMarket(){for(const k in DRUGS)S.dm[k]=+(.8+Math.random()*.5).toFixed(2)}
+if(!Object.keys(S.dm).length)rollMarket();
+const canMake=id=>Object.entries(DRUGS[id].cost).every(([k,v])=>(S.reag[k]||0)>=v);
+const costTxt=id=>Object.entries(DRUGS[id].cost).map(([k,v])=>v+'× '+ING[k].n).join(', ');
+const stepTxt=id=>DRUGS[id].steps.map(k=>STEP[k].n).join(' → ');
+
+// ---------------- Mining & Krypto ("SchwarzCoin", rein fiktiv) ----------------
+const hashrate=()=>.01+S.rig.gpu*.02*(1+S.rig.fan*.25);
+const gpuCost=()=>Math.floor(150*Math.pow(1.55,S.rig.gpu));
+const fanCost=()=>400*Math.pow(2,S.rig.fan);
+const EVENTS=[
+  {t:'📈 Ein Influencer postet einen Hund-Emoji – SCN steigt!',m:1.45},
+  {t:'📉 „Krypto ist tot“ – sagt jemand, der gestern noch gekauft hat. SCN fällt.',m:.65},
+  {t:'🔌 Tante Erna wundert sich über die Stromrechnung. (Kein Effekt auf den Kurs.)',m:1},
+  {t:'🚀 SCN „to the moon“! Behauptet zumindest ein Forum.',m:1.3},
+  {t:'🐟 Ein Wal verkauft. Kurs taucht ab.',m:.75},
+  {t:'🤖 Neuer Miner-Bot im Netz – Kurs wackelt.',m:1.1}
+];
+const BILLS=['Stromrechnung: Dein „Heimserver“ zieht Strom wie ein Hochofen.','Stromrechnung: Der Nachbar fragt, warum deine Lüfter wie ein Flugzeug klingen.','Stromrechnung: Der Stromanbieter schickt dir Blumen. Und eine Rechnung.'];
+function labDay(){
+  if(!S.lab)return;
+  const bill=8+S.rig.gpu*12,pay=Math.min(S.cash,bill);
+  if(pay>0){S.cash-=pay;msg('⚡ '+BILLS[S.day%BILLS.length]+' −'+money(pay))}
+  rollMarket();
+}
+function mineTick(dt){
+  if(!S.lab)return;
+  S.coins+=hashrate()*dt;
+  S.cpT-=dt;if(S.cpT<=0){S.cpT=4;S.cp=clamp(S.cp*(1+(Math.random()-.5)*.12)+(40-S.cp)*.03,8,260)}
+  S.evT-=dt;if(S.evT<=0){S.evT=rnd(50,90);const e=EVENTS[Math.floor(Math.random()*EVENTS.length)];S.cp=clamp(S.cp*e.m,8,260);S.news=e.t;if(lapOpen&&lapTab==='mine'&&!lapLoad)renderLap()}
+}
+
+// ---------------- Menüs (Rick, Chemikalien-Schrank, Rezept-Board, Hinweis) ----------------
+function noticeMenu(){S.flags.notice=1;return{line:'⚠ HINWEIS\nDies ist ein Spiel (Satire). Alle Stoffe, Abläufe, Mengen und Werte im Labor sind frei erfunden und KEINE Anleitung für irgendetwas.\nHerstellung, Besitz und Handel mit Drogen sind in der Realität strafbar und gefährlich. Nur zur Unterhaltung – ab 18.',items:[['Verstanden – Labor betreten',true,closeMenu]]}}
+function shopMenu(){
+  const items=Object.entries(ING).map(([k,v])=>[`${v.n} – ${money(v.p)}`,S.cash>=v.p,()=>{S.cash-=v.p;S.reag[k]=(S.reag[k]||0)+1;S.flags.bought=1},`im Regal: ${S.reag[k]||0}`]);
+  for(const id in DRUGS){if(!S.recipes[id])continue;const D=DRUGS[id];
+    const miss=Object.entries(D.cost).map(([k,v])=>[k,Math.max(0,v-(S.reag[k]||0))]).filter(([k,n])=>n>0);
+    const cst=miss.reduce((a,[k,n])=>a+n*ING[k].p,0);
+    if(miss.length)items.push([`Set für ${D.ic} ${D.n} ergänzen – ${money(cst)}`,S.cash>=cst,()=>{S.cash-=cst;miss.forEach(([k,n])=>S.reag[k]=(S.reag[k]||0)+n);S.flags.bought=1},'fehlt: '+miss.map(([k,n])=>n+'× '+ING[k].n).join(', ')])}
+  items.push(['Schließen',true,closeMenu]);
+  return{line:'CHEMIKALIEN-SCHRANK\nNur erfundene Spielzutaten. (Im Darknet gibt’s sie per Drohne günstiger.)',items}}
+function boardMenu(){
+  const items=[];let line;
+  if(S.cook){const D=DRUGS[S.cook.drug];
+    line=`Aktiver Ansatz: ${D.ic} ${D.n}\nSchritt ${S.cook.i+1}/${D.steps.length}: ${STEP[D.steps[S.cook.i]].n} → ${STATION[STEP[D.steps[S.cook.i]].st]}`;
+    items.push(['Ansatz verwerfen (Zutaten gehen verloren)',true,()=>{S.cook=null;msg('Ansatz entsorgt.')}]);
+  }else{
+    line='REZEPT-BOARD\nZutaten werden beim Start verbraucht. '+(S.psa?'':'⚠ Du trägst keine Schutzausrüstung!');
+    for(const id in DRUGS){const D=DRUGS[id];
+      if(!S.recipes[id])items.push([`🔒 ${D.ic} ${D.n} – Anleitung im Darknet besorgen (Laptop)`,false,()=>{},`${stars(D)} · ab Level ${D.lvl} · ${D.coin} SCN`]);
+      else items.push([`${D.ic} Ansatz starten: ${D.n} ${D.s}`,canMake(id),()=>{startCook(id);closeMenu()},`${stars(D)} · ${costTxt(id)}`]);
+    }
+  }
+  items.push(['Schließen',true,closeMenu]);return{line,items}}
+function rickMenu(){
+  const b=[];
+  b.push([`Pakete verkaufen (${S.pack}) – ${money(S.pack*S.price)}  [Preis ${money(S.price)}]`,S.pack>0,()=>{const v=S.pack*S.price;S.cash+=v;addXp(v/10);S.pack=0;S.flags.sold=1;msg('+'+money(v))}]);
+  for(const id in DRUGS){const d=S.drugs[id];if(!d||d.n<1)continue;const D=DRUGS[id],v=Math.round(d.n*unitPrice(id));
+    b.push([`${D.ic} ${D.n} verkaufen (${d.n}× · ${QN(d.q)} ${d.q}%) – ${money(v)}`,true,()=>{S.cash+=v;addXp(v/12);S.drugs[id]={n:0,q:0};S.flags.soldDrug=1;msg('+'+money(v))},'Marktfaktor ×'+(S.dm[id]||1)])}
+  b.push([`Neuen Topf kaufen (${money(potCost())})`,S.potsOwned<12&&S.cash>=potCost(),()=>{S.cash-=potCost();const p=pots.find(q=>!q.owned);p.owned=true;S.potsOwned++}]);
+  b.push([`Arbeiter einstellen (${money(hireCost())}) – ${money(SALARY)}/Tag`,S.workers<6&&S.cash>=hireCost(),()=>{S.cash-=hireCost();S.workers++;spawnWorker()}]);
+  b.push([`Wachstumslampen Lvl ${S.lights}/5 (${money(lightCost())})`,S.lights<5&&S.cash>=lightCost(),()=>{S.cash-=lightCost();S.lights++}]);
+  b.push([`Größere Gießkanne ${S.waterCap}→${S.waterCap+4} (${money(canCost())})`,S.canUp<3&&S.cash>=canCost(),()=>{S.cash-=canCost();S.canUp++;S.waterCap+=4;S.water=S.waterCap}]);
+  if(!S.lab&&S.flags.sold&&S.workers>0)b.push([`🔬 Hinterraum-Labor freischalten – ${money(LAB_COST)}`,S.level>=3&&S.cash>=LAB_COST,()=>{S.cash-=LAB_COST;S.lab=1;msg('🔬 Labor freigeschaltet – Stahltür an der rechten Wand!')},'ab Level 3 · 2 Räume + Laptop mit Darknet']);
+  if(S.workers>0)b.push(['Arbeiter entlassen',true,()=>{const w=workers.pop();if(w.job&&w.job.p)w.job.p.claim=null;scene.remove(w.m);S.workers--}]);
+  b.push(['Schließen',true,closeMenu]);
+  return{line:S.lab?'Das Labor läuft? Dann bring mir die Ware, Kleiner.':lines[Math.floor((S.day+S.level)%lines.length)],items:b}}
+
+// ---------------- Laptop: Miner + Darknet-Markt ----------------
+let lapTab='mine',lapLoad=0;
+const LOAD_TXT=['Verbinde über Relay 1/3 …','Relay 2/3 (irgendwo in einem Keller) …','Relay 3/3 – Tante Ernas WLAN …','Lade „totally-legit.onion“ …'];
+const SCAMS=['Es war ein Scam. Natürlich. −15 % deiner Coins.','„100 % echt“ war leider zu 100 % gelogen. −15 % deiner Coins.','Du hast wirklich schon wieder geklickt?! −15 % deiner Coins.'];
+function openLap(){
+  modal=true;lapOpen=true;if(document.pointerLockElement)document.exitPointerLock();
+  if(!S.flags.lap){S.flags.lap=1;S.coins+=3;msg('🎁 Willkommensbonus: 3.000 SCN von „Onkel_Hans_1337“')}
+  $('lap').style.display='grid';renderLap()}
+function closeLap(){modal=false;lapOpen=false;$('lap').style.display='none';relock()}
+const cn=c=>c.toFixed(3);
+// Welche Buttons (de)aktiviert sind, hängt von Coins, Bargeld und Level ab – Änderung => neu rendern
+function lapSig(){
+  const g=[S.coins>=.01,S.cash>=gpuCost(),S.cash>=fanCost(),S.rig.gpu,S.rig.fan,S.cash>=1200*Math.pow(2,S.up.yield),S.cash>=900*Math.pow(2,S.up.ease),S.up.yield,S.up.ease];
+  for(const id in DRUGS)g.push(S.coins>=DRUGS[id].coin,S.level>=DRUGS[id].lvl,!!S.recipes[id]);
+  for(const k in ING)g.push(S.coins>=+(ING[k].p*5*.6/40).toFixed(2));
+  return g.join()}
+let lapSigLast='';
+function lapStats(){
+  if(!lapOpen||lapLoad)return;
+  const e=id=>$(id);
+  if(e('lapC')){e('lapC').textContent=cn(S.coins);e('lapV').textContent=money(S.coins*S.cp);e('lapP').textContent=money(S.cp);e('lapM').textContent=money(S.cash)}
+  if(e('lapCashV'))e('lapCashV').textContent=money(S.coins*S.cp);
+  if(lapSig()!==lapSigLast)renderLap()}
+function renderLap(){
+  const tabs=[['mine','⛏ Miner'],['market','🕸 Darknet-Markt'],['gear','🧪 Ausrüstung'],['guides','📜 Anleitungen']];
+  $('lapTabs').innerHTML=tabs.map(([k,t])=>`<button data-a="tab" data-k="${k}" class="${lapTab===k?'on':''}">${t}</button>`).join('');
+  $('lapUrl').textContent=lapTab==='market'?'🧅 totally-legit-7x3kq2.onion/markt':'🧅 Onion-Browser – gesicherte Verbindung (angeblich)';
+  const head=`<div class="lh"><span>🪙 <b id="lapC">${cn(S.coins)}</b> SCN</span><span>≈ <b id="lapV">${money(S.coins*S.cp)}</b></span><span>Kurs <b id="lapP">${money(S.cp)}</b></span><span>💵 <b id="lapM">${money(S.cash)}</b></span></div>`;
+  let h=head;
+  if(lapLoad>0){h+=`<div class="ld"><div class="spin">🧅</div><p>${LOAD_TXT[Math.min(3,Math.floor((1-lapLoad/1.6)*4))]}</p></div>`}
+  else if(lapTab==='mine'){
+    h+=`<p class="news">${S.news}</p>
+    <div class="grid">
+     <div class="card"><b>⛏ Mining-Rig</b><br>Hashrate: <b>${(hashrate()*1000).toFixed(0)} mSCN/s</b><br>Grafikkarten: <b>${S.rig.gpu}</b> · Lüfter-Stufe: <b>${S.rig.fan}</b><br>Strom: <b>${money(8+S.rig.gpu*12)}</b>/Tag</div>
+     <div class="card"><button class="big" data-a="click">⛏ Manuell minen (+${cn(.004*(1+S.rig.gpu*.1))} SCN)</button><button data-a="cash" ${S.coins<.01?'disabled':''}>💰 Alle Coins auszahlen (≈ <span id="lapCashV">${money(S.coins*S.cp)}</span>)</button></div>
+    </div>
+    <div class="grid">
+     <div class="card">🖥 Grafikkarte kaufen (+20 mSCN/s)<br><button data-a="gpu" ${S.rig.gpu>=10||S.cash<gpuCost()?'disabled':''}>${S.rig.gpu>=10?'max':money(gpuCost())}</button></div>
+     <div class="card">🌀 Lüfter-Upgrade (+25 % Hashrate)<br><button data-a="fan" ${S.rig.fan>=3||S.cash<fanCost()?'disabled':''}>${S.rig.fan>=3?'max':money(fanCost())}</button></div>
+    </div>`}
+  else if(lapTab==='market'){
+    h+=`<h3>📜 Anleitungen (Spiel-Rezepte)</h3>`;
+    for(const id in DRUGS){const D=DRUGS[id],own=S.recipes[id];
+      h+=`<div class="card"><b>${D.ic} Anleitung: ${D.n} ${D.s}</b> <span class="tg">${stars(D)}</span><br><small>Verkäufer: <b>${D.v}</b> ${D.r}</small><br><small><i>${D.rev}</i></small><br>
+      ${own?'<span class="ok">✔ gekauft – siehe Tab „Anleitungen“</span>':`<button data-a="rec" data-k="${id}" ${S.coins<D.coin||S.level<D.lvl?'disabled':''}>Kaufen – ${D.coin} SCN</button> <small>${S.level<D.lvl?'(ab Level '+D.lvl+')':''}</small>`}</div>`}
+    h+=`<h3>📦 Drohnen-Lieferung (5er-Pack, 40 % günstiger)</h3><div class="grid">`;
+    for(const k in ING){const c=+(ING[k].p*5*.6/40).toFixed(2);h+=`<div class="card">${ING[k].n} ×5<br><button data-a="drone" data-k="${k}" ${S.coins<c?'disabled':''}>${c.toFixed(2)} SCN</button></div>`}
+    h+=`</div><h3>⚠ Sonderangebote</h3>
+    <div class="card"><b>🎁 100 % ECHTE GRATIS-COINS – nur heute!!!</b><br><small>Verkäufer: Prinz_Abubakar_Offiziell ★1.0 (47.113)</small><br><button data-a="scam">Jetzt abholen</button></div>
+    <div class="card"><b>🚐 „Definitiv-kein-FBI-Van“ – Lieferwagen zu vermieten</b><br><small>Verkäufer: Agent_Smith_privat ★4.2 (1)</small><br><button data-a="van">Mieten</button></div>`}
+  else if(lapTab==='gear'){
+    h+=`<h3>🧪 Labor-Ausrüstung (Bargeld)</h3>`;
+    [['yield','Bessere Glasware: +1 Einheit pro Ansatz',3,n=>1200*Math.pow(2,n)],['ease','Präzisions-Ausrüstung: größere Zielzonen',3,n=>900*Math.pow(2,n)]].forEach(([k,t,mx,cf])=>{const n=S.up[k],c=cf(n);
+      h+=`<div class="card">${t}<br><small>Stufe ${n}/${mx}</small><br><button data-a="up" data-k="${k}" ${n>=mx||S.cash<c?'disabled':''}>${n>=mx?'max':money(c)}</button></div>`});
+    h+=`<p class="news">Ansätze bisher: ${S.batches||0} · Einheiten pro Ansatz: ${batchUnits()}</p>`}
+  else{
+    const own=Object.keys(DRUGS).filter(id=>S.recipes[id]);
+    if(!own.length)h+=`<p class="news">Noch keine Anleitung gekauft. Minen → Darknet-Markt → kaufen.</p>`;
+    own.forEach(id=>{const D=DRUGS[id];
+      h+=`<div class="card guide"><b>${D.ic} ${D.n} ${D.s}</b> <span class="tg">${stars(D)}</span><br><small>Zutaten: ${costTxt(id)}</small><ol>${D.steps.map(k=>`<li>${STEP[k].ic} <b>${STEP[k].n}</b> <small>@ ${STATION[STEP[k].st]}</small><br><small class="tip">💡 ${STEP[k].tip}</small></li>`).join('')}</ol><small class="tip">⭐ ${D.tip}</small></div>`})}
+  $('lapBody').innerHTML=h;lapSigLast=lapSig()}
+let lapStage=-1;
+function lapTick(dt){
+  if(!lapOpen)return;
+  if(lapLoad>0){lapLoad-=dt;
+    if(lapLoad<=0){lapLoad=0;renderLap()}
+    else{const st=Math.min(3,Math.floor((1-lapLoad/1.6)*4));if(st!==lapStage){lapStage=st;renderLap()}}}
+  else lapStats()}
+function labInv(){
+  if(!S.lab)return '';
+  let h=`<br>🪙 <b>${cn(S.coins)}</b> SCN · 🥽 PSA <b>${S.psa?'✔':'✘'}</b>`;
+  const d=Object.keys(DRUGS).filter(k=>S.drugs[k]&&S.drugs[k].n>0).map(k=>`${DRUGS[k].ic} ${S.drugs[k].n}× (${S.drugs[k].q}%)`).join(' ');
+  if(d)h+='<br>'+d;
+  if(inLabNow()){const r=Object.keys(ING).filter(k=>S.reag[k]).map(k=>`${ING[k].n.split(' ')[0]} ${S.reag[k]}`).join(' · ');if(r)h+='<br>📦 '+r}
+  return h}
+function lapAct(a,k){
+  if(a==='tab'){lapTab=k;lapLoad=k==='market'?1.6:0;lapStage=-1}
+  else if(a==='click'){S.coins+=.004*(1+S.rig.gpu*.1);lapStats();return}
+  else if(a==='cash'){S.cash+=S.coins*S.cp;msg('💰 +'+money(S.coins*S.cp)+' ausgezahlt');S.coins=0}
+  else if(a==='gpu'&&S.cash>=gpuCost()&&S.rig.gpu<10){S.cash-=gpuCost();S.rig.gpu++}
+  else if(a==='fan'&&S.cash>=fanCost()&&S.rig.fan<3){S.cash-=fanCost();S.rig.fan++}
+  else if(a==='rec'){const D=DRUGS[k];if(S.coins>=D.coin&&S.level>=D.lvl){S.coins-=D.coin;S.recipes[k]=1;S.flags.guide=1;msg('📜 Anleitung „'+D.n+'“ heruntergeladen (Verkäufer: '+D.v+')')}}
+  else if(a==='drone'){const c=+(ING[k].p*5*.6/40).toFixed(2);if(S.coins>=c){S.coins-=c;S.reag[k]=(S.reag[k]||0)+5;S.flags.bought=1;msg('🚁 Drohne hat 5× '+ING[k].n+' geliefert – leider auf Tante Ernas Dach.')}}
+  else if(a==='scam'){S.coins*=.85;S.scams=(S.scams||0)+1;msg('🎁 '+SCAMS[S.scams%SCAMS.length])}
+  else if(a==='van'){const c=Math.min(S.cash,200);S.cash-=c;msg('🚐 Es war tatsächlich das FBI. Anwaltskosten −'+money(c))}
+  else if(a==='up'){const f={yield:n=>1200*Math.pow(2,n),ease:n=>900*Math.pow(2,n)}[k],c=f(S.up[k]);if(S.up[k]<3&&S.cash>=c){S.cash-=c;S.up[k]++}}
+  renderLap()}
+$('lapBody').addEventListener('click',e=>{const b=e.target.closest('button');if(b&&!b.disabled)lapAct(b.dataset.a,b.dataset.k)});
+$('lapTabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b)lapAct(b.dataset.a,b.dataset.k)});
+$('lapX').onclick=closeLap;
+
+// ---------------- Ansatz (Kochablauf) ----------------
+function startCook(id){
+  if(S.cook||!canMake(id))return;
+  for(const [k,v] of Object.entries(DRUGS[id].cost))S.reag[k]-=v;
+  S.cook={drug:id,i:0,sc:[]};S.flags.cookstart=1;
+  msg('Ansatz gestartet – weiter in Raum 2 (Kochlabor).')}
+function useStation(id){
+  const c=S.cook;if(!c){msg('Kein Ansatz aktiv – am Rezept-Board in Raum 1 starten.');return}
+  const k=DRUGS[c.drug].steps[c.i],ST=STEP[k];
+  if(ST.st!==id){msg('Jetzt dran: '+ST.n+' → '+STATION[ST.st]);return}
+  startMini(k)}
+function cookStepDone(score,fail){
+  const c=S.cook;if(!c)return;
+  if(fail){mishap(fail);S.cook=null;return}
+  c.sc.push(Math.round(score));c.i++;addXp(3);
+  if(c.i>=DRUGS[c.drug].steps.length)finishCook()}
+function finishCook(){
+  const c=S.cook,D=DRUGS[c.drug],q=Math.round(c.sc.reduce((a,b)=>a+b,0)/c.sc.length),u=batchUnits();
+  const cur=S.drugs[c.drug]||{n:0,q:0};
+  S.drugs[c.drug]={n:cur.n+u,q:Math.round((cur.q*cur.n+q*u)/(cur.n+u))};
+  addXp(Math.round(D.xp*(.5+q/100)));S.batches=(S.batches||0)+1;S.flags.cooked=1;S.cook=null;
+  msg(`${D.ic} ${u}× ${D.n} fertig – Qualität ${q}% (${QN(q)})`)}
+function mishap(reason){
+  $('flash').style.opacity=1;setTimeout(()=>$('flash').style.opacity=0,500);
+  if(S.psa)msg('💥 '+reason+' – Ansatz verloren, aber die Schutzausrüstung hat dich gerettet.');
+  else{const c=Math.min(S.cash,Math.round(250+Math.random()*250));S.cash-=c;msg('💥 '+reason+' – Ansatz verloren. Notaufnahme −'+money(c)+' (ohne Schutzausrüstung!)')}}
+function togglePSA(){S.psa=!S.psa;if(S.psa)S.flags.psa=1;$('psa').style.display=S.psa&&inLabNow()?'block':'none';
+  msg(S.psa?'🥽 Kittel, Schutzbrille, Handschuhe & Atemschutz angelegt.':'Schutzausrüstung abgelegt.')}
+function labInteract(id){
+  if(id==='locker')togglePSA();
+  else if(id==='shop')openMenuX(shopMenu);
+  else if(id==='recipes')openMenuX(boardMenu);
+  else if(id==='terminal')openLap();
+  else useStation(id)}
+function stPrompt(id){
+  if(id==='locker')return S.psa?'[E] Schutzausrüstung ablegen':'[E] Schutzausrüstung anlegen';
+  if(id==='shop')return '[E] Chemikalien-Schrank (Zutaten kaufen)';
+  if(id==='recipes')return S.cook?'[E] Rezept-Board (Ansatz läuft)':'[E] Rezept-Board – Ansatz starten';
+  if(id==='terminal')return '[E] Laptop benutzen (Mining & Darknet)';
+  const c=S.cook;if(!c)return STATION[id]+' – kein Ansatz aktiv';
+  const ST=STEP[DRUGS[c.drug].steps[c.i]];return ST.st===id?'[E] '+ST.n+' starten':STATION[id]+' – gerade nicht dran'}
+// Laufend geprüft: Betritt der Spieler das (angebaute) Labor, gilt die Schutzbrillen-Optik + einmaliger Hinweis
+function labEnterCheck(){
+  const inside=inLabNow();
+  $('psa').style.display=S.psa&&inside?'block':'none';
+  if(inside&&!S.flags.inlab){S.flags.inlab=1;if(!S.flags.notice)openMenuX(noticeMenu)}}
+
+// ---------------- HUD (Ansatz-Liste, Marker) ----------------
+let cookLast='';
+function labHud(time){
+  const c=S.cook;let h='';
+  if(c){const D=DRUGS[c.drug];
+    h=`<b class="t">${D.ic} Ansatz: ${D.n}</b>`;
+    D.steps.forEach((k,i)=>{const s=STEP[k];h+=`<div class="${i<c.i?'done':i===c.i?'cur':'todo'}">${i<c.i?'✔':i===c.i?'▶':'○'} ${s.ic} ${s.n}${i<c.i?' – '+c.sc[i]+'%':''}</div>`});
+    h+=`<div style="font-size:12px;opacity:.8">Nächste Station: ${STATION[STEP[D.steps[c.i]].st]}</div>`}
+  if(h!==cookLast){cookLast=h;$('cook').innerHTML=h;$('cook').style.display=h?'block':'none'}
+  if(c&&S.lab){const L=LST[STEP[DRUGS[c.drug].steps[c.i]].st];labMarker.visible=true;labMarker.position.set(L.x,L.ly+.7+Math.sin(time*4)*.08,L.z)}else labMarker.visible=false}
+
+// ======================= Minispiele =======================
+const mini=$('mini'),mc=$('mc'),mctx=mc.getContext('2d');
+function relock(){try{const p=renderer.domElement.requestPointerLock();p&&p.catch&&p.catch(()=>{})}catch(e){}}
+function openMini(title,info){modal=true;if(document.pointerLockElement)document.exitPointerLock();mini.style.display='grid';$('mt').textContent=title;$('mi').textContent=info;$('mr').textContent='';$('mb').innerHTML=''}
+function closeMini(){modal=false;mini.style.display='none';mg=null;relock()}
+function setBtns(list){const b=$('mb');b.innerHTML='';list.forEach(([t,fn])=>{const el=document.createElement('button');el.textContent=t;el.onclick=fn;b.appendChild(el)})}
+function startMini(k){
+  const c=S.cook,D=DRUGS[c.drug],ST=STEP[k],W=(1+S.up.ease*.18)/D.d;
+  openMini(ST.ic+' '+ST.n+' – '+STATION[ST.st],ST.h);
+  mg=({weigh:gPour,mix:gStir,heat:gGauge,cool:gGauge,filter:gGauge,dry:gTiming,press:gTiming})[k](k,D,W);
+  mg.hold=false;mg.mx=320;mg.my=130;mg.fin=false;
+  if(mg.btns)setBtns(mg.btns)}
+function mgFinish(score,fail,note){
+  if(!mg||mg.fin)return;mg.fin=true;
+  $('mr').innerHTML=fail?`<span style="color:#f66">💥 ${fail}</span>`:`<span style="color:${score>=80?'#7f7':score>=50?'#ff6':'#fa6'}">${note||''} Ergebnis: <b>${Math.round(score)}%</b></span>`;
+  const next=()=>{closeMini();cookStepDone(score,fail)};mg.next=next;
+  setBtns([[fail?'Weiter':'Weiter ▶',next]])}
+function mgDown(){if(!mg||mg.fin)return;mg.hold=true;mg.press&&mg.press()}
+function mgUp(){if(!mg)return;const was=mg.hold;mg.hold=false;was&&mg.release&&mg.release()}
+function modalKey(e){
+  if(lapOpen){if(e.code==='Escape')closeLap();return}
+  if(!mg)return;
+  if(e.code==='Escape'){if(mg.fin)mg.next();else closeMini();return}
+  if(e.code==='Space'){e.preventDefault();if(!e.repeat)mgDown();return}
+  if(mg.fin&&(e.code==='Enter'))mg.next();else if(mg.key)mg.key(e.code)}
+mc.addEventListener('mousedown',e=>{e.preventDefault();mgDown()});
+mc.addEventListener('mousemove',e=>{if(!mg)return;const r=mc.getBoundingClientRect();mg.mx=(e.clientX-r.left)*640/r.width;mg.my=(e.clientY-r.top)*260/r.height});
+addEventListener('mouseup',()=>{if(mg&&mg.hold)mgUp()});
+
+// ---- Dosieren (Waage) ----
+function gPour(k,D,W){
+  const tgt=Math.round(rnd(8,22)*10)/10,tol=.9*W;let w=0,ht=0,resets=0;const o={};
+  o.upd=dt=>{if(o.fin)return;if(o.hold){ht+=dt;w+=(1.1+3*Math.min(ht,2))*dt}else ht=0};
+  o.release=()=>{w+=.04};
+  const confirm=()=>{if(o.fin)return;const err=Math.abs(w-tgt);mgFinish(Math.max(0,100*(1-clamp((err-tol*.3)/(tol*2.5),0,1))-8*resets),null,err<=tol?'Präzise!':err<=tol*2?'Okay.':'Daneben …')};
+  const tara=()=>{if(o.fin)return;w=0;resets++};
+  o.key=c=>{if(c==='Enter')confirm();if(c==='KeyR')tara()};
+  o.btns=[['Bestätigen (Enter)',confirm],['Tara (R) −8 %',tara]];
+  o.draw=g=>{g.clearRect(0,0,640,260);
+    g.fillStyle='#0b1a0f';g.fillRect(40,24,260,92);g.strokeStyle='#2c5';g.lineWidth=2;g.strokeRect(40,24,260,92);
+    g.fillStyle=Math.abs(w-tgt)<=tol?'#9dffb0':'#4dff88';g.font='bold 50px monospace';g.textAlign='right';g.fillText(w.toFixed(2)+' g',286,90);
+    g.fillStyle='#9ab';g.font='16px sans-serif';g.textAlign='left';g.fillText('Soll: '+tgt.toFixed(1)+' g  (±'+tol.toFixed(2)+')',40,142);
+    const bx=40,bw=560,bm=26;
+    g.fillStyle='#1a222c';g.fillRect(bx,170,bw,28);g.fillStyle='#2a7a45';g.fillRect(bx+(tgt-tol)/bm*bw,170,tol*2/bm*bw,28);
+    g.fillStyle=w>tgt+tol?'#d55':'#5af';g.fillRect(bx,177,Math.min(1,w/bm)*bw,14);g.fillStyle='#fff';g.fillRect(bx+tgt/bm*bw-1,164,2,40);
+    g.fillStyle='#cfd5da';g.beginPath();g.ellipse(480,80,72,20,0,0,7);g.fill();
+    const ph=Math.min(34,2+w*1.2);g.fillStyle='#f4f4f4';g.beginPath();g.ellipse(480,80,Math.min(62,8+w*3),ph,0,Math.PI,2*Math.PI);g.fill();
+    if(o.hold){g.strokeStyle='#fff';g.lineWidth=3;g.beginPath();g.moveTo(480,16);g.lineTo(480,80-ph);g.stroke()}
+    g.fillStyle='#9ab';g.fillText(w>tgt+tol*2.5?'Zu viel! → Tara (R)':'Halten = dosieren, loslassen = stoppen',40,238)};
+  return o}
+
+// ---- Rühren ----
+function gStir(k,D,W){
+  const o={ang:null,sp:0,prog:0,t:0,T:15,rot:0},ctr=.5+(D.d-1)*.03,hw=.17*W+.03;
+  o.upd=dt=>{if(o.fin)return;o.t+=dt;
+    const dx=o.mx-320,dy=o.my-118,r=Math.hypot(dx,dy);let inst=0;
+    if(r>25){const a=Math.atan2(dy,dx);if(o.ang!==null){let d=a-o.ang;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;inst=Math.abs(d)/Math.max(dt,.001)/15.7}o.ang=a}else o.ang=null;
+    o.sp+=(Math.min(1.6,inst)-o.sp)*Math.min(1,dt*5);o.inb=Math.abs(o.sp-ctr)<=hw;
+    if(o.inb)o.prog=Math.min(1,o.prog+dt/5.5);o.rot+=o.sp*dt*9;
+    if(o.prog>=1||o.t>=o.T)mgFinish(o.prog*100,null,o.prog>=1?'Schön gleichmäßig!':'Zeit abgelaufen.')};
+  o.draw=g=>{g.clearRect(0,0,640,260);const cx=320,cy=118;
+    g.fillStyle='#16202b';g.beginPath();g.arc(cx,cy,100,0,7);g.fill();g.strokeStyle='#6a8aa8';g.lineWidth=4;g.stroke();
+    g.fillStyle='#4aa6d8aa';g.beginPath();g.arc(cx,cy,92,0,7);g.fill();
+    g.strokeStyle='#ffffff55';g.lineWidth=2;for(let i=0;i<3;i++){g.beginPath();g.arc(cx,cy,28+i*22,o.rot+i,o.rot+i+3);g.stroke()}
+    g.save();g.translate(cx,cy);g.rotate(o.rot);g.fillStyle='#fff';g.fillRect(-46,-6,92,12);g.restore();
+    g.fillStyle='#ffd23a';g.beginPath();g.arc(o.mx,o.my,5,0,7);g.fill();
+    g.fillStyle='#1a222c';g.fillRect(40,8,560,10);g.fillStyle='#3ddc84';g.fillRect(40,8,560*o.prog,10);
+    const gx=40,gw=560,gy=236;g.fillStyle='#1a222c';g.fillRect(gx,gy,gw,16);g.fillStyle='#2a7a45';g.fillRect(gx+(ctr-hw)/1.6*gw,gy,hw*2/1.6*gw,16);
+    g.fillStyle=o.inb?'#9dffb0':'#fff';g.fillRect(gx+clamp(o.sp,0,1.6)/1.6*gw-2,gy-5,4,26);
+    g.fillStyle='#9ab';g.font='14px sans-serif';g.textAlign='left';g.fillText('Rührgeschwindigkeit – kreise um den Kolben',40,230)};
+  return o}
+
+// ---- Heizen / Kühlen / Filtern (Anzeige im Zielbereich halten) ----
+function gGauge(k,D,W){
+  const hw=Math.max(5,11*W),ease=1+S.up.ease*.1;
+  const cfg={
+    heat:{v0:12,hold:26,rel:-13/ease,dur:15,danger:95,col:'#ffb347'},
+    cool:{v0:88,hold:-20,rel:9/ease,dur:15,col:'#bfe6ff'},
+    filter:{v0:30,tap:11,rel:-14/ease,dur:13,col:'#e8e8d8'}
+  }[k],ctr=D.band[k];
+  const o={v:cfg.v0,t:0,inb:0,dang:0,nz:0,nzT:0,nzG:0};
+  o.press=()=>{if(cfg.tap)o.v=Math.min(100,o.v+cfg.tap)};
+  o.upd=dt=>{if(o.fin)return;o.t+=dt;
+    o.nzT-=dt;if(o.nzT<=0){o.nzT=.4;o.nzG=rnd(-4,4)}o.nz+=(o.nzG-o.nz)*Math.min(1,dt*3);
+    if(cfg.tap)o.v+=(cfg.rel+o.nz)*dt;else o.v+=((o.hold?cfg.hold:cfg.rel)+o.nz*1.5)*dt;
+    o.v=clamp(o.v,0,100);if(Math.abs(o.v-ctr)<=hw)o.inb+=dt;
+    if(cfg.danger&&o.v>=cfg.danger){o.dang+=dt;if(o.dang>1.2)mgFinish(0,'Siedeverzug! Der Ansatz ist übergekocht.')}else o.dang=Math.max(0,o.dang-dt*.5);
+    if(!o.fin&&o.t>=cfg.dur){const s=Math.min(100,o.inb/(cfg.dur-2)*100);mgFinish(s,null,s>=80?'Stabil gehalten.':'Wackelig …')}};
+  o.draw=g=>{g.clearRect(0,0,640,260);const x=320,y=88;
+    g.strokeStyle='#cfe8ff';g.lineWidth=3;g.fillStyle='#cfe8ff22';
+    if(k==='filter'){g.beginPath();g.moveTo(x-70,y-60);g.lineTo(x+70,y-60);g.lineTo(x+12,y+10);g.lineTo(x-12,y+10);g.closePath();g.fill();g.stroke();g.fillStyle='#fff8';g.fillRect(x-60,y-56,120,6);
+      g.fillStyle=cfg.col;for(let i=0;i<3;i++){const dy=(o.t*60+i*18)%40;g.beginPath();g.arc(x,y+14+dy,3,0,7);g.fill()}}
+    else{g.beginPath();g.arc(x,y+14,46,0,7);g.fill();g.stroke();g.strokeRect(x-9,y-64,18,40);
+      g.fillStyle=cfg.col;g.beginPath();g.arc(x,y+14,40,.1*Math.PI,.9*Math.PI);g.fill();
+      if(k==='heat'){const a=o.hold?1:.3;g.fillStyle=`rgba(255,${120+((o.t*500)%80)|0},30,${a})`;for(let i=-2;i<=2;i++){g.beginPath();g.moveTo(x+i*18-8,y+70);g.lineTo(x+i*18,y+70-26-(o.hold?12:0));g.lineTo(x+i*18+8,y+70);g.fill()}
+        g.fillStyle='#fff9';for(let i=0;i<Math.floor(o.v/12);i++){g.beginPath();g.arc(x-24+((i*37)%48),y+10-((o.t*50+i*23)%34),2+(i%3),0,7);g.fill()}}
+      else{g.fillStyle='#e8f6ffdd';for(let i=0;i<7;i++)g.fillRect(x-60+i*18,y+62+(i%2)*4,14,12)}}
+    const gx=40,gw=560,gy=170;
+    g.fillStyle='#1a222c';g.fillRect(gx,gy,gw,26);g.fillStyle='#2a7a45';g.fillRect(gx+(ctr-hw)/100*gw,gy,hw*2/100*gw,26);
+    if(cfg.danger){g.fillStyle='#a33';g.fillRect(gx+cfg.danger/100*gw,gy,gw*(1-cfg.danger/100),26)}
+    g.fillStyle='#fff';g.fillRect(gx+o.v/100*gw-3,gy-8,6,42);
+    g.fillStyle='#1a222c';g.fillRect(40,222,560,8);g.fillStyle='#4da3ff';g.fillRect(40,222,560*Math.min(1,o.t/cfg.dur),8);
+    g.fillStyle='#9ab';g.font='14px sans-serif';g.textAlign='left';
+    g.fillText({heat:'Temperatur',cool:'Badtemperatur',filter:'Unterdruck'}[k]+' – '+(cfg.tap?'tippen':'halten'),40,160)};
+  return o}
+
+// ---- Timing (Trocknen / Tablettieren) ----
+function gTiming(k,D,W){
+  const n=k==='dry'?3:5,o={i:0,res:[],m:0,dir:1,spd:.9,zc:rnd(.2,.8),hw:.1*W+.02,flash:0,last:null};
+  o.upd=dt=>{if(o.fin)return;o.m+=o.dir*o.spd*dt;if(o.m>1){o.m=1;o.dir=-1}if(o.m<0){o.m=0;o.dir=1}o.flash=Math.max(0,o.flash-dt)};
+  o.press=()=>{if(o.fin)return;const e=Math.abs(o.m-o.zc)/o.hw,s=e<=.35?100:Math.max(0,100-(e-.35)*55);
+    o.res.push(s);o.last=s;o.flash=.5;o.i++;
+    if(o.i>=n)mgFinish(o.res.reduce((a,b)=>a+b,0)/n,null,'Timing');else{o.zc=rnd(.18,.82);o.spd*=1.18}};
+  o.draw=g=>{g.clearRect(0,0,640,260);const x0=40,w=560;
+    g.fillStyle='#1a222c';g.fillRect(x0,100,w,50);g.fillStyle='#2a7a45';g.fillRect(x0+(o.zc-o.hw)*w,100,o.hw*2*w,50);
+    g.fillStyle=o.flash>0?'#ffd23a':'#fff';g.fillRect(x0+o.m*w-3,88,6,74);
+    for(let i=0;i<n;i++){g.fillStyle=i<o.i?(o.res[i]>=70?'#3ddc84':'#fa6'):'#334';g.beginPath();g.arc(320-(n-1)*18+i*36,44,10,0,7);g.fill()}
+    g.fillStyle='#9ab';g.font='16px sans-serif';g.textAlign='center';
+    g.fillText(k==='dry'?'Schieber im grünen Bereich stoppen':'Stempel im Takt – jetzt!',320,200);
+    if(o.last!==null)g.fillText('Letzter Versuch: '+Math.round(o.last)+' %',320,230)};
+  return o}
+
+
 // ---------------- Hauptschleife ----------------
 const hb=$('hotbar');
 ['🌱|Samen','💧|Gießen','✂️|Schere'].forEach((t,i)=>{const [ic,n]=t.split('|');const d=document.createElement('div');d.className='slot sh';d.innerHTML=`<b>${i+1}</b>${ic}<small id="sl${i}">${n}</small>`;hb.appendChild(d)});
@@ -430,20 +1103,21 @@ function frame(){
   requestAnimationFrame(frame);
   const dt=Math.min(clock.getDelta(),.05),time=clock.elapsedTime;
   // Bewegung
-  if(!menuOpen&&started){
+  if(!menuOpen&&!modal&&started){
+    const ox=player.x,oz=player.z;
     const f=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0),r=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0);
     if(f||r){const sp=(keys.ShiftLeft?5.6:3.6)*dt,l=Math.hypot(f,r);
       const fx=-Math.sin(yaw),fz=-Math.cos(yaw),rx=Math.cos(yaw),rz=-Math.sin(yaw);
       player.x+=(fx*f+rx*r)/l*sp;player.z+=(fz*f+rz*r)/l*sp;bob+=dt*(keys.ShiftLeft?11:8)}
     if(keys.KeyQ)yaw+=dt*1.6;if(keys.KeyY&&false)yaw-=dt*1.6;
-    player.x=Math.max(-HX+.5,Math.min(HX-.5,player.x));player.z=Math.max(-HZ+.5,Math.min(HZ-.5,player.z));
+    walkCollide(ox,oz);
     for(const s of solids){const sx=s.o?s.o.x:s.x,sz=s.o?s.o.z:s.z;if(s.o&&!s.o.owned)continue;const dx=player.x-sx,dz=player.z-sz,d=Math.hypot(dx,dz),R=s.r+.3;if(d<R&&d>0){player.x=sx+dx/d*R;player.z=sz+dz/d*R}}
   }
   camera.position.set(player.x,1.7+Math.sin(bob)*.035,player.z);camera.rotation.set(pitch,yaw,0);
   // Rick schaut zum Spieler
   rick.rotation.y+=((Math.atan2(player.x-rick.position.x,player.z-rick.position.z))-rick.rotation.y)*.05;rick.position.y=Math.sin(time*2)*.01;
   // Tag / Gehalt
-  S.dayT+=dt;if(S.dayT>=DAYLEN){S.dayT=0;S.day++;const pay=Math.min(S.cash,S.workers*SALARY);S.cash-=pay;if(pay>0)msg('Tag '+S.day+': Gehälter −'+money(pay));S.price=Math.round(40+Math.random()*45+S.level*2)}
+  S.dayT+=dt;if(S.dayT>=DAYLEN){S.dayT=0;S.day++;const pay=Math.min(S.cash,S.workers*SALARY);S.cash-=pay;if(pay>0)msg('Tag '+S.day+': Gehälter −'+money(pay));S.price=Math.round(40+Math.random()*45+S.level*2);labDay()}
   // Pflanzen
   for(const p of pots){
     p.g.visible=p.owned;if(!p.owned)continue;
@@ -460,12 +1134,18 @@ function frame(){
   stations.rack.heap.scale.set(1.5,.15+Math.min(S.raw,8)*.07,1);stations.rack.heap.visible=S.raw>0;
   stations.table.boxes.forEach((b,i)=>b.visible=i<S.pack);
   workers.forEach(w=>updateWorker(w,dt,time));
+  labDoor.position.x+=((S.lab?2.2:0)-labDoor.position.x)*Math.min(1,dt*3);
+  mineTick(dt);labEnterCheck();labHud(time);lapTick(dt);
+  if(mg){mg.upd(dt);mg&&mg.draw(mctx)}
+  {const tt=!inLabNow()?'Dragon Smoke':player.z<LZ0+8.2?'Labor · Raum 1 – Vorbereitung':'Labor · Raum 2 – Kochraum';if($('title').textContent!==tt)$('title').textContent=tt}
   // Zielerfassung + HUD
   aim();
   let pr='';
-  if(aimed&&!menuOpen){
+  if(aimed&&!menuOpen&&!modal){
     const r=aimed;
     if(r.type==='rick')pr='[E] Mit Onkel Rick reden';
+    else if(r.type==='labdoor')pr='🔒 Stahltür – abgeschlossen (Onkel Rick hat den Schlüssel)';
+    else if(r.type==='st')pr=stPrompt(r.id);
     else if(r.type==='barrel')pr='[E] Gießkanne auffüllen';
     else if(r.type==='rack')pr='[E] Blüten trimmen  ('+S.raw+' roh)';
     else if(r.type==='table')pr='[E] Verpacken  ('+S.trim+' getrimmt, 3 nötig)';
@@ -476,7 +1156,7 @@ function frame(){
   $('money').textContent=money(S.cash);
   $('xpfill').style.width=(S.xp/need(S.level)*100)+'%';$('xpnum').textContent=S.level;
   $('day').textContent='Tag '+S.day+' · Markt: '+money(S.price)+'/Paket · Arbeiter: '+S.workers+' · Lampen Lvl '+S.lights;
-  $('inv').innerHTML=`🌿 Roh: <b>${S.raw}</b> &nbsp; ✂️ Getrimmt: <b>${S.trim}</b> &nbsp; 📦 Pakete: <b>${S.pack}</b>`;
+  $('inv').innerHTML=`🌿 Roh: <b>${S.raw}</b> &nbsp; ✂️ Getrimmt: <b>${S.trim}</b> &nbsp; 📦 Pakete: <b>${S.pack}</b>`+labInv();
   slotEls.forEach((e,i)=>e.classList.toggle('sel',i===S.tool));
   $('sl0').textContent='Samen '+money(SEED);$('sl1').textContent='Wasser '+S.water+'/'+S.waterCap;$('sl2').textContent='Schere';
   renderer.render(scene,camera);
