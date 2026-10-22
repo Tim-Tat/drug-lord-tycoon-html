@@ -7,7 +7,22 @@ Zwei spielbare Browser-Versionen, inspiriert von *Drug Lord Tycoon* (inoffiziell
 
 Einfach die HTML-Datei im Browser öffnen (die 3D-Version lädt three.js per CDN, Internet nötig).
 
-Steuerung 3D: WASD, Maus, Shift, 1/2/3 Werkzeug, Klick benutzen, E interagieren.
+Steuerung 3D: WASD, Maus, Shift, 1/2/3 Werkzeug, Klick benutzen, E interagieren, **F2** Grafik hoch/niedrig.
+
+## Grafik & Animation (3D-Version)
+
+Rein optische Überarbeitung – Spielregeln, Werte und Abläufe sind unverändert.
+
+- **Render-Pipeline:** HDR mit MSAA, Bloom (leuchtende Lampen, Bildschirme, Sonne), Tone-Mapping, Vignette, leichtes Filmkorn. Mit **F2** auf „niedrig“ schalten (kein Bloom, kleinere Schatten, kein Gras) – läuft auch ohne WebGL2/Float-Targets automatisch im Fallback.
+- **Tag & Nacht:** Ein Spieltag (90 s) ist ein kompletter Tageszyklus mit Sonnenaufgang, Mittag, Abendrot, Nacht mit Mond und Sternen. Sonne und Mond werfen Schatten, die Hängelampen gehen abends an.
+- **Prozeduraler Himmel** mit ziehenden Wolken, Sonnenscheibe und Reflexionen auf Glas/Metall (aus dem Himmel gerenderte Umgebungskarte).
+- **Gewächshaus:** Ziegel-, Beton-, Holz- und Glas-Materialien mit Bump, Kondenswasser auf den Scheiben, Lichtstrahlen und Staub im Sonnenlicht, Dachklappen die sich langsam öffnen, drehende Ventilatoren, schwingende Lampen, Wanduhr in Echtzeit, Werkzeugwand, Regale, Pfützen.
+- **Pflanzen:** gezackte Fächerblätter, Seitentriebe, Blüten mit Stempelhärchen und funkelndem Harz. Sie wiegen sich im Wind, lassen bei Durst die Blätter hängen und richten sich nach dem Gießen auf; feuchte Erde wird dunkler. Partikel beim Pflanzen, Gießen und Ernten.
+- **Hand & Werkzeug (Ego-Ansicht):** Handschuhhand mit Samentüte, Gießkanne (echter Wasserstrahl) und Gartenschere, mit Lauf-Wippen, Trägheit, Werkzeugwechsel- und Benutz-Animationen. Mit Schutzausrüstung wechseln die Handschuhe auf Nitril-Blau.
+- **Figuren:** Onkel Rick (Hawaiihemd, Strohhut, Blinzeln, folgt dir mit dem Blick, gestikuliert beim Reden, Kaffee mit Dampf) und Arbeiter im Schutzanzug mit Lauf-/Arbeitsanimation und Staubwölkchen.
+- **Außenwelt:** Gelände mit Hügeln, Gras und Blumen im Wind, Bäume, Büsche, Zaun, Windräder, Vögel, Schmetterlinge.
+- **Labor:** glänzender Fliesenboden mit Reflexionen, Wandfliesen, Deckenplatten mit Leuchtstoffröhren (flackern gelegentlich), Rohre und Kabeltrassen, beschriftete Reagenzflaschen. Alle Geräte reagieren auf das Minispiel: Rührfisch dreht sich, Heizspirale glüht mit Blasen und Dampf, Eisbad mit Nebel, Filtration mit Manometer, Presse schlägt zu, Trockenschrank glüht, Waage zeigt das Gewicht, Zentrifuge und Mining-Rig-Lüfter drehen, der Laptop zeigt einen laufenden Terminal-Bildschirm. Ein Leuchtring markiert die nächste Station.
+- **Minispiele & HUD:** neu gezeichnete Minispiele (Kolben, Flamme, Eisbad, Vakuum-Manometer, Wirbel, Presse), Glas-HUD mit Tasten-Hinweisen, animiertem Geld-/Ziel-Feedback und Fadenkreuz, das auf Interaktionen reagiert.
 
 ## Das Labor (3D-Version)
 
