@@ -213,7 +213,7 @@ const Post=(()=>{
         bloom:{value:.5},time:{value:0},expo:{value:.62/.6},vig:{value:.34},grain:{value:.028},ca:{value:.0035},res:{value:new T.Vector2(1,1)},tint:{value:new T.Vector3(1,1,1)},fade:{value:1}}
     };
     const mBright=mk(`uniform sampler2D tex;uniform float thr;varying vec2 vUv;
-      void main(){vec3 c=texture2D(tex,vUv).rgb;float l=max(c.r,max(c.g,c.b));float k=clamp((l-thr)/(thr*.8+.001),0.,1.);gl_FragColor=vec4(c*k*k,1.);}`,U.bright);
+      void main(){vec3 c=texture2D(tex,vUv).rgb;if(!(c.r>=0.&&c.g>=0.&&c.b>=0.&&c.r<1e3&&c.g<1e3&&c.b<1e3))c=vec3(0.);float l=max(c.r,max(c.g,c.b));float k=clamp((l-thr)/(thr*.8+.001),0.,1.);gl_FragColor=vec4(c*k*k,1.);}`,U.bright);
     const mBlur=mk(`uniform sampler2D tex;uniform vec2 dir;varying vec2 vUv;
       void main(){vec3 s=texture2D(tex,vUv).rgb*.2270270270;
         s+=(texture2D(tex,vUv+dir*1.3846153846).rgb+texture2D(tex,vUv-dir*1.3846153846).rgb)*.3162162162;
@@ -224,13 +224,13 @@ const Post=(()=>{
       const mat3 AOut=mat3(vec3(1.60475,-.10208,-.00327),vec3(-.53108,1.10813,-.07276),vec3(-.07367,-.00605,1.07602));
       vec3 fit(vec3 v){vec3 a=v*(v+.0245786)-.000090537;vec3 b=v*(.983729*v+.4329510)+.238081;return a/b;}
       vec3 aces(vec3 c){c=AIn*c;c=fit(c);c=AOut*c;return clamp(c,0.,1.);}
-      vec3 srgb(vec3 c){return mix(c*12.92,1.055*pow(c,vec3(1./2.4))-.055,step(.0031308,c));}
+      vec3 srgb(vec3 c){return mix(c*12.92,1.055*pow(max(c,vec3(0.)),vec3(1./2.4))-.055,step(.0031308,c));}
       void main(){vec2 d=vUv-.5;float r2=dot(d,d);vec2 off=d*r2*ca;
-        vec3 c=vec3(texture2D(tex,vUv+off).r,texture2D(tex,vUv).g,texture2D(tex,vUv-off).b);
+        vec3 c=vec3(texture2D(tex,vUv+off).r,texture2D(tex,vUv).g,texture2D(tex,vUv-off).b);if(!(c.r>=0.&&c.g>=0.&&c.b>=0.&&c.r<1e4&&c.g<1e4&&c.b<1e4))c=vec3(0.);
         vec3 bl=texture2D(b0,vUv).rgb*.85+texture2D(b1,vUv).rgb*.8+texture2D(b2,vUv).rgb*.7+texture2D(b3,vUv).rgb*.6+texture2D(b4,vUv).rgb*.5;
         c+=bl*bloom;c=aces(c*expo);
         float l=dot(c,vec3(.2126,.7152,.0722));c=mix(vec3(l),c,1.1);c=c*c*(3.-2.*c)*.18+c*.82;   // sanfte S-Kurve
-        c*=tint;c=srgb(c);
+        c=max(c,vec3(0.));c*=tint;c=srgb(c);
         c*=1.-vig*smoothstep(.2,.95,length(d)*1.45);
         float n=fract(sin(dot(vUv*res+fract(time)*61.,vec2(12.9898,78.233)))*43758.5453);
         c+=(n-.5)*grain;gl_FragColor=vec4(c*fade,1.);}`,U.fin);
@@ -885,7 +885,7 @@ const budMatP=new T.MeshStandardMaterial({vertexColors:true,roughness:.5,emissiv
 // Trichom-Glitzer (Punkte mit Funkeln im Shader)
 const glitU={uTime:{value:0}};
 const glitMat=new T.ShaderMaterial({transparent:true,depthWrite:false,blending:T.AdditiveBlending,uniforms:Object.assign({uScale:PS.uScale},glitU),
-  vertexShader:'attribute float ph;uniform float uScale,uTime;varying float vA;void main(){vec4 mv=modelViewMatrix*vec4(position,1.);float tw=pow(.5+.5*sin(uTime*(2.2+ph*1.3)+ph*40.),8.);vA=.05+tw*.7;gl_PointSize=max(1.2,(.008+.008*tw)*uScale/-mv.z);gl_Position=projectionMatrix*mv;}',
+  vertexShader:'attribute float ph;uniform float uScale,uTime;varying float vA;void main(){vec4 mv=modelViewMatrix*vec4(position,1.);float tw=pow(clamp(.5+.5*sin(uTime*(2.2+ph*1.3)+ph*40.),0.,1.),8.);vA=.05+tw*.7;gl_PointSize=max(1.2,(.008+.008*tw)*uScale/-mv.z);gl_Position=projectionMatrix*mv;}',
   fragmentShader:'varying float vA;void main(){float d=length(gl_PointCoord-.5)*2.;float a=smoothstep(1.,.0,d)*vA;if(a<.02)discard;gl_FragColor=vec4(vec3(1.,.97,.9)*a*1.6,a);}'});
 function glitGeo(h,r,n){const p=[],ph=[];for(let i=0;i<n;i++){const t=Math.random(),a=Math.random()*6.283,rad=r*(1-.5*t)*(1.0+Math.random()*.25);p.push(Math.cos(a)*rad,t*h+.02,Math.sin(a)*rad);ph.push(Math.random())}
   const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(p,3));g.setAttribute('ph',new T.Float32BufferAttribute(ph,1));return g}
@@ -943,7 +943,7 @@ const ledTex=canvasTex(128,96,(g,w,h)=>{g.fillStyle='#220a2a';g.fillRect(0,0,w,h
 const ledMat=new T.MeshBasicMaterial({map:ledTex,color:new T.Color(2.1,1.5,2.4),toneMapped:false});
 const beamMat=new T.ShaderMaterial({transparent:true,depthWrite:false,blending:T.AdditiveBlending,side:T.DoubleSide,uniforms:{uK:{value:.14},uCol:{value:new T.Color(1,.5,1)}},
   vertexShader:'varying vec2 vUv;varying vec3 vN;varying vec3 vV;void main(){vUv=uv;vN=normalize(normalMatrix*normal);vec4 mv=modelViewMatrix*vec4(position,1.);vV=normalize(-mv.xyz);gl_Position=projectionMatrix*mv;}',
-  fragmentShader:'uniform float uK;uniform vec3 uCol;varying vec2 vUv;varying vec3 vN;varying vec3 vV;void main(){float f=pow(abs(dot(normalize(vN),normalize(vV))),1.6);float a=pow(vUv.y,1.15)*f*uK;gl_FragColor=vec4(uCol*a,a);}'});
+  fragmentShader:'uniform float uK;uniform vec3 uCol;varying vec2 vUv;varying vec3 vN;varying vec3 vV;void main(){float f=pow(abs(dot(normalize(vN),normalize(vV))),1.6);float a=pow(clamp(vUv.y,0.,1.),1.15)*f*uK;gl_FragColor=vec4(uCol*a,a);}'});
 const beamGeo=new T.CylinderGeometry(.42,.92,1.4,32,1,true);
 const glowTex=canvasTex(128,128,(g,w,h)=>{const gr=g.createRadialGradient(64,64,0,64,64,64);gr.addColorStop(0,'rgba(255,170,255,.9)');gr.addColorStop(.45,'rgba(220,90,255,.35)');gr.addColorStop(1,'rgba(180,60,255,0)');g.fillStyle=gr;g.fillRect(0,0,128,128)},1,1);
 const glowFloor=new T.MeshBasicMaterial({map:glowTex,transparent:true,blending:T.AdditiveBlending,depthWrite:false,opacity:.55,toneMapped:false});
