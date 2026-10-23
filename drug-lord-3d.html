@@ -2250,7 +2250,7 @@ function startMini(k){
   const c=S.cook,D=DRUGS[c.drug],ST=STEP[k],W=(1+S.up.ease*.18)/D.d*.85;
   openMini(ST.ic+' '+ST.n+' – '+STATION[ST.st],ST.h+((k==='heat'&&!S.vent)?'  ⚠ ABZUG-LÜFTUNG IST AUS!':''));
   mg=({weigh:gPour,mix:gStir,heat:gGauge,cool:gGauge,filter:gGauge,dry:gTiming,press:gTiming})[ST.g](ST.g,D,W,ST.bk||ST.g);
-  mg.hold=false;mg.mx=320;mg.my=130;mg.fin=false;mg.kind=k;mg.cid=c.id;mg.si=c.i;   // Ansatz + Schritt beim Start festhalten
+  mg.hold=false;mg.mx=320;mg.my=130;mg.fin=false;mg.kind=ST.g;mg.cid=c.id;mg.si=c.i;   // Ansatz + Schritt beim Start festhalten
   if(k==='heat'&&!S.vent){const o=mg,u=o.upd;o.vt=0;o.upd=dt=>{u(dt);if(!o.fin){o.vt+=dt;if(o.vt>5)mgFinish(0,'Abzug war aus – giftige Dämpfe im Raum!',null,'gas')}}}
   if(mg.btns)setBtns(mg.btns)}
 function mgFinish(score,fail,note,hz){
