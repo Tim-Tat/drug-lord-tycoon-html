@@ -1,0 +1,9 @@
+{
+  "name": "drug-lord-tycoon-html",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Drug Lord Tycoon (Fan-Nachbau) – optionaler eigener Vermittlungsserver für den Co-op-Multiplayer",
+  "scripts": { "start": "peerjs --host ${HOST:-0.0.0.0} --port ${PORT:-9000} --path /" },
+  "dependencies": { "peer": "^1.0.2" },
+  "engines": { "node": ">=18" }
+}

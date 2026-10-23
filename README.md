@@ -1,11 +1,23 @@
 # Drug Lord Tycoon – Fan-Nachbau (HTML)
 
+> **Version 1 (Branch `main-1v`)** – erster kompletter Stand: 3D-Optik, Multiplayer (Co-op/P2P), Charakter-Editor, Straße/Lieferwagen/Straßenverkauf, Darknet-Verkauf mit Packstation, Gesundheit/Tod, mehrstufige Labor-Rezepte und der Labor-Schlüssel bei Onkel Rick. Per Smoke-Test geprüft: Pflanzen → Verkauf → Labor → Kochen (alle 4 Produkte) → Laptop → Straße/Kunden → Auto → Post → Tod/Respawn → Speichern/Laden.
+
+
 Zwei spielbare Browser-Versionen, inspiriert von *Drug Lord Tycoon* (inoffizieller Fan-Nachbau, **Satire mit fiktiver Spielmechanik**).
 
 - `drug-lord-3d.html` – First-Person-3D-Gewächshaus (three.js, Low-Poly): pflanzen, gießen, ernten, trimmen, verpacken, verkaufen, Arbeiter einstellen – plus **angebautes Labor (2 Räume)**.
 - `index.html` – 2D-Idle-Tycoon-Variante.
 
-Einfach die HTML-Datei im Browser öffnen (die 3D-Version lädt three.js per CDN, Internet nötig).
+Einfach die HTML-Datei im Browser öffnen (die 3D-Version lädt three.js per CDN, Internet nötig). Der Ordner `ui/` (gemeinsames Menü-Design) muss neben den HTML-Dateien liegen.
+
+## UI (Startmenü, Einstellungen, Lobby)
+
+Beide Spiele nutzen dasselbe UI-Modul (`ui/dlt-ui.css`, `ui/dlt-ui.js`):
+
+- **Startmenü / Pause** mit Weiter, Neues Spiel, Speichern, Tastatur-Navigation (↑/↓, Esc = zurück). Das 2D-Spiel pausiert, solange ein Menü offen ist.
+- **Einstellungen** (sofort wirksam, automatisch gespeichert): Menü-/HUD-Größe, reduzierte Animationen; 3D: Mausempfindlichkeit, Y-Achse, FOV, Renderauflösung, Schatten, Kopfwippen, FPS-Anzeige, Fadenkreuz, Ziel-Anzeige; 2D: Zahlenformat, Log, Benachrichtigungen, Autosave-Intervall. Tab „Daten“: Spielstand kopieren/importieren/löschen.
+- **Steuerung** und **Über & Hinweis** (Satire-Hinweis).
+- **Multiplayer:** In der 2D-Version ist die Lobby nur eine UI-Vorschau (kein Netzcode). In der 3D-Version führt „Multiplayer“ zum echten Co-op (Raum hosten / per Code beitreten, siehe unten).
 
 Steuerung 3D: WASD, Maus, Shift, 1/2/3 Werkzeug, Klick benutzen, E interagieren, **F2** Grafik hoch/niedrig.
 
@@ -35,6 +47,58 @@ Freischalten: Tutorial-Ziele abschließen (Paket verkaufen, Arbeiter einstellen)
 - **Kochen = Geschicklichkeit:** jeder Schritt ist ein Minispiel (Dosieren, Rühren, Heizen, Kühlen, Filtern, Trocknen, Tablettieren). Qualität = Durchschnitt der Schritte, Marktpreis hängt von Qualität und Tagesmarkt ab. Siedeverzug ruiniert den Ansatz; ohne Schutzausrüstung kostet das Notaufnahme-Geld.
 - **Ausrüstung:** Glasware (mehr Ausbeute) und Präzisions-Ausrüstung (größere Zielzonen) am Laptop.
 - Verkauf der Produkte bei Onkel Rick.
+
+## Straße, Auto, Post & Fahndung (3D)
+
+Sobald du das erste Paket an Onkel Rick verkauft hast, geht die **Hintertür** (Ostwand des Gewächshauses) auf. Draußen liegen Hof, Straße, Häuser, ein Lieferwagen und die Postfiliale.
+
+- **Straßenverkauf:** Auf dem Gehweg kommen Kunden auf dich zu (💬). **E** = ansprechen: Menge, Mindestqualität und Preis stehen im Menü. Straßenpreise liegen über Ricks Preisen, an den **💰-Straßenecken** kommen mehr Kunden mit besseren Preisen. „Mehr verlangen (+25 %)“ ist ein Risiko (Kunde geht, Lärm erhöht die Fahndung). Es werden Gras-Päckchen und alle selbst gekochten Produkte nachgefragt.
+- **Fahndung 🚨:** Jeder Verkauf und jeder Blitzer erhöht sie, mit der Zeit sinkt sie. Ab 55 % taucht ein Polizist auf (Streifenwagen blinkt) und verfolgt dich. Mit Ware am Mann folgt **Festnahme** (70 % der Ware weg, Strafe, Fahndung zurück, du landest im Gewächshaus), ohne Ware nur eine Kontrolle. Verstecken geht im Gewächshaus oder in der Post, im Auto holt dich der Polizist nicht ein.
+- **Lieferwagen:** **E** am Auto einsteigen/aussteigen, W/S Gas/Bremse, A/D lenken, Leertaste Handbremse. Tempolimit 40 km/h, zwei **Blitzer** an der Straße (Strafe + Fahndung). Kollisionen beschädigen mitgeführte Pakete.
+- **Darknet-Aufträge:** Laptop → Tab **📦 Aufträge** (neue Aufträge kommen laufend, wenn du Rezepte hast): annehmen → am **Versandtisch** (Labor, Raum 1) packen und mitnehmen → mit dem Auto die Straße nach Norden zur **Postfiliale** (Entfernung im HUD) und am **Postschalter** (E) abgeben. Lohn in SCN: voller Lohn ab 80 % Paketzustand, danach Abzug, unter 20 % zerstört. Aufträge haben eine Frist.
+- **Hotbar draußen:** 💰 Straßenpreise · 🚗 Auto · 📦 Pakete · 🚨 Fahndung (Tasten 1–4).
+- **Multiplayer:** Verkäufe, Festnahmen, Pakete und Abgabe laufen über den Host (gemeinsames Geld/Ware/Fahndung). Kunden, Polizisten und dein Lieferwagen sind pro Spieler lokal; Mitspieler sehen deine Figur samt Auto beim Fahren.
+
+## Charaktere & Hotbar
+
+- **Charakter-Editor** im Startbildschirm (Live-Vorschau): Haut, Frisur, Haarfarbe, Oberteil, Hose, Extra (Sonnenbrille / Cap / Mundschutz). Wird lokal gespeichert und im Multiplayer an alle gesendet, die anderen sehen deine Figur samt Namen. Mit angelegter Schutzausrüstung trägt sie Kittel, Schutzbrille und Handschuhe.
+- **V** wechselt zwischen 1. und 3. Person (eigenen Charakter ansehen).
+- **Hotbar wechselt automatisch:** im Gewächshaus Samen / Gießen / Schere (1–3), im Labor die Chemie-Leiste (1–4): 🥽 Schutzausrüstung an/aus, 📋 aktueller Ansatz-Schritt (Taste zeigt Hinweis), 🧪 Zutaten-Vorrat, 💻 Laptop öffnen.
+
+## Multiplayer (Co-op, P2P)
+
+Im Startbildschirm der 3D-Version: **Raum hosten** (zeigt einen 5-stelligen Code) oder mit dem Code **Beitreten**. Bis zu 8 Spieler, Drop-in jederzeit.
+
+- **Host = Autorität:** Der Host spielt vom eigenen Gerät aus und führt die komplette Simulation (Pflanzen, Arbeiter, Tage, Mining, Labor). Der Host-Tab muss sichtbar bleiben.
+- **Geteilte Welt:** Alle bedienen dasselbe Gewächshaus und Labor (Geld, Pakete, Rezepte, Ansatz, Produkte sind gemeinsam). Pflanzen, gießen, ernten, trimmen, verpacken, Rick-Menü, Chemikalien-Schrank, Rezept-Board, Laptop/Darknet und alle Koch-Schritte funktionieren auch für Mitspieler. Schutzausrüstung, Gießkanne und Werkzeug sind pro Spieler.
+- **Sichtbar:** Avatare mit Namen, Spielerliste, Chat (Enter).
+- **Technik:** WebRTC über [PeerJS](https://peerjs.com). Der Vermittlungsserver (PeerJS-Cloud) wird nur für den Verbindungsaufbau genutzt, Spieldaten laufen direkt zwischen den Geräten. Eigener Server: `?ps=host:port` an die URL hängen (z. B. `peer`-npm-Paket). Hinter sehr strikten NATs/Firmennetzen kann ein TURN-Server nötig sein.
+- Mitspieler speichern nicht über den Host-Spielstand; der Host speichert wie gewohnt lokal.
+
+## Darknet-Verkauf & Post
+
+Am Laptop gibt es den Tab **📤 Darknet-Verkauf**: Ware (Pakete oder Labor-Produkte) mit Preisfaktor einstellen. Käufer bestellen von allein – je teurer, desto seltener (und je besser deine Händler-Bewertung, desto häufiger). Jede Bestellung ist ein **Paket, das du zur gelben Packstation auf der Straße bringen musst** (Porto $4, Frist 3 Tage). Nach dem Aufgeben kommt das Paket zum Tageswechsel an: Zahlung in **SCN**, Bewertung steigt oder sinkt je nach Qualität. Verpasste Frist = Storno + schlechtere Bewertung, 8 % Zoll-Risiko pro Paket.
+
+## Gesundheit, Rausch & Gefahren beim Kochen
+
+- **Gesundheitsbalken** (rechts unten). Regeneriert langsam, Erste-Hilfe-Schrank in Raum 1 heilt gegen Geld. **Bei 0 HP stirbst du**: Krankenhaus kostet 30 % Bargeld, die Labor-Ware ist zur Hälfte weg.
+- **Beim Kochen kann alles schiefgehen** (rein fiktive Spielmechanik): Siedeverzug → Explosion; falsche Einwaage → giftige Dämpfe; zu wildes Rühren → ätzende Spritzer; Unterdruck/Gefrierbruch → Glasbruch; zweimal komplett verfehlte Schläge → Brand/Quetschung. **Abzug-Lüftung** (Schalter neben dem Abzug) muss beim Erhitzen laufen, sonst gibt es Gas. Schutzausrüstung reduziert den Schaden stark, ersetzt aber keine Präzision. Die Zielzonen sind enger geworden.
+- **Eigenkonsum (F)**: jede Ware hat einen eigenen mehrminütigen Rausch-Effekt (Tempo, Bildfilter, Wackeln) und danach einen Crash. Unreine Ware (< 50 % Qualität) macht krank, **Mischkonsum kann zur Überdosis führen**.
+
+## Eigener Multiplayer-Vermittlungsserver (optional)
+
+Der Co-op-Multiplayer läuft Peer-to-Peer (WebRTC); ein Vermittlungsserver wird nur für den Verbindungsaufbau gebraucht. Standardmäßig wird die öffentliche PeerJS-Cloud benutzt. Wer unabhängig davon sein will, startet einen eigenen Server:
+
+```
+npm install
+npm start               # PORT=9000, HOST=0.0.0.0
+```
+
+(oder per `Dockerfile`) und öffnet das Spiel mit `drug-lord-3d.html?ps=<host>:<port>`. Spieldaten laufen weiterhin direkt zwischen den Geräten.
+
+## Einstellungen & Pause (3D)
+
+Über **Esc** (Pause) oder den Button „⚙ Einstellungen“ im Startbildschirm: Mausempfindlichkeit, Y-Achse, FOV, Renderauflösung, Schatten, Kopfwippen, FPS-Anzeige, HUD-Größe, Fadenkreuz, Ziel-Anzeige, Steuerungsübersicht sowie Spielstand kopieren/importieren/löschen. Im Solo-Spiel pausiert das Menü die Zeit. Der Ordner `ui/` muss neben den HTML-Dateien liegen.
 
 ## Wichtig / Rechtliches
 
